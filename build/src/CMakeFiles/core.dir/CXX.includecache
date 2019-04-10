@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/dinies/gitrepos/loam/src/Dummy.cpp
+Dummy.hpp
+/home/dinies/gitrepos/loam/src/Dummy.hpp
+
+/home/dinies/gitrepos/loam/src/Dummy.hpp
+unistd.h
+-
+iostream
+-
+thread
+-
+

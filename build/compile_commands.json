@@ -1,0 +1,37 @@
+[
+{
+  "directory": "/home/dinies/gitrepos/loam/build/googletest-build/googlemock",
+  "command": "/usr/bin/c++  -DUNIX -isystem /home/dinies/gitrepos/loam/build/googletest-src/googlemock/include -isystem /home/dinies/gitrepos/loam/build/googletest-src/googlemock -isystem /home/dinies/gitrepos/loam/build/googletest-src/googletest/include -isystem /home/dinies/gitrepos/loam/build/googletest-src/googletest  -g  -std=c++1z  -ggdb  -Wno-ignored-attributes    -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -std=c++11 -o CMakeFiles/gmock_main.dir/src/gmock_main.cc.o -c /home/dinies/gitrepos/loam/build/googletest-src/googlemock/src/gmock_main.cc",
+  "file": "/home/dinies/gitrepos/loam/build/googletest-src/googlemock/src/gmock_main.cc"
+},
+{
+  "directory": "/home/dinies/gitrepos/loam/build/googletest-build/googlemock",
+  "command": "/usr/bin/c++  -DUNIX -I/home/dinies/gitrepos/loam/build/googletest-src/googlemock/include -I/home/dinies/gitrepos/loam/build/googletest-src/googlemock -isystem /home/dinies/gitrepos/loam/build/googletest-src/googletest/include -isystem /home/dinies/gitrepos/loam/build/googletest-src/googletest  -g  -std=c++1z  -ggdb  -Wno-ignored-attributes    -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -std=c++11 -o CMakeFiles/gmock.dir/src/gmock-all.cc.o -c /home/dinies/gitrepos/loam/build/googletest-src/googlemock/src/gmock-all.cc",
+  "file": "/home/dinies/gitrepos/loam/build/googletest-src/googlemock/src/gmock-all.cc"
+},
+{
+  "directory": "/home/dinies/gitrepos/loam/build/googletest-build/googletest",
+  "command": "/usr/bin/c++  -DUNIX -isystem /home/dinies/gitrepos/loam/build/googletest-src/googletest/include -isystem /home/dinies/gitrepos/loam/build/googletest-src/googletest  -g  -std=c++1z  -ggdb  -Wno-ignored-attributes    -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -std=c++11 -o CMakeFiles/gtest_main.dir/src/gtest_main.cc.o -c /home/dinies/gitrepos/loam/build/googletest-src/googletest/src/gtest_main.cc",
+  "file": "/home/dinies/gitrepos/loam/build/googletest-src/googletest/src/gtest_main.cc"
+},
+{
+  "directory": "/home/dinies/gitrepos/loam/build/googletest-build/googletest",
+  "command": "/usr/bin/c++  -DUNIX -I/home/dinies/gitrepos/loam/build/googletest-src/googletest/include -I/home/dinies/gitrepos/loam/build/googletest-src/googletest  -g  -std=c++1z  -ggdb  -Wno-ignored-attributes    -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -std=c++11 -o CMakeFiles/gtest.dir/src/gtest-all.cc.o -c /home/dinies/gitrepos/loam/build/googletest-src/googletest/src/gtest-all.cc",
+  "file": "/home/dinies/gitrepos/loam/build/googletest-src/googletest/src/gtest-all.cc"
+},
+{
+  "directory": "/home/dinies/gitrepos/loam/build/src",
+  "command": "/usr/bin/c++  -DUNIX -I/home/dinies/gitrepos/loam -I/usr/local/include/eigen3 -I/usr/include/opencv -I/home/dinies/gitrepos/loam/src  -g  -std=c++1z  -ggdb  -Wno-ignored-attributes    -o CMakeFiles/core.dir/Dummy.cpp.o -c /home/dinies/gitrepos/loam/src/Dummy.cpp",
+  "file": "/home/dinies/gitrepos/loam/src/Dummy.cpp"
+},
+{
+  "directory": "/home/dinies/gitrepos/loam/build/tests",
+  "command": "/usr/bin/c++  -DUNIX -I/home/dinies/gitrepos/loam -I/usr/local/include/eigen3 -I/home/dinies/gitrepos/loam/src -isystem /usr/include/opencv -isystem /home/dinies/gitrepos/loam/build/googletest-src/googletest/include -isystem /home/dinies/gitrepos/loam/build/googletest-src/googletest -isystem /home/dinies/gitrepos/loam/build/googletest-src/googlemock/include -isystem /home/dinies/gitrepos/loam/build/googletest-src/googlemock  -g  -std=c++1z  -ggdb  -Wno-ignored-attributes    -o CMakeFiles/dummy.dir/Starter.cpp.o -c /home/dinies/gitrepos/loam/tests/Starter.cpp",
+  "file": "/home/dinies/gitrepos/loam/tests/Starter.cpp"
+},
+{
+  "directory": "/home/dinies/gitrepos/loam/build/tests",
+  "command": "/usr/bin/c++  -DUNIX -I/home/dinies/gitrepos/loam -I/usr/local/include/eigen3 -I/home/dinies/gitrepos/loam/src -isystem /usr/include/opencv -isystem /home/dinies/gitrepos/loam/build/googletest-src/googletest/include -isystem /home/dinies/gitrepos/loam/build/googletest-src/googletest -isystem /home/dinies/gitrepos/loam/build/googletest-src/googlemock/include -isystem /home/dinies/gitrepos/loam/build/googletest-src/googlemock  -g  -std=c++1z  -ggdb  -Wno-ignored-attributes    -o CMakeFiles/dummy.dir/TestDummy.cpp.o -c /home/dinies/gitrepos/loam/tests/TestDummy.cpp",
+  "file": "/home/dinies/gitrepos/loam/tests/TestDummy.cpp"
+}
+]
