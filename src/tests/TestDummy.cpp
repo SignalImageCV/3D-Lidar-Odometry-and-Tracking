@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
-
-#include "../src/Dummy.hpp"
+#include "../loam/Dummy.hpp"
 
 using namespace testing;
 namespace Loam{
