@@ -1,99 +1,37 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
+cmake_minimum_required(VERSION 2.8.3)
+project(loam)
 
-project(Loam CXX)
+find_package(catkin REQUIRED COMPONENTS
+  srrg_cmake_modules
+)
 
-# Set the output directory for the build executables and libraries
-ADD_DEFINITIONS(-DUNIX)
-MESSAGE(STATUS "Compiling on Unix")
+include(${srrg_cmake_modules_INCLUDE_DIRS}/CMakeCompileOptions.txt)
 
-set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
+find_package(Eigen3 REQUIRED)
+find_package(Cholmod REQUIRED)
+find_package(OpenCV REQUIRED)
+message(STATUS "${PROJECT_NAME}|OpenCV version ${OpenCV_VERSION}")
+message(STATUS "${PROJECT_NAME}|OpenCV_INCLUDE_DIRS: ${OpenCV_INCLUDE_DIRS}")
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug)
-endif()
+catkin_package(
+  INCLUDE_DIRS
+    src
+  LIBRARIES
+    loam_library
+  CATKIN_DEPENDS
+    srrg_cmake_modules
+  DEPENDS
+    OpenCV
+)
 
-SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -std=c++1z  -ggdb  -Wno-ignored-attributes ")
+include_directories(
+  ${EIGEN3_INCLUDE_DIR}
+  ${OpenCV_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+  ${PROJECT_SOURCE_DIR}/src
+)
 
-message("build type: '${CMAKE_BUILD_TYPE}'")
-message("system type: '${CMAKE_SYSTEM_NAME}'")
+link_directories(${catkin_LIBRARY_DIRS})
 
-
-set_property(GLOBAL PROPERTY GLOBAL_DEPENDS_DEBUG_MODE 1)
-
-# Gtest START
-# Download and unpack googletest at configure time
-configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
-execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-  RESULT_VARIABLE result
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
-if(result)
-  message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-endif()
-execute_process(COMMAND ${CMAKE_COMMAND} --build .
-  RESULT_VARIABLE result
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
-if(result)
-  message(FATAL_ERROR "Build step for googletest failed: ${result}")
-endif()
-
-# Prevent overriding the parent project's compiler/linker
-# settings on Windows
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-# Add googletest directly to our build. This defines
-# the gtest and gtest_main targets.
-add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
-                 ${CMAKE_BINARY_DIR}/googletest-build
-                 EXCLUDE_FROM_ALL)
-
-# The gtest/gtest_main targets carry header search path
-# dependencies automatically when using CMake 2.8.11 or
-# later. Otherwise we have to add them here ourselves.
-if (CMAKE_VERSION VERSION_LESS 2.8.11)
-  include_directories("${gtest_SOURCE_DIR}/include")
-endif()
-# Gtest END
-
-
-SET(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
-SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
-SET(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
-
-INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}")
-
-
-# Find Eigen3
-FIND_PACKAGE(Eigen3 REQUIRED)
-INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIR})
-# INCLUDE_DIRECTORIES(/usr/include/eigen3)
-
-# Find Opencv
-FIND_PACKAGE(OpenCV REQUIRED)
-INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS})
-
-
-# Find Roscpp
-FIND_PACKAGE(roscpp REQUIRED)
-INCLUDE_DIRECTORIES(${roscpp_INCLUDE_DIRS})
-
-
-# Find Rosbag
-FIND_PACKAGE(rosbag REQUIRED)
-INCLUDE_DIRECTORIES(${rosbag_INCLUDE_DIRS})
-
-
-# Find std_msgs
-FIND_PACKAGE( std_msgs REQUIRED)
-INCLUDE_DIRECTORIES(${std_msgs_INCLUDE_DIRS})
-
-
-enable_testing()
-add_subdirectory( src)
-add_subdirectory( tests)
-
-
-
-
-
-
-
+# set sources
+add_subdirectory(src)
