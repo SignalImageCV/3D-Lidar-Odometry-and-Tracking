@@ -71,6 +71,22 @@ INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIR})
 FIND_PACKAGE(OpenCV REQUIRED)
 INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS})
 
+
+# Find Roscpp
+FIND_PACKAGE(roscpp REQUIRED)
+INCLUDE_DIRECTORIES(${roscpp_INCLUDE_DIRS})
+
+
+# Find Rosbag
+FIND_PACKAGE(rosbag REQUIRED)
+INCLUDE_DIRECTORIES(${rosbag_INCLUDE_DIRS})
+
+
+# Find std_msgs
+FIND_PACKAGE( std_msgs REQUIRED)
+INCLUDE_DIRECTORIES(${std_msgs_INCLUDE_DIRS})
+
+
 enable_testing()
 add_subdirectory( src)
 add_subdirectory( tests)

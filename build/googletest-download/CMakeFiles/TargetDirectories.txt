@@ -1,3 +1,0 @@
-/home/dinies/gitrepos/loam/build/googletest-download/CMakeFiles/rebuild_cache.dir
-/home/dinies/gitrepos/loam/build/googletest-download/CMakeFiles/googletest.dir
-/home/dinies/gitrepos/loam/build/googletest-download/CMakeFiles/edit_cache.dir

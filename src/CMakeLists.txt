@@ -1,5 +1,6 @@
 add_library( core
   Dummy.cpp
+  DatasetManager.cpp
   )
 
 target_include_directories(
