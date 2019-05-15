@@ -12,6 +12,9 @@
     <buildtool_depend>catkin</buildtool_depend>
   <!-- ia build,build_export and exec depend are now contained in 'depend' -->
   <depend>srrg_cmake_modules</depend>
+  <depend>sensor_msgs</depend>
+  <depend>srrg2_core</depend>
+
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

@@ -1,0 +1,5 @@
+
+- error with the srrg2_qgl_viewport usage, the error output is:  what(): QGLViewport::draw|missing a BufferSource, quit
+
+- error with conversion of .bag file in srrg compatible (.boss) file, the error is: no config with name [rosbag_to_boss_converter_app] found in file
+  

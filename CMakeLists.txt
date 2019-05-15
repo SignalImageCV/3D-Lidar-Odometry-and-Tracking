@@ -2,8 +2,10 @@ cmake_minimum_required(VERSION 2.8.3)
 project(loam)
 
 find_package(catkin REQUIRED COMPONENTS
+  sensor_msgs
   srrg_cmake_modules
-)
+  srrg2_core
+ )
 
 include(${srrg_cmake_modules_INCLUDE_DIRS}/CMakeCompileOptions.txt)
 
@@ -19,7 +21,9 @@ catkin_package(
   LIBRARIES
     loam_library
   CATKIN_DEPENDS
+    sensor_msgs
     srrg_cmake_modules
+    srrg2_core
   DEPENDS
     OpenCV
 )
