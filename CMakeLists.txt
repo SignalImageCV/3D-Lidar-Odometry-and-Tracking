@@ -2,14 +2,17 @@ cmake_minimum_required(VERSION 2.8.3)
 project(loam)
 
 find_package(catkin REQUIRED COMPONENTS
-  sensor_msgs
   srrg_cmake_modules
   srrg2_core
+  srrg2_slam_interfaces
+  srrg2_qgl_viewport
  )
 
 include(${srrg_cmake_modules_INCLUDE_DIRS}/CMakeCompileOptions.txt)
 
 find_package(Eigen3 REQUIRED)
+find_package(QGLViewer REQUIRED)
+
 find_package(Cholmod REQUIRED)
 find_package(OpenCV REQUIRED)
 message(STATUS "${PROJECT_NAME}|OpenCV version ${OpenCV_VERSION}")
@@ -21,16 +24,20 @@ catkin_package(
   LIBRARIES
     loam_library
   CATKIN_DEPENDS
-    sensor_msgs
     srrg_cmake_modules
     srrg2_core
+    srrg2_slam_interfaces
+    srrg2_qgl_viewport
   DEPENDS
     OpenCV
+    SRRG_QT
+    QGLViewer
 )
 
 include_directories(
   ${EIGEN3_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
+  ${SRRG_QT_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/src
 )

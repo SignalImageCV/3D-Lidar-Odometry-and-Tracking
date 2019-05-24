@@ -4,15 +4,22 @@
 #include <srrg_boss/deserializer.h>
 #include <srrg_messages/instances.h>
 
+#include "../../include/loam/structs.hpp"
 
 namespace Loam {
+  using namespace std;
+  using namespace srrg2_core;
+
 
   class DatasetManager{
 
-  public:
-    DatasetManager();
-    void readDataset();
+  private:
+    MessageFileSource m_source;
+    int m_current_index;
 
+  public:
+    DatasetManager( string filename);
+    vector<scanPoint> readMessageFromDataset();
   };
 }
 
