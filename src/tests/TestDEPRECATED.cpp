@@ -43,7 +43,7 @@ int main( int argc, char** argv){
       cloud->getPointCloud(current_point_cloud);
       std::vector<point3d> points;
       points.reserve(current_point_cloud.size());
-      for( int i = 0; i<current_point_cloud.size();++i){
+      for(unsigned int i = 0; i<current_point_cloud.size();++i){
         point3d p ( i,
             current_point_cloud[i].coordinates().x(),
             current_point_cloud[i].coordinates().y(),

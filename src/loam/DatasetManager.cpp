@@ -6,18 +6,18 @@ namespace Loam {
   };
 
 
-  vector<scanPoint> DatasetManager::readMessageFromDataset(){
+  vector<ScanPoint> DatasetManager::readMessageFromDataset(){
     BaseSensorMessagePtr msg;
     messages_registerTypes();
-    vector<scanPoint> scanPoints;
+    vector<ScanPoint> scanPoints;
     if(msg=m_source.getMessage()){
       PointCloud2Message* cloud = dynamic_cast<PointCloud2Message*>(msg.get());
       if(cloud){
         Point3fVectorCloud current_point_cloud;
         cloud->getPointCloud(current_point_cloud);
         scanPoints.reserve( current_point_cloud.size());
-        for( int i = 0; i<current_point_cloud.size();++i){
-          scanPoint p ( m_current_index, i,
+        for(unsigned int i = 0; i<current_point_cloud.size();++i){
+          ScanPoint p ( m_current_index, i,
             current_point_cloud[i].coordinates().x(),
             current_point_cloud[i].coordinates().y(),
             current_point_cloud[i].coordinates().z());

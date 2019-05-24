@@ -4,7 +4,7 @@
 #include <srrg_boss/deserializer.h>
 #include <srrg_messages/instances.h>
 
-#include "../../include/loam/structs.hpp"
+#include "ScanPoint.hpp"
 
 namespace Loam {
   using namespace std;
@@ -19,7 +19,7 @@ namespace Loam {
 
   public:
     DatasetManager( string filename);
-    vector<scanPoint> readMessageFromDataset();
+    vector<ScanPoint> readMessageFromDataset();
   };
 }
 

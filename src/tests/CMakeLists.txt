@@ -9,6 +9,7 @@ target_link_libraries(test_helloworld
 catkin_add_gtest(test_runner 
   TestDummy.cpp
   TestDatasetManager.cpp
+  TestFeatureExtractor.cpp
   Starter.cpp
   )
 target_link_libraries(test_runner
