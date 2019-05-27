@@ -12,6 +12,7 @@ namespace Loam{
 
       ~FeatureExtractor() = default;
 
+      void computeSmoothnessPaper( std::vector<ScanPoint> & points);
       void computeSmoothness( std::vector<ScanPoint> & points);
 
 

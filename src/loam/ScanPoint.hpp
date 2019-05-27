@@ -39,7 +39,7 @@ namespace Loam{
    
       ~ScanPoint() = default;
 
-      inline void setSmoothnees( const float t_smoothness){ m_smoothness = t_smoothness;};
+      inline void setSmoothnees( float t_smoothness){ m_smoothness = t_smoothness;};
 
       inline float getSmoothnees(){ return m_smoothness;};
 
