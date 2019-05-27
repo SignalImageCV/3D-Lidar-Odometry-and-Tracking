@@ -16,7 +16,7 @@ namespace Loam{
       }
       float denom = points.size() * points[i].getCoords().norm();
       float c = sum_distances.norm() / denom ;
-      points[i].setSmoothnees( c);
+      points[i].setSmoothness( c);
     }
   };
 
@@ -30,11 +30,52 @@ namespace Loam{
       }
       float denom = points.size() * points[i].getCoords().norm();
       float c = abs(sum_distances) / denom ;
-      points[i].setSmoothnees( c);
+      points[i].setSmoothness( c);
     }
   };
 
+  ScanPoint FeatureExtractor::findMaxSmoothnessPoint( const  std::vector<ScanPoint> & points){
+    float curr_max_value = points[0].getSmoothness();
+    ScanPoint curr_max_point = points[0];
 
+    for( auto& p: points){
+      if( p.getSmoothness() > curr_max_value){
+        curr_max_point = p;
+      }
+    }
+    return curr_max_point;
+  }
+
+  ScanPoint FeatureExtractor::findMinSmoothnessPoint( const  std::vector<ScanPoint> & points){
+    float curr_min_value = points[0].getSmoothness();
+    ScanPoint curr_min_point = points[0];
+
+    for( auto& p: points){
+      if( p.getSmoothness() < curr_min_value){
+        curr_min_point = p;
+      }
+    }
+    return curr_min_point;
+  }
+
+  std::list<ScanPoint> FeatureExtractor::sortForDecreasingSmoothness(const  std::vector<ScanPoint> & points){
+    std::list<ScanPoint> point_list( points.begin(), points.end()); 
+    point_list.sort([](const ScanPoint & sp1, const ScanPoint & sp2)
+        {
+          return sp1.getSmoothness() > sp2.getSmoothness();
+        });
+    return point_list;
+  }
+ 
+  std::list<ScanPoint> FeatureExtractor::sortForIncreasingSmoothness(const  std::vector<ScanPoint> & points){
+    std::list<ScanPoint> point_list( points.begin(), points.end()); 
+    point_list.sort([](const ScanPoint & sp1, const ScanPoint & sp2)
+        {
+          return sp1.getSmoothness() < sp2.getSmoothness();
+        });
+    return point_list;
+  }
+ 
 
 }
 

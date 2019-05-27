@@ -39,15 +39,15 @@ namespace Loam{
    
       ~ScanPoint() = default;
 
-      inline void setSmoothnees( float t_smoothness){ m_smoothness = t_smoothness;};
+      inline void setSmoothness( float t_smoothness){ m_smoothness = t_smoothness;};
 
-      inline float getSmoothnees(){ return m_smoothness;};
+      inline float getSmoothness() const{ return m_smoothness;};
 
-      inline Eigen::Vector3f getCoords(){ return m_coords;};
+      inline Eigen::Vector3f getCoords() const{ return m_coords;};
 
-      inline int getIndexOfSweep(){ return m_index_ofSweep;};
+      inline int getIndexOfSweep() const{ return m_index_ofSweep;};
 
-      inline int getIndexInSweep(){ return m_index_inSweep;};
+      inline int getIndexInSweep() const{ return m_index_inSweep;};
   };
 }
 

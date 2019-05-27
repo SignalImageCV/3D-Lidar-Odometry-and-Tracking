@@ -15,6 +15,13 @@ namespace Loam{
       void computeSmoothnessPaper( std::vector<ScanPoint> & points);
       void computeSmoothness( std::vector<ScanPoint> & points);
 
+      ScanPoint findMaxSmoothnessPoint( const  std::vector<ScanPoint> & points);
+      ScanPoint findMinSmoothnessPoint( const  std::vector<ScanPoint> & points);
+
+      std::list<ScanPoint> sortForDecreasingSmoothness(const  std::vector<ScanPoint> & points);
+      std::list<ScanPoint> sortForIncreasingSmoothness(const  std::vector<ScanPoint> & points);
+
+
 
   };
 }

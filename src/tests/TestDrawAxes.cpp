@@ -1,0 +1,76 @@
+#include <srrg_qgl_viewport/viewer_core_shared_qgl.h>
+#include <srrg_system_utils/shell_colors.h>
+#include <thread>
+
+using namespace std;
+using namespace srrg2_core;
+using namespace srrg2_qgl_viewport;
+
+void drawingPointsSubrutine(ViewerCanvasPtr canvas ){
+
+
+  while(ViewerCoreSharedQGL::isRunning()){
+
+    int num_points = 100;
+
+    Point3fVectorCloud pointcloud_x_axis;
+    Point3fVectorCloud pointcloud_y_axis;
+    Point3fVectorCloud pointcloud_z_axis;
+    pointcloud_x_axis.resize( num_points);
+    pointcloud_y_axis.resize( num_points);
+    pointcloud_z_axis.resize( num_points);
+
+    float x = 0;
+    float y = 0;
+    float z = 0;
+    
+    for (unsigned int i = 0; i < pointcloud_x_axis.size(); ++i) {
+      x += 0.1;
+      y += 0.1;
+      z += 0.1;
+      pointcloud_x_axis[i].coordinates()=Vector3f( x,0,0);
+      pointcloud_y_axis[i].coordinates()=Vector3f( 0,y,0);
+      pointcloud_z_axis[i].coordinates()=Vector3f( 0,0,z);
+    }
+
+
+    canvas->pushPointSize();
+    canvas->setPointSize(4.0);
+
+    canvas->pushColor();
+    canvas->setColor(ColorPalette::color3fOrange());
+ 
+    canvas->putPoints( pointcloud_x_axis);
+    canvas->popAttribute();
+
+    canvas->pushColor();
+    canvas->setColor(ColorPalette::color3fBlue());
+ 
+    canvas->putPoints( pointcloud_y_axis);
+    canvas->popAttribute();
+
+    canvas->pushColor();
+    canvas->setColor(ColorPalette::color3fGreen());
+ 
+    canvas->putPoints( pointcloud_z_axis);
+    canvas->popAttribute();
+    canvas->popAttribute();
+
+
+    canvas->flush();
+  }
+
+}
+
+
+int main( int argc, char** argv){
+
+  ViewerCoreSharedQGL viewer(argc, argv);
+  ViewerCanvasPtr canvas = viewer.getCanvas("drawingPoints_test");
+  std::thread processing_thread(drawingPointsSubrutine, canvas);
+  viewer.startViewerServer();
+  processing_thread.join();
+
+  return 0;
+}
+
