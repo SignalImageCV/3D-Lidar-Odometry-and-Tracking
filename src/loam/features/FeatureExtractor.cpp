@@ -41,6 +41,7 @@ namespace Loam{
     for( auto& p: points){
       if( p.getSmoothness() > curr_max_value){
         curr_max_point = p;
+        curr_max_value = p.getSmoothness();
       }
     }
     return curr_max_point;
@@ -50,9 +51,11 @@ namespace Loam{
     float curr_min_value = points[0].getSmoothness();
     ScanPoint curr_min_point = points[0];
 
+
     for( auto& p: points){
       if( p.getSmoothness() < curr_min_value){
         curr_min_point = p;
+        curr_min_value = p.getSmoothness();
       }
     }
     return curr_min_point;
@@ -75,7 +78,34 @@ namespace Loam{
         });
     return point_list;
   }
- 
+
+  std::vector<std::vector<ScanPoint>> FeatureExtractor::divideInSectors( const int num_sectors, const  std::vector<ScanPoint> & points){
+    std::vector<std::vector<ScanPoint>> divided_points;
+    if( points.size() >= num_sectors){
+      divided_points.reserve(num_sectors);
+      std::div_t division;
+      division= std::div( points.size(), num_sectors);
+      int num_point_each_sector= division.quot;
+      int remainder= division.rem;
+      int current_index = 0;
+      int curr_sector_capacity;
+      for( int sect = 0; sect<num_sectors; ++sect){
+        std::vector<ScanPoint> sector_points;
+        sector_points.reserve( num_point_each_sector);
+        if( sect < num_sectors - 1){
+          curr_sector_capacity = num_point_each_sector;
+        }else{
+          curr_sector_capacity = num_point_each_sector+remainder;
+        }
+        for( int j=0; j<curr_sector_capacity; ++j){
+          sector_points.push_back( points[current_index + j]);
+        }
+        divided_points.push_back( sector_points);
+        current_index += num_point_each_sector;
+      }
+    }
+    return divided_points;
+  };
 
 }
 

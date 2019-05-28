@@ -20,7 +20,7 @@ namespace Loam{
 
       std::list<ScanPoint> sortForDecreasingSmoothness(const  std::vector<ScanPoint> & points);
       std::list<ScanPoint> sortForIncreasingSmoothness(const  std::vector<ScanPoint> & points);
-
+      std::vector<std::vector<ScanPoint>>  divideInSectors( const int num_sectors, const  std::vector<ScanPoint> & points);
 
 
   };

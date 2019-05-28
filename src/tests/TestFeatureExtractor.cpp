@@ -77,7 +77,7 @@ namespace Loam{
     std::vector<ScanPoint> points;
     points.reserve( 6);
     ScanPoint p1( 0,0, 3., 3., 0.);
-    p1.setSmoothness(8);
+    p1.setSmoothness(1);
     ScanPoint p2( 0,1, 2., 2., 1.);
     p2.setSmoothness(12);
     ScanPoint p3( 0,2, 1.2, 1.2, 1.2);
@@ -93,7 +93,7 @@ namespace Loam{
     points.push_back( p5);
 
     ScanPoint min_p = fE.findMinSmoothnessPoint( points);
-    ScanPoint max_p = fE.findMinSmoothnessPoint( points);
+    ScanPoint max_p = fE.findMaxSmoothnessPoint( points);
     ASSERT_EQ( 4, min_p.getIndexInSweep());
     ASSERT_EQ( 1, max_p.getIndexInSweep());
 
@@ -130,18 +130,65 @@ namespace Loam{
 
     std::list<ScanPoint> increasing_ordered_list= fE.sortForIncreasingSmoothness( points);
     ASSERT_EQ( increasing_ordered_list.size(), increasing_ordered_truth.size());
-    //REWRITE THIS DOUBLE ITERATOR N LISTS TODO
 
-    for (std::list<int>::iterator it1=increasing_ordered_truth.begin(),
-        std::list<int>::iterator it2=increasing_ordered_list.begin();
-        it1 != increasing_ordered_truth.end() &&
-        it2 != increasing_ordered_list.end();
-        ++it1, ++it2){
-      ASSERT_EQ( *it1.getIndexInSweep(),*it2.getIndexInSweep());
+ 
+    std::list<ScanPoint>::iterator it1=increasing_ordered_truth.begin();
+    std::list<ScanPoint>::iterator it2=increasing_ordered_list.begin();
+
+    while( it1 != increasing_ordered_truth.end() &&
+      it2 != increasing_ordered_list.end()){
+      ASSERT_EQ( it1->getIndexInSweep(),it2->getIndexInSweep());
+      ++it1, ++it2;
     }
 
   }
 
+  TEST( FeatureExtractor, divideInSectorsFew){
+
+    FeatureExtractor fE = FeatureExtractor(0);
+
+    std::vector<ScanPoint> points;
+    points.reserve( 5);
+    ScanPoint p1( 0,0, 1., 0., 0.);
+    ScanPoint p2( 0,1, -1., 0., 0.);
+    ScanPoint p3( 0,2, 0., 1., 0.);
+    ScanPoint p4( 0,3, 0., -1., 0.);
+    ScanPoint p5( 0,4, 0., 0., 1.);
+    points.push_back( p1);
+    points.push_back( p2);
+    points.push_back( p3);
+    points.push_back( p4);
+    points.push_back( p5);
+
+    std::vector<std::vector<ScanPoint>> result = fE.divideInSectors( 4, points);
+
+    ASSERT_EQ( result.size(), 4);
+    ASSERT_EQ( result[0].size(), 1);
+    ASSERT_EQ( result[1].size(), 1);
+    ASSERT_EQ( result[2].size(), 1);
+    ASSERT_EQ( result[3].size(), 2);
+    }
+
+  TEST( FeatureExtractor, divideInSectorsMany){
+
+    FeatureExtractor fE = FeatureExtractor(0);
+
+    std::vector<ScanPoint> points;
+    int num_points = 123;
+    points.reserve( num_points);
+    for(unsigned int j = 0; j<num_points;++j){
+      ScanPoint p( 0,0, 1., 0., 0.);
+      points.push_back( p);
+    }
+
+    std::vector<std::vector<ScanPoint>> result = fE.divideInSectors( 4, points);
+
+    ASSERT_EQ( result.size(), 4);
+    ASSERT_EQ( result[0].size(), 30);
+    ASSERT_EQ( result[1].size(), 30);
+    ASSERT_EQ( result[2].size(), 30);
+    ASSERT_EQ( result[3].size(), 33);
+  }
 
 }
 
