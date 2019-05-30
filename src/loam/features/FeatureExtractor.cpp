@@ -30,13 +30,14 @@ namespace Loam{
 
   void FeatureExtractor::computeSmoothnessMine( std::vector<ScanPoint> & points){
     for(unsigned int i = 0; i<points.size();++i){
-      float sum_distances = 0;
+      Vector3f sum_distances = Vector3f::Zero();
       for(unsigned int j = 0; j<points.size();++j){
         if ( i != j){
-          sum_distances += points[i].getCoords().norm() - points[j].getCoords().norm();
+          sum_distances += points[i].getCoords() - points[j].getCoords();
         }
       }
-      float denom = points.size() * points[i].getCoords().norm();
+      float denom = points.size();
+      //float denom = points.size() * points[i].getCoords().norm();
       float sigma = 0.001;
       if (denom < sigma){
         denom = sigma;
@@ -45,7 +46,7 @@ namespace Loam{
         std::cerr<<" ofSweep: "<<points[i].getIndexOfSweep()<<"\n";
         std::cerr<<" inSweep: "<<points[i].getIndexInSweep()<<"\n";
       }
-      float c = abs(sum_distances) / denom ;
+      float c = sum_distances.norm() / denom ;
       points[i].setSmoothness( c);
     }
   };
@@ -69,11 +70,12 @@ namespace Loam{
   };
 
   void FeatureExtractor::computeSingleSmoothnessMine(const  std::vector<ScanPoint> & other_points, ScanPoint & point){
-    float sum_distances = 0;
+    Vector3f sum_distances = Vector3f::Zero();
     for(auto&  p: other_points){
-      sum_distances += point.getCoords().norm() - p.getCoords().norm();
+      sum_distances += point.getCoords() - p.getCoords();
     }
-    float denom = other_points.size() * point.getCoords().norm();
+    float denom = other_points.size();
+    //float denom = other_points.size() * point.getCoords().norm();
     float sigma = 0.001;
     if (denom < sigma){
       denom = sigma;
@@ -82,7 +84,7 @@ namespace Loam{
       std::cerr<<" ofSweep: "<<point.getIndexOfSweep()<<"\n";
       std::cerr<<" inSweep: "<<point.getIndexInSweep()<<"\n";
     }
-    float c = abs(sum_distances) / denom ;
+    float c = sum_distances.norm() / denom ;
     point.setSmoothness( c);
   };
      

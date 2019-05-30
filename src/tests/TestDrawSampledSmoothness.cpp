@@ -10,9 +10,9 @@ using namespace Loam;
 
 void drawingSampledSmoothness( ViewerCanvasPtr canvas){
 
-  Eigen::Vector3f center( 5, 5, 5);
-  float length_edge = 6;
-  int precision = 5;
+  Eigen::Vector3f center( 0, 7, 0);
+  float length_edge = 7;
+  int precision = 9;
    
   std::vector<ScanPoint> cube_points =
     ScanPoint::generateCubeSampledScanPoints(center, length_edge, precision);
@@ -40,13 +40,13 @@ void drawingSampledSmoothness( ViewerCanvasPtr canvas){
     pointcloud_z_axis[i].coordinates()=Vector3f( 0,0,z);
   }
 
-  const int num_line_points = 50;
+  const int num_line_points = 250;
   vector<ScanPoint> line_points;
   line_points.reserve(num_line_points);
 
-  const Eigen::Vector3f line_start( 7, 7, -3); 
+  const Eigen::Vector3f line_start( 0, 7, -10); 
   Eigen::Vector3f line_curr_point = line_start; 
-  const Eigen::Vector3f line_direction(-0.1, -0.1, 0.4);
+  const Eigen::Vector3f line_direction(0, 0, 0.4);
 
   for (unsigned int i = 0; i < num_line_points; ++i) {
     ScanPoint p( 0, i, line_curr_point);
@@ -72,7 +72,7 @@ void drawingSampledSmoothness( ViewerCanvasPtr canvas){
   for( auto & p: cube_points){
     //std::cerr<<"coords: "<<p.getCoords()<<"\n";
     //std::cerr<<"bef: "<<p.getSmoothness()<<"\n";
-    fE.computeSingleSmoothnessPaper(line_points, p );
+    fE.computeSingleSmoothnessMine(line_points, p );
     //std::cerr<<"aft: "<<p.getSmoothness()<<"\n";
   }
   while(ViewerCoreSharedQGL::isRunning()){

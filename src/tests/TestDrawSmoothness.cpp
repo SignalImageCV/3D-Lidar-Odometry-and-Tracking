@@ -51,10 +51,11 @@ void drawingSmoothness( ViewerCanvasPtr canvas, const  string & filename){
       canvas->pushPointSize();
       canvas->setPointSize(3.0);
 
-      fE.computeSmoothnessPaper( points);
       std::vector<std::vector<ScanPoint>> sectors = fE.divideInSectors( 4, points);
 
       for( auto& sect: sectors){
+
+        fE.computeSmoothnessMine( sect);
 
         float min_smoothness = fE.findMinSmoothnessPoint(sect).getSmoothness();
         float max_smoothness = fE.findMaxSmoothnessPoint(sect).getSmoothness();
