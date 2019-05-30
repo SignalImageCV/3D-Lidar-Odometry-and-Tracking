@@ -15,12 +15,20 @@ namespace Loam{
         }
       }
       float denom = points.size() * points[i].getCoords().norm();
+      float sigma = 0.001;
+      if (denom < sigma){
+        denom = sigma;
+        std::cerr<<"There is a point near the camera frame origin:\n";
+        std::cerr<<" coords: "<<points[i].getCoords()<<"\n";
+        std::cerr<<" ofSweep: "<<points[i].getIndexOfSweep()<<"\n";
+        std::cerr<<" inSweep: "<<points[i].getIndexInSweep()<<"\n";
+      }
       float c = sum_distances.norm() / denom ;
-      points[i].setSmoothness( c);
+      points[i].setSmoothness( c );
     }
   };
 
-  void FeatureExtractor::computeSmoothness( std::vector<ScanPoint> & points){
+  void FeatureExtractor::computeSmoothnessMine( std::vector<ScanPoint> & points){
     for(unsigned int i = 0; i<points.size();++i){
       float sum_distances = 0;
       for(unsigned int j = 0; j<points.size();++j){
@@ -29,11 +37,55 @@ namespace Loam{
         }
       }
       float denom = points.size() * points[i].getCoords().norm();
+      float sigma = 0.001;
+      if (denom < sigma){
+        denom = sigma;
+        std::cerr<<"There is a point near the camera frame origin:\n";
+        std::cerr<<" coords: "<<points[i].getCoords()<<"\n";
+        std::cerr<<" ofSweep: "<<points[i].getIndexOfSweep()<<"\n";
+        std::cerr<<" inSweep: "<<points[i].getIndexInSweep()<<"\n";
+      }
       float c = abs(sum_distances) / denom ;
       points[i].setSmoothness( c);
     }
   };
 
+  void FeatureExtractor::computeSingleSmoothnessPaper(const std::vector<ScanPoint> & other_points, ScanPoint & point){
+    Vector3f sum_distances = Vector3f::Zero();
+    for(auto&  p: other_points){
+      sum_distances += point.getCoords() - p.getCoords();
+    }
+    float denom = other_points.size() * point.getCoords().norm();
+    float sigma = 0.001;
+    if (denom < sigma){
+      denom = sigma;
+      std::cerr<<"There is a point near the camera frame origin:\n";
+      std::cerr<<" coords: "<<point.getCoords()<<"\n";
+      std::cerr<<" ofSweep: "<<point.getIndexOfSweep()<<"\n";
+      std::cerr<<" inSweep: "<<point.getIndexInSweep()<<"\n";
+    }
+    float c = sum_distances.norm() / denom ;
+    point.setSmoothness( c);
+  };
+
+  void FeatureExtractor::computeSingleSmoothnessMine(const  std::vector<ScanPoint> & other_points, ScanPoint & point){
+    float sum_distances = 0;
+    for(auto&  p: other_points){
+      sum_distances += point.getCoords().norm() - p.getCoords().norm();
+    }
+    float denom = other_points.size() * point.getCoords().norm();
+    float sigma = 0.001;
+    if (denom < sigma){
+      denom = sigma;
+      std::cerr<<"There is a point near the camera frame origin:\n";
+      std::cerr<<" coords: "<<point.getCoords()<<"\n";
+      std::cerr<<" ofSweep: "<<point.getIndexOfSweep()<<"\n";
+      std::cerr<<" inSweep: "<<point.getIndexInSweep()<<"\n";
+    }
+    float c = abs(sum_distances) / denom ;
+    point.setSmoothness( c);
+  };
+     
   ScanPoint FeatureExtractor::findMaxSmoothnessPoint( const  std::vector<ScanPoint> & points){
     float curr_max_value = points[0].getSmoothness();
     ScanPoint curr_max_point = points[0];
@@ -45,7 +97,7 @@ namespace Loam{
       }
     }
     return curr_max_point;
-  }
+  };
 
   ScanPoint FeatureExtractor::findMinSmoothnessPoint( const  std::vector<ScanPoint> & points){
     float curr_min_value = points[0].getSmoothness();

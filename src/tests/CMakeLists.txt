@@ -8,6 +8,7 @@ target_link_libraries(test_helloworld
 
 catkin_add_gtest(test_runner 
   TestDummy.cpp
+  TestScanPoint.cpp
   TestDatasetManager.cpp
   TestFeatureExtractor.cpp
   Starter.cpp
@@ -85,5 +86,17 @@ target_link_libraries(test_drawSmoothness
   pthread
   )
 
-
+add_executable(test_drawSampledSmoothness
+  TestDrawSampledSmoothness.cpp
+  )
+target_link_libraries(test_drawSampledSmoothness
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  ${QGLViewer_LIBRARIES}
+  ${catkin_LIBRARIES}
+  pthread
+  )
 

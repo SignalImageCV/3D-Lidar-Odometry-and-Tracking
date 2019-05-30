@@ -1,5 +1,6 @@
 #pragma once
 #include <Eigen/Core>
+#include <vector>
 namespace Loam{
 
   class ScanPoint{
@@ -48,6 +49,18 @@ namespace Loam{
       inline int getIndexOfSweep() const{ return m_index_ofSweep;};
 
       inline int getIndexInSweep() const{ return m_index_inSweep;};
+
+      inline bool operator==(ScanPoint& rhs){
+        return m_index_ofSweep == rhs.getIndexOfSweep() &&
+        m_index_inSweep == rhs.getIndexInSweep() &&
+        m_coords == rhs.getCoords();
+      }
+      inline bool operator!=(ScanPoint& rhs){ return !(*this == rhs); }
+
+      static std::vector<ScanPoint> generateCubeSampledScanPoints(
+          const  Eigen::Vector3f & cube_center,
+          const float & edge_length,
+          const int precision);
   };
 }
 

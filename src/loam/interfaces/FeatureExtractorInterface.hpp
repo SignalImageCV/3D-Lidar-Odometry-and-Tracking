@@ -3,6 +3,8 @@
 #include <list>
 #include "../ScanPoint.hpp"
 
+#include <iostream>
+
 namespace Loam{
 
   class  FeatureExtractorInterface{
@@ -17,7 +19,8 @@ namespace Loam{
       // (called scan plane) e.g. produced in a single instant from
       // a lidar, computes the smoothness c of every one
       // it updates the c value inside the struct of each point
-      virtual  void computeSmoothness( std::vector<ScanPoint> & points) =0;
+      virtual  void computeSmoothnessMine( std::vector<ScanPoint> & points) =0;
+      virtual  void computeSmoothnessPaper( std::vector<ScanPoint> & points) =0;
 
   };
 }

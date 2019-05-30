@@ -5,7 +5,7 @@
 using namespace testing;
 namespace Loam{
 
-  TEST( FeatureExtractor, allDistancesEqual1){
+  TEST( FeatureExtractor, allDistancesEqualPaper){
 
     FeatureExtractor fE = FeatureExtractor(0);
 
@@ -27,8 +27,39 @@ namespace Loam{
     ASSERT_EQ( -1, points[0].getSmoothness());
     ASSERT_EQ( -1, points[3].getSmoothness());
 
-    fE.computeSmoothness(points);
-    //with the function of the smoothness of the paper need to change all 0 with ones
+    fE.computeSmoothnessPaper(points);
+
+    ASSERT_EQ( 1, points[0].getSmoothness());
+    ASSERT_EQ( 1, points[1].getSmoothness());
+    ASSERT_EQ( 1, points[2].getSmoothness());
+    ASSERT_EQ( 1, points[3].getSmoothness());
+    ASSERT_EQ( 1, points[4].getSmoothness());
+    ASSERT_EQ( 1, points[5].getSmoothness());
+
+  }
+  TEST( FeatureExtractor, allDistancesEqualMine){
+
+    FeatureExtractor fE = FeatureExtractor(0);
+
+    std::vector<ScanPoint> points;
+    points.reserve( 6);
+    ScanPoint p1( 0,0, 1., 0., 0.);
+    ScanPoint p2( 0,1, -1., 0., 0.);
+    ScanPoint p3( 0,2, 0., 1., 0.);
+    ScanPoint p4( 0,3, 0., -1., 0.);
+    ScanPoint p5( 0,4, 0., 0., 1.);
+    ScanPoint p6( 0,5, 0., 0., -1.);
+    points.push_back( p1);
+    points.push_back( p2);
+    points.push_back( p3);
+    points.push_back( p4);
+    points.push_back( p5);
+    points.push_back( p6);
+
+    ASSERT_EQ( -1, points[0].getSmoothness());
+    ASSERT_EQ( -1, points[3].getSmoothness());
+
+    fE.computeSmoothnessMine(points);
 
     ASSERT_EQ( 0, points[0].getSmoothness());
     ASSERT_EQ( 0, points[1].getSmoothness());
@@ -39,7 +70,7 @@ namespace Loam{
 
   }
 
-  TEST( FeatureExtractor, edgePoint){
+  TEST( FeatureExtractor, edgePointPaper){
 
     FeatureExtractor fE = FeatureExtractor(0);
 
@@ -56,7 +87,7 @@ namespace Loam{
     points.push_back( p4);
     points.push_back( p5);
 
-    fE.computeSmoothness(points);
+    fE.computeSmoothnessMine(points);
     std::cout << points[0].getSmoothness()<< " 1 \n";
     std::cout << points[1].getSmoothness()<< " 2 \n";
     std::cout << points[2].getSmoothness()<< " 3 \n";
@@ -69,6 +100,127 @@ namespace Loam{
     ASSERT_TRUE(  points[2].getSmoothness() > points[4].getSmoothness());
 
   }
+
+
+  TEST( FeatureExtractor, edgePointMine){
+
+    FeatureExtractor fE = FeatureExtractor(0);
+
+    std::vector<ScanPoint> points;
+    points.reserve( 6);
+    ScanPoint p1( 0,0, 3., 3., 0.);
+    ScanPoint p2( 0,1, 2., 2., 1.);
+    ScanPoint p3( 0,2, 1.2, 1.2, 1.2);
+    ScanPoint p4( 0,3, 1., 1., 2.);
+    ScanPoint p5( 0,4, 0., 0., 3.);
+    points.push_back( p1);
+    points.push_back( p2);
+    points.push_back( p3);
+    points.push_back( p4);
+    points.push_back( p5);
+
+    fE.computeSmoothnessMine(points);
+    std::cout << points[0].getSmoothness()<< " 1 \n";
+    std::cout << points[1].getSmoothness()<< " 2 \n";
+    std::cout << points[2].getSmoothness()<< " 3 \n";
+    std::cout << points[3].getSmoothness()<< " 4 \n";
+    std::cout << points[4].getSmoothness()<< " 5 \n";
+
+    ASSERT_TRUE(  points[2].getSmoothness() > points[0].getSmoothness());
+    ASSERT_TRUE(  points[2].getSmoothness() > points[1].getSmoothness());
+    ASSERT_TRUE(  points[2].getSmoothness() > points[3].getSmoothness());
+    ASSERT_TRUE(  points[2].getSmoothness() > points[4].getSmoothness());
+
+  }
+
+
+ TEST( FeatureExtractor, singleSmoothnessPaperEqualDist){
+
+    FeatureExtractor fE = FeatureExtractor(0);
+
+    std::vector<ScanPoint> points;
+    points.reserve( 6);
+    ScanPoint p1( 0,0, 1., 0., 0.);
+    ScanPoint p2( 0,1, -1., 0., 0.);
+    ScanPoint p3( 0,2, 0., 1., 0.);
+    ScanPoint p4( 0,3, 0., -1., 0.);
+    ScanPoint p5( 0,4, 0., 0., 1.);
+    ScanPoint p6( 0,5, 0., 0., -1.);
+    points.push_back( p1);
+    points.push_back( p2);
+    points.push_back( p3);
+    points.push_back( p4);
+    points.push_back( p5);
+    points.push_back( p6);
+
+    ASSERT_EQ( -1, points[0].getSmoothness());
+    ASSERT_EQ( -1, points[3].getSmoothness());
+
+
+    fE.computeSingleSmoothnessPaper(points, points[0]);
+    fE.computeSingleSmoothnessPaper(points, points[2]);
+    fE.computeSingleSmoothnessPaper(points, points[4]);
+
+    ASSERT_EQ( 1, points[0].getSmoothness());
+    ASSERT_EQ( -1, points[1].getSmoothness());
+    ASSERT_EQ( 1, points[2].getSmoothness());
+    ASSERT_EQ( -1, points[3].getSmoothness());
+    ASSERT_EQ( 1, points[4].getSmoothness());
+    ASSERT_EQ( -1, points[5].getSmoothness());
+
+  }
+  
+  TEST( FeatureExtractor, singleSmoothnessPaperOrigin){
+
+    FeatureExtractor fE = FeatureExtractor(0);
+
+    std::vector<ScanPoint> points;
+    points.reserve( 6);
+    ScanPoint p1( 0,0, 3., 3., 0.);
+    ScanPoint p2( 0,1, 2., 2., 1.);
+    ScanPoint p3( 0,2, 0., 0., 0.);
+    ScanPoint p4( 0,3, 1., 1., 2.);
+    ScanPoint p5( 0,4, 0., 0., 3.);
+    points.push_back( p1);
+    points.push_back( p2);
+    points.push_back( p4);
+    points.push_back( p5);
+
+    fE.computeSingleSmoothnessPaper(points, p3);
+
+    ASSERT_EQ(  points[0].getSmoothness() , -1);
+    ASSERT_EQ(  points[1].getSmoothness() , -1);
+    ASSERT_EQ(  points[2].getSmoothness() , -1);
+    ASSERT_EQ(  points[3].getSmoothness() , -1);
+    ASSERT_TRUE(  p3.getSmoothness() > -1);
+    std::cerr<< "HHHHHHHHHHHHHHH   "<< p3.getSmoothness()<<"\n";
+  } 
+
+
+  TEST( FeatureExtractor, singleSmoothnessPaperEdge){
+
+    FeatureExtractor fE = FeatureExtractor(0);
+
+    std::vector<ScanPoint> points;
+    points.reserve( 6);
+    ScanPoint p1( 0,0, 3., 3., 0.);
+    ScanPoint p2( 0,1, 2., 2., 1.);
+    ScanPoint p3( 0,2, 1.2, 1.2, 1.2);
+    ScanPoint p4( 0,3, 1., 1., 2.);
+    ScanPoint p5( 0,4, 0., 0., 3.);
+    points.push_back( p1);
+    points.push_back( p2);
+    points.push_back( p4);
+    points.push_back( p5);
+
+    fE.computeSingleSmoothnessPaper(points, p3);
+
+    ASSERT_EQ(  points[0].getSmoothness() , -1);
+    ASSERT_EQ(  points[1].getSmoothness() , -1);
+    ASSERT_EQ(  points[2].getSmoothness() , -1);
+    ASSERT_EQ(  points[3].getSmoothness() , -1);
+    ASSERT_TRUE(  p3.getSmoothness() > -1);
+  } 
 
   TEST( FeatureExtractor, maxAndMinSmoothnessPoint){
 
