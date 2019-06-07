@@ -1,6 +1,14 @@
 #pragma once
 #include <Eigen/Core>
 #include <vector>
+
+
+
+
+
+
+
+// DEPRECATED todo remove all the methods that use scanpoint class. Trying to adopt the Point3f class
 namespace Loam{
 
   class ScanPoint{

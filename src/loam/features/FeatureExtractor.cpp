@@ -1,10 +1,52 @@
 #include "FeatureExtractor.hpp"
 
-using namespace Eigen;
 namespace Loam{
 
-  FeatureExtractor::FeatureExtractor( int nonsi ):
-    FeatureExtractorInterface( nonsi ){};
+  FeatureExtractor::FeatureExtractor( Point3fVectorCloud & t_cloud ):
+    FeatureExtractorInterface( ),
+    m_cloud( t_cloud) {};
+
+
+
+
+  vector<Matchable> FeatureExtractor::extractFeatures(){
+    vector<Matchable> v;
+    return v;
+  }
+
+
+
+  float FeatureExtractor::computeSmoothness( const Point3fVectorCloud & cloud, const int index_point){
+    Point3f curr_p = cloud[index_point];
+    float range_scan_section_rad = M_PI/6;
+
+    const float theta = atan2( curr_p.coordinates().y(), curr_p.coordinates().x());
+    const float alpha =  MyMath::boxMinusAngleRad( theta, range_scan_section_rad/2);
+    const float beta =  MyMath::boxPlusAngleRad( theta, range_scan_section_rad/2);
+    int dim_S= 0;
+
+    Vector3f sum_distances = Vector3f::Zero();
+    for(unsigned int i = 0; i< cloud.size();++i){
+      if ( i != index_point){
+        float phi = atan2( cloud[i].coordinates().y(), cloud[i].coordinates().x());
+
+        if ( MyMath::checkIsInsideArcBoundaries( alpha, beta, theta, phi)){
+          sum_distances += ( curr_p.coordinates() - cloud[i].coordinates() );
+          ++dim_S;
+        }
+      }
+    }
+    float denom = dim_S * curr_p.coordinates().norm();
+    float sigma = 0.001;
+    if (denom < sigma){
+      denom = sigma;
+      std::cerr<<"This is a point near the camera frame origin:\n";
+      std::cerr<<" coords: "<<curr_p.coordinates()<<"\n";
+      std::cerr<<" dim S set: "<<dim_S <<"\n";
+    }
+    float c = sum_distances.norm() / denom ;
+    return c;
+  }
 
   void FeatureExtractor::computeSmoothnessPaper( std::vector<ScanPoint> & points){
     for(unsigned int i = 0; i<points.size();++i){
@@ -87,6 +129,9 @@ namespace Loam{
     float c = sum_distances.norm() / denom ;
     point.setSmoothness( c);
   };
+
+
+
      
   ScanPoint FeatureExtractor::findMaxSmoothnessPoint( const  std::vector<ScanPoint> & points){
     float curr_max_value = points[0].getSmoothness();

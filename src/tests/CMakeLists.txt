@@ -1,16 +1,6 @@
-add_executable(test_helloworld
-  TestHelloWorld.cpp)
-
-target_link_libraries(test_helloworld
-  loam_library
-  ${catkin_LIBRARIES}
-  )
-
 catkin_add_gtest(test_runner 
-  TestDummy.cpp
-  TestScanPoint.cpp
   TestDatasetManager.cpp
-  TestFeatureExtractor.cpp
+  TestPoint3f.cpp
   Starter.cpp
   )
 
@@ -18,14 +8,6 @@ target_link_libraries(test_runner
   loam_library
   srrg2_system_utils_library
   srrg2_boss_library
-  ${catkin_LIBRARIES}
-  )
-
-add_executable(test_drawer
-  TestDrawer.cpp
-  )
-target_link_libraries(test_drawer
-  loam_library
   ${catkin_LIBRARIES}
   )
 
@@ -46,16 +28,6 @@ target_link_libraries(test_viewer
   )
 
 
-add_executable(test_DEPRECATED
-  TestDEPRECATED.cpp
-  )
-target_link_libraries(test_DEPRECATED
-  loam_library
-  srrg2_system_utils_library
-  srrg2_boss_library
-  ${catkin_LIBRARIES}
-  )
-
 
 add_executable(test_drawAxes
   TestDrawAxes.cpp
@@ -72,10 +44,40 @@ target_link_libraries(test_drawAxes
   )
 
 
-add_executable(test_drawSmoothness
-  TestDrawSmoothness.cpp
+add_executable(test_fullCloud
+  TestDrawFullClouds.cpp
   )
-target_link_libraries(test_drawSmoothness
+target_link_libraries(test_fullCloud
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  ${QGLViewer_LIBRARIES}
+  ${catkin_LIBRARIES}
+  pthread
+  )
+
+
+
+add_executable(test_visualizeCloud
+  TestCloudVisualization.cpp
+  )
+target_link_libraries(test_visualizeCloud
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  ${QGLViewer_LIBRARIES}
+  ${catkin_LIBRARIES}
+  pthread
+  )
+
+add_executable(test_boolCondition
+  TestBooleanCondition.cpp
+  )
+target_link_libraries(test_boolCondition
   loam_library
   srrg2_system_utils_library
   srrg2_qgl_viewport_library

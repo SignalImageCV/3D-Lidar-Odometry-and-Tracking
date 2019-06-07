@@ -1,6 +1,5 @@
 add_library( loam_library
-  Dummy.cpp
-  Drawer.cpp
+  MyMath.cpp
   ScanPoint.cpp
   DatasetManager.cpp
   features/FeatureExtractor.cpp

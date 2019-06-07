@@ -9,7 +9,7 @@ using namespace srrg2_core;
 using namespace srrg2_qgl_viewport;
 using namespace Loam;
 
-void drawingSmoothness( ViewerCanvasPtr canvas, const  string & filename){
+void drawingCloud( ViewerCanvasPtr canvas, const  string & filename){
 
   int num_points_axes = 100;
 
@@ -35,7 +35,7 @@ void drawingSmoothness( ViewerCanvasPtr canvas, const  string & filename){
 
   DatasetManager dM( filename);
   vector<ScanPoint> points;
-  FeatureExtractor fE(0);
+  FeatureExtractor fE();
 
   std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >  colors;
   colors.resize(64);
@@ -43,9 +43,10 @@ void drawingSmoothness( ViewerCanvasPtr canvas, const  string & filename){
     colors[i]= Vector3f( 2.f*float(i)/64, 2.f*(1.0 - float(i)/64), 0.f);
   }
   
-
+  std::vector<ScanPoint> old_points;
+  old_points.reserve( 400000);
+    
   while(ViewerCoreSharedQGL::isRunning()){
-
     points = dM.readMessageFromDataset();
     if(points.size() > 0){
       canvas->pushPointSize();
@@ -61,7 +62,6 @@ void drawingSmoothness( ViewerCanvasPtr canvas, const  string & filename){
         float max_smoothness = fE.findMaxSmoothnessPoint(sect).getSmoothness();
         double dim_interval= static_cast<double>( (max_smoothness - min_smoothness) / colors.size());
       
-        cerr<<"Distribution:min="<<min_smoothness<<" max="<<max_smoothness<<" inter="<<dim_interval<<"\n";
         std::list<ScanPoint> ordered_for_smoothness=
         fE.sortForIncreasingSmoothness(sect);
 
@@ -76,7 +76,6 @@ void drawingSmoothness( ViewerCanvasPtr canvas, const  string & filename){
             curr_vec.push_back( *it);
           }
           else{
-            cerr<<"num_index= "<<curr_interval_index<<" num_points: "<<curr_vec.size()<<"\n";
             curr_interval_index = quotient;
             if( curr_vec.size() > 0){
               Point3fVectorCloud pointcloud;
@@ -88,13 +87,14 @@ void drawingSmoothness( ViewerCanvasPtr canvas, const  string & filename){
               canvas->setColor(colors[curr_interval_index]);
               canvas->putPoints( pointcloud);
               canvas->popAttribute();
+
+              old_points.insert(std::end(old_points), std::begin(curr_vec), std::end(curr_vec));
               curr_vec.clear();
               curr_vec.push_back(*it);
             }
           }
         }
       }
-
     canvas->pushColor();
     canvas->setColor(ColorPalette::color3fOrange());
  
@@ -112,7 +112,21 @@ void drawingSmoothness( ViewerCanvasPtr canvas, const  string & filename){
  
     canvas->putPoints( pointcloud_z_axis);
     canvas->popAttribute();
- 
+
+
+    if( old_points.size() >0){
+      Point3fVectorCloud old_pointcloud;
+      old_pointcloud.resize( old_points.size());
+
+      for (unsigned int j = 0; j < old_pointcloud.size(); ++j) {
+        old_pointcloud[j].coordinates()=old_points[j].getCoords();
+      }
+      canvas->pushColor();
+      canvas->setColor( Vector3f(0.3f,0.3f,0.3f));
+      canvas->putPoints( old_pointcloud);
+      canvas->popAttribute();
+    }
+   
     canvas->popAttribute();
     canvas->flush();
     }
@@ -124,10 +138,35 @@ int main( int argc, char** argv){
 
   string filename = "/home/dinies/gitrepos/loam/datasets/undulating_motion.boss";
   ViewerCoreSharedQGL viewer(argc, argv);
-  ViewerCanvasPtr canvas = viewer.getCanvas("drawingPoints_test");
-  std::thread processing_thread(drawingSmoothness, canvas, filename);
+  ViewerCanvasPtr canvas = viewer.getCanvas("drawingCloud");
+  std::thread processing_thread(drawingCloud, canvas, filename);
   viewer.startViewerServer();
   processing_thread.join();
   return 0;
 }
+
+
+
+
+
+
+
+
+// it requires PASL and other setup for an external library, not built in in std
+//void fillPointsParallel(const std::vector<ScanPoint> & source,
+//    Point3fVectorCloud & dest, long lo, long hi) {
+//  long n = hi - lo;
+//  if (n == 0) {
+//  } else if (n == 1) {
+//    dest[lo].coordinates() = source[lo].getCoords();
+//  } else {
+//    long mid = (lo + hi) / 2;
+//    fork2([&] {
+//      fillPointsParallel(source, dest, lo, mid);
+//    }, [&] {
+//      fillPointsParallel(source, dest, mid, hi);
+//    });
+//  }
+//}
+
 

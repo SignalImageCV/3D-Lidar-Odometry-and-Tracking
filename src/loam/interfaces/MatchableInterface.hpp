@@ -1,3 +1,4 @@
+#pragma once
 #include <srrg_boss/id_context.h>
 #include <srrg_system_utils/system_utils.h>
 #include <srrg_boss/serializer.h>
@@ -5,20 +6,24 @@
 #include <srrg_messages/instances.h>
 
 
-namespace Loam {
+namespace Loam{
   using namespace std;
   using namespace srrg2_core;
 
 
-  class DatasetManager{
+  class MatchableInterface{
+    protected:
+      Vector3f p_m;
+      Matrix3f R_m;
+      Matrix3f Omega_m;
 
-  private:
-    MessageFileSource m_source;
-    int m_current_index;
+    public:
 
-  public:
-    DatasetManager( string filename);
-    Point3fVectorCloud  readMessageFromDataset();
+      MatchableInterface() = default;
+
+      ~MatchableInterface() = default;
   };
+
 }
+
 

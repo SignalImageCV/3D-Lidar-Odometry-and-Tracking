@@ -10,8 +10,8 @@ using namespace Loam;
 
 void drawingSampledSmoothness( ViewerCanvasPtr canvas){
 
-  Eigen::Vector3f center( 0, 7, 0);
-  float length_edge = 7;
+  Eigen::Vector3f center( 0, 2, 0);
+  float length_edge = 1;
   int precision = 9;
    
   std::vector<ScanPoint> cube_points =
@@ -40,11 +40,11 @@ void drawingSampledSmoothness( ViewerCanvasPtr canvas){
     pointcloud_z_axis[i].coordinates()=Vector3f( 0,0,z);
   }
 
-  const int num_line_points = 250;
+  const int num_line_points = 50;
   vector<ScanPoint> line_points;
   line_points.reserve(num_line_points);
 
-  const Eigen::Vector3f line_start( 0, 7, -10); 
+  const Eigen::Vector3f line_start( 0, 2, -10); 
   Eigen::Vector3f line_curr_point = line_start; 
   const Eigen::Vector3f line_direction(0, 0, 0.4);
 
@@ -61,8 +61,6 @@ void drawingSampledSmoothness( ViewerCanvasPtr canvas){
   }
           
 
-  FeatureExtractor fE(0);
-
   std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >  colors;
   colors.resize(64);
   for(size_t i=0; i < colors.size(); ++i) {
@@ -72,17 +70,28 @@ void drawingSampledSmoothness( ViewerCanvasPtr canvas){
   for( auto & p: cube_points){
     //std::cerr<<"coords: "<<p.getCoords()<<"\n";
     //std::cerr<<"bef: "<<p.getSmoothness()<<"\n";
-    fE.computeSingleSmoothnessMine(line_points, p );
+    
+   
+    
+    
+    
+    //FeatureExtractor::computeSingleSmoothnessPaper(line_points, p );
+
+    FeatureExtractor::computeSingleSmoothnessMine(line_points, p );
+
+
+
+
     //std::cerr<<"aft: "<<p.getSmoothness()<<"\n";
   }
   while(ViewerCoreSharedQGL::isRunning()){
     canvas->pushPointSize();
     canvas->setPointSize(7.0);
-    float min_smoothness = fE.findMinSmoothnessPoint(cube_points).getSmoothness();
-    float max_smoothness = fE.findMaxSmoothnessPoint(cube_points).getSmoothness();
+    float min_smoothness = FeatureExtractor::findMinSmoothnessPoint(cube_points).getSmoothness();
+    float max_smoothness = FeatureExtractor::findMaxSmoothnessPoint(cube_points).getSmoothness();
     double dim_interval= static_cast<double>( (max_smoothness - min_smoothness) / colors.size());
 
-    std::list<ScanPoint> ordered_for_smoothness= fE.sortForIncreasingSmoothness(cube_points);
+    std::list<ScanPoint> ordered_for_smoothness= FeatureExtractor::sortForIncreasingSmoothness(cube_points);
 
     //cerr<<"Distribution:min="<<min_smoothness<<" max="<<max_smoothness<<" inter="<<dim_interval<<"\n";
 
@@ -101,6 +110,7 @@ void drawingSampledSmoothness( ViewerCanvasPtr canvas){
         if( curr_vec.size() > 0){
           Point3fVectorCloud pointcloud;
           pointcloud.resize( curr_vec.size());
+
           for (unsigned int j = 0; j < pointcloud.size(); ++j) {
             pointcloud[j].coordinates()=curr_vec[j].getCoords();
           }
