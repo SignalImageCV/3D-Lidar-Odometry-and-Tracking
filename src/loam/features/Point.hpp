@@ -1,3 +1,4 @@
+#pragma once
 #include "Matchable.hpp"
 
 namespace Loam{
