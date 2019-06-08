@@ -2,6 +2,56 @@
 
 namespace Loam{
     
+  SphericalDepthImage::SphericalDepthImage( int num_vertical_rings ,
+      int num_points_ring , const Point3fVectorCloud & cloud):
+  m_num_vertical_rings( num_vertical_rings), m_num_points_ring( num_points_ring){
+    m_index_image.reserve( num_vertical_rings);
+    for ( auto & v : m_index_image){
+      v.resize( num_points_ring);
+    }
+    Vector2f min_max_elevation = extimateMinMaxElevation( cloud);
+    m_min_elevation = min_max_elevation.x();
+    m_max_elevation = min_max_elevation.y();
+  }
+
+
+  vector<int> SphericalDepthImage::mapSphericalCoordsInIndexImage(
+      const float t_azimuth, const float t_elevation ){
+
+    const double interval_elevation = static_cast<double>( (m_max_elevation - m_min_elevation) / m_num_vertical_rings );
+    const int u= static_cast<int>( floor( t_elevation/ interval_elevation ));
+
+    const double interval_azimuth = static_cast<double>( 2*M_PI / m_num_points_ring);
+    const double azimuth_normalized = t_azimuth + M_PI;
+    const int v= static_cast<int>( floor(azimuth_normalized / interval_azimuth));
+
+    vector<int> result;
+    result.push_back(u);
+    result.push_back(v);
+    return result;
+  }
+
+  Vector2f SphericalDepthImage::extimateMinMaxElevation( const Point3fVectorCloud & cloud){
+    float min_elevation = 0;
+    float max_elevation = 0;
+    if (cloud.size()>0){
+      Vector3f initialSphericalCoords = SphericalDepthImage::directMappingFunc( cloud[0].coordinates());
+      min_elevation = initialSphericalCoords.y();
+      max_elevation = initialSphericalCoords.y();
+      Vector3f curr_sphericalCoords;
+      for ( auto & p: cloud){
+        curr_sphericalCoords = SphericalDepthImage::directMappingFunc( p.coordinates());
+        if( curr_sphericalCoords.y()< min_elevation){
+          min_elevation = curr_sphericalCoords.y();
+        }
+        if( curr_sphericalCoords.y()> max_elevation){
+          max_elevation = curr_sphericalCoords.y();
+        }
+      }
+    }
+    return  Vector2f( min_elevation, max_elevation);
+  }
+
   Vector3f SphericalDepthImage::directMappingFunc(const Vector3f & t_cart_coords){
     return Vector3f(
         atan2( t_cart_coords.y(), t_cart_coords.x()),
