@@ -150,9 +150,7 @@ namespace Loam{
 
   TEST_F( SDIFixture_forIndexImage, mapBuildIndexImage){
     sph_Image.buildIndexImage( cloud);
-    vector<vector<list<int>>> index_image_result = sph_Image.getIndexImage();
-    int rows_truth = 4;
-    int cols_truth = 24;
+    vector<vector<list< sphericalDepthPoint >>> index_image_result = sph_Image.getIndexImage();
     ASSERT_TRUE( index_image_result.size() > 0 );
     ASSERT_EQ( index_image_result.size(), 4 );
     ASSERT_TRUE( index_image_result[0].size() >0 );

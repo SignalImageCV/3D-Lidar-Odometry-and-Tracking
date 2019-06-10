@@ -17,11 +17,11 @@ namespace Loam{
 
   void SphericalDepthImage::buildIndexImage(const Point3fVectorCloud & t_cloud){
     if (t_cloud.size()>0){
-
-      for ( int i = 0; i<t_cloud.size(); ++i){
+      for (unsigned int i = 0; i<t_cloud.size(); ++i){
         Vector3f spherical_coords = SphericalDepthImage::directMappingFunc( t_cloud[i].coordinates());
         vector<int> coords = mapSphericalCoordsInIndexImage( spherical_coords.x(), spherical_coords.y()); 
-        m_index_image[coords[0]][coords[1]].push_back(i);
+        sphericalDepthPoint sp( i, spherical_coords);
+        m_index_image[coords[0]][coords[1]].push_back(sp);
       }
     }
   }

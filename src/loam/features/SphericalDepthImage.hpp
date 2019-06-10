@@ -9,10 +9,20 @@ namespace Loam{
   using namespace std;
   using namespace srrg2_core;
 
+  typedef struct sphericalDepthPoint_tag{
+    int index_in_stl_container;
+    Vector3f spherical_coords;
+    sphericalDepthPoint_tag( int t_index, Vector3f t_sph_coords):
+      index_in_stl_container( t_index),
+      spherical_coords( t_sph_coords)
+    {}
+  }sphericalDepthPoint;
 
-   class SphericalDepthImage {
+
+  class SphericalDepthImage {
      protected:
-       vector<  vector< list<int> >> m_index_image;
+       //this matrix is both the index matrix I and the spherical depth matrix D
+       vector<vector< list< sphericalDepthPoint >>> m_index_image;
        int m_num_vertical_rings;
        int m_num_points_ring;
        float m_min_elevation;
@@ -38,7 +48,7 @@ namespace Loam{
       static  Vector3f inverseMappingFunc(const Vector3f & t_spher_coords);
 
 
-      inline const vector<vector<list<int>>> & getIndexImage(){ return m_index_image;};
+      inline const vector<vector<list<sphericalDepthPoint>>> & getIndexImage(){ return m_index_image;};
 
 
 
