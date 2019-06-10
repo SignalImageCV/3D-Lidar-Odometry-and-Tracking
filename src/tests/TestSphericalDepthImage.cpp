@@ -59,6 +59,40 @@ namespace Loam{
       }
     };
  
+
+  class SDIFixture_forIndexImage: public testing::Test {
+    protected:
+      SphericalDepthImage sph_Image;
+      Point3fVectorCloud cloud;
+      
+      
+      virtual void SetUp(){
+        cloud.resize(8);
+        float epsilon = 0.0001;
+        Vector3f coords_p_1 = Vector3f( 1./2, 0, sqrt(3)/2);
+        Vector3f coords_p_2 = Vector3f( sqrt(3)/2, 0, -1./2);
+        Vector3f coords_p_3 = Vector3f( 0, sqrt(3)/2 , +1./2);
+        Vector3f coords_p_4 = Vector3f( 0-epsilon,  sqrt(3)/2 -epsilon, +1./2);
+        Vector3f coords_p_5 = Vector3f( 0-epsilon*2, sqrt(3)/2 +epsilon, +1./2);
+        Vector3f coords_p_6 = Vector3f( 0-epsilon*3, sqrt(3)/2 -epsilon, +1./2);
+        Vector3f coords_p_7 = Vector3f( 0+epsilon, sqrt(3)/2, -1./2);
+        Vector3f coords_p_8 = Vector3f( 0-epsilon, sqrt(3)/2, -1./2);
+        cloud[0].coordinates() = coords_p_1;
+        cloud[1].coordinates() = coords_p_2;
+        cloud[2].coordinates() = coords_p_3;
+        cloud[3].coordinates() = coords_p_4;
+        cloud[4].coordinates() = coords_p_5;
+        cloud[5].coordinates() = coords_p_6;
+        cloud[6].coordinates() = coords_p_7;
+        cloud[7].coordinates() = coords_p_8;
+     
+        const int num_rings =4;
+        const int num_points_ring= 24;
+        sph_Image= SphericalDepthImage(
+            num_rings,num_points_ring,cloud);
+      }
+    };
+ 
   TEST_F( SDIFixture_elevation, extimateMinMaxElev){
 
 
@@ -83,7 +117,7 @@ namespace Loam{
 
     const float degree = M_PI/180;
     const float azimuth_1 = degree*10;
-    const float elevation_1 = degree*10;
+    const float elevation_1 = degree*31;
     vector<int> result_1 =  sph_Image.mapSphericalCoordsInIndexImage( azimuth_1, elevation_1);
     ASSERT_EQ( result_1[0], 0);
     ASSERT_EQ( result_1[1], 12);
@@ -91,25 +125,64 @@ namespace Loam{
     const float azimuth_2 = degree*50;
     const float elevation_2 = degree*80;
     vector<int> result_2 =  sph_Image.mapSphericalCoordsInIndexImage( azimuth_2, elevation_2);
-    ASSERT_EQ( result_2[0], 5);
+    ASSERT_EQ( result_2[0], 3);
     ASSERT_EQ( result_2[1], 15);
 
     const float azimuth_3 = - degree*70;
     const float elevation_3 = degree*89;
     vector<int> result_3 =  sph_Image.mapSphericalCoordsInIndexImage( azimuth_3, elevation_3);
-    ASSERT_EQ( result_3[0], 5);
+    ASSERT_EQ( result_3[0], 3);
     ASSERT_EQ( result_3[1], 7);
 
     const float azimuth_4 = - degree*170;
     const float elevation_4 = degree*41;
     vector<int> result_4 =  sph_Image.mapSphericalCoordsInIndexImage( azimuth_4, elevation_4);
-    ASSERT_EQ( result_4[0], 2);
+    ASSERT_EQ( result_4[0], 0);
     ASSERT_EQ( result_4[1], 0);
 
-
+    const float azimuth_5 = - degree*170;
+    const float elevation_5 = degree*(30+89);
+    vector<int> result_5 =  sph_Image.mapSphericalCoordsInIndexImage( azimuth_5, elevation_5);
+    ASSERT_EQ( result_5[0], 5);
+    ASSERT_EQ( result_5[1], 0);
 
   }
 
+  TEST_F( SDIFixture_forIndexImage, mapBuildIndexImage){
+    sph_Image.buildIndexImage( cloud);
+    vector<vector<list<int>>> index_image_result = sph_Image.getIndexImage();
+    int rows_truth = 4;
+    int cols_truth = 24;
+    ASSERT_TRUE( index_image_result.size() > 0 );
+    ASSERT_EQ( index_image_result.size(), 4 );
+    ASSERT_TRUE( index_image_result[0].size() >0 );
+    ASSERT_EQ( index_image_result[0].size() , 24 );
+
+
+    //p1
+    ASSERT_EQ( index_image_result[0][12].size(),1 );
+    ASSERT_EQ( index_image_result[0][11].size(),0 );
+    ASSERT_EQ( index_image_result[0][13].size(),0 );
+    ASSERT_EQ( index_image_result[1][12].size(),0 );
+    //p2
+    ASSERT_EQ( index_image_result[3][12].size(),1 );
+    ASSERT_EQ( index_image_result[2][12].size(),0 );
+    ASSERT_EQ( index_image_result[3][11].size(),0 );
+    ASSERT_EQ( index_image_result[3][13].size(),0 );
+    //p3,p4,p5,p6
+    ASSERT_EQ( index_image_result[1][18].size(),4 );
+    ASSERT_EQ( index_image_result[0][18].size(),0 );
+    ASSERT_EQ( index_image_result[2][18].size(),0 );
+    ASSERT_EQ( index_image_result[1][19].size(),0 );
+    ASSERT_EQ( index_image_result[1][17].size(),0 );
+    //p7,p8
+    ASSERT_EQ( index_image_result[3][17].size(),1 );
+    ASSERT_EQ( index_image_result[2][17].size(),0 );
+    ASSERT_EQ( index_image_result[3][16].size(),0 );
+    ASSERT_EQ( index_image_result[3][18].size(),1 );
+    ASSERT_EQ( index_image_result[2][18].size(),0 );
+    ASSERT_EQ( index_image_result[3][19].size(),0 );
+  }
 
 
   TEST( SphericalDepthImage, directMapping){
@@ -144,6 +217,14 @@ namespace Loam{
     ASSERT_NEAR( spherical_truth_4.y(), result_4.y(), 1e-3);
     ASSERT_NEAR( spherical_truth_4.z(), result_4.z(), 1e-3);
 
+    Vector3f cartesian_5 = Vector3f( 0 ,sqrt(3)/2, -1./2);
+    Vector3f spherical_truth_5 = Vector3f(M_PI/2, 2*M_PI/3,1);
+    Vector3f result_5 = SphericalDepthImage::directMappingFunc(cartesian_5 );
+    ASSERT_NEAR( spherical_truth_5.x(), result_5.x(), 1e-3);
+    ASSERT_NEAR( spherical_truth_5.y(), result_5.y(), 1e-3);
+    ASSERT_NEAR( spherical_truth_5.z(), result_5.z(), 1e-3);
+
+
  }
 
   TEST( SphericalDepthImage, inverseMapping){
@@ -176,6 +257,13 @@ namespace Loam{
     ASSERT_NEAR(cartesian_truth_4.z(), result_4.z(), 1e-3);
  
 
+    Vector3f spherical_5= Vector3f(M_PI/2, 2*M_PI/3, 1);
+    Vector3f cartesian_truth_5 = Vector3f(0 ,sqrt(3)/2, -1./2);
+    Vector3f result_5 = SphericalDepthImage::inverseMappingFunc(spherical_5);
+    ASSERT_NEAR(cartesian_truth_5.x(), result_5.x(), 1e-3);
+    ASSERT_NEAR(cartesian_truth_5.y(), result_5.y(), 1e-3);
+    ASSERT_NEAR(cartesian_truth_5.z(), result_5.z(), 1e-3);
+ 
 
   }
 

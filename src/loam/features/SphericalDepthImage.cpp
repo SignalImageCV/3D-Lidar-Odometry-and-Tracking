@@ -5,7 +5,7 @@ namespace Loam{
   SphericalDepthImage::SphericalDepthImage( int num_vertical_rings ,
       int num_points_ring , const Point3fVectorCloud & cloud):
   m_num_vertical_rings( num_vertical_rings), m_num_points_ring( num_points_ring){
-    m_index_image.reserve( num_vertical_rings);
+    m_index_image.resize( num_vertical_rings);
     for ( auto & v : m_index_image){
       v.resize( num_points_ring);
     }
@@ -15,15 +15,29 @@ namespace Loam{
   }
 
 
+  void SphericalDepthImage::buildIndexImage(const Point3fVectorCloud & t_cloud){
+    if (t_cloud.size()>0){
+
+      for ( int i = 0; i<t_cloud.size(); ++i){
+        Vector3f spherical_coords = SphericalDepthImage::directMappingFunc( t_cloud[i].coordinates());
+        vector<int> coords = mapSphericalCoordsInIndexImage( spherical_coords.x(), spherical_coords.y()); 
+        m_index_image[coords[0]][coords[1]].push_back(i);
+      }
+    }
+  }
+
   vector<int> SphericalDepthImage::mapSphericalCoordsInIndexImage(
       const float t_azimuth, const float t_elevation ){
 
     const double interval_elevation = static_cast<double>( (m_max_elevation - m_min_elevation) / m_num_vertical_rings );
-    const int u= static_cast<int>( floor( t_elevation/ interval_elevation ));
+    const float elevation_normalized = t_elevation - m_min_elevation;
+    int u= static_cast<int>( floor( elevation_normalized/ interval_elevation ));
+    if ( u == m_num_vertical_rings){ --u;};
 
     const double interval_azimuth = static_cast<double>( 2*M_PI / m_num_points_ring);
     const double azimuth_normalized = t_azimuth + M_PI;
-    const int v= static_cast<int>( floor(azimuth_normalized / interval_azimuth));
+    int v= static_cast<int>( floor(azimuth_normalized / interval_azimuth));
+    if ( v == m_num_points_ring){ --v;};
 
     vector<int> result;
     result.push_back(u);

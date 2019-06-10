@@ -25,6 +25,7 @@ namespace Loam{
 
       ~SphericalDepthImage() = default;
 
+      void buildIndexImage(const Point3fVectorCloud & t_cloud);
 
       vector<int> mapSphericalCoordsInIndexImage(
           const float t_azimuth, const float t_elevation);
@@ -35,6 +36,10 @@ namespace Loam{
       static  Vector3f directMappingFunc(const Vector3f & t_cart_coords);
       //  and from  spherical coords to cartesian ones
       static  Vector3f inverseMappingFunc(const Vector3f & t_spher_coords);
+
+
+      inline const vector<vector<list<int>>> & getIndexImage(){ return m_index_image;};
+
 
 
 
