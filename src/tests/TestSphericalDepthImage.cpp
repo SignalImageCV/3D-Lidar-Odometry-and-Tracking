@@ -14,7 +14,7 @@ namespace Loam{
       Point3fVectorCloud cloud_3;
       
       
-      virtual void SetUp(){
+      void SetUp() override {
         cloud_1.resize(2);
         cloud_2.resize(2);
         cloud_3.resize(2);
@@ -30,12 +30,20 @@ namespace Loam{
         cloud_3[1].coordinates() = coords_p_3;
         const int num_rings =2;
         const int num_points_ring= 1;
+        const float epsilon_radius= 2;
+        const int epsilon_times= 3;
         Sph_Image_1= SphericalDepthImage(
-            num_rings,num_points_ring,cloud_1);
+            num_rings,num_points_ring,
+            epsilon_radius, epsilon_times,
+            cloud_1);
         Sph_Image_2= SphericalDepthImage(
-            num_rings,num_points_ring,cloud_2);
+            num_rings,num_points_ring,
+            epsilon_radius,epsilon_times,
+            cloud_2);
         Sph_Image_3= SphericalDepthImage(
-            num_rings,num_points_ring,cloud_3);
+            num_rings,num_points_ring,
+            epsilon_radius,epsilon_times,
+            cloud_3);
       }
     };
 
@@ -45,7 +53,7 @@ namespace Loam{
       Point3fVectorCloud cloud;
       
       
-      virtual void SetUp(){
+      void SetUp() override {
         cloud.resize(2);
         Vector3f coords_p_1 = Vector3f( 1./2, 0, sqrt(3)/2);
         Vector3f coords_p_2 = Vector3f( sqrt(3)/2, 0, -1./2);
@@ -54,9 +62,15 @@ namespace Loam{
      
         const int num_rings =6;
         const int num_points_ring= 24;
+        const float epsilon_radius= 2;
+        const int epsilon_times= 3;
+     
         sph_Image= SphericalDepthImage(
-            num_rings,num_points_ring,cloud);
+            num_rings,num_points_ring,
+            epsilon_radius, epsilon_times,
+            cloud);
       }
+   
     };
  
 
@@ -66,7 +80,7 @@ namespace Loam{
       Point3fVectorCloud cloud;
       
       
-      virtual void SetUp(){
+      void SetUp() override{
         cloud.resize(8);
         float epsilon = 0.0001;
         Vector3f coords_p_1 = Vector3f( 1./2, 0, sqrt(3)/2);
@@ -88,10 +102,16 @@ namespace Loam{
      
         const int num_rings =4;
         const int num_points_ring= 24;
+        const float epsilon_radius= 2;
+        const int epsilon_times= 3;
+ 
         sph_Image= SphericalDepthImage(
-            num_rings,num_points_ring,cloud);
+            num_rings,num_points_ring,
+            epsilon_radius, epsilon_times,
+            cloud);
       }
     };
+
  
   TEST_F( SDIFixture_elevation, extimateMinMaxElev){
 
@@ -149,7 +169,7 @@ namespace Loam{
   }
 
   TEST_F( SDIFixture_forIndexImage, mapBuildIndexImage){
-    sph_Image.buildIndexImage( cloud);
+    sph_Image.buildIndexImage();
     vector<vector<list< sphericalDepthPoint >>> index_image_result = sph_Image.getIndexImage();
     ASSERT_TRUE( index_image_result.size() > 0 );
     ASSERT_EQ( index_image_result.size(), 4 );
@@ -264,6 +284,49 @@ namespace Loam{
  
 
   }
+
+  class SDIFixture_removeFlatSurfaces: public testing::Test {
+    protected:
+      SphericalDepthImage sph_Image;
+      Point3fVectorCloud cloud;
+      
+      
+      void SetUp() override{
+        cloud.resize(7);
+        Vector3f coords_p_1 = Vector3f(4., 4., 4. );
+        Vector3f coords_p_2 = Vector3f(3., 3., 8. );
+        Vector3f coords_p_3 = Vector3f(1., 1., 5. );
+        Vector3f coords_p_4 = Vector3f(7., 1., 2. );
+        Vector3f coords_p_5 = Vector3f(7., 7., 3. );
+        Vector3f coords_p_6 = Vector3f(1., 7., 4. );
+        Vector3f coords_p_7 = Vector3f(3., 5., 0. );
+        cloud[0].coordinates() = coords_p_1;
+        cloud[1].coordinates() = coords_p_2;
+        cloud[2].coordinates() = coords_p_3;
+        cloud[3].coordinates() = coords_p_4;
+        cloud[4].coordinates() = coords_p_5;
+        cloud[5].coordinates() = coords_p_6;
+        cloud[6].coordinates() = coords_p_7;
+     
+        const int num_rings =10;
+        const int num_points_ring= 200;
+        const float epsilon_radius= 2;
+        const int epsilon_times= 2;
+        sph_Image= SphericalDepthImage(
+            num_rings,num_points_ring,
+            epsilon_radius, epsilon_times,
+            cloud);
+      }
+    };
+
+   TEST_F( SDIFixture_removeFlatSurfaces, removeFlatSurfacesFunc){
+
+    Point3fVectorCloud cloud_raw = sph_Image.getPointCloud();
+    ASSERT_EQ( cloud_raw.size(), 7 );
+    sph_Image.removeFlatSurfaces();
+    Point3fVectorCloud cloud_pruned = sph_Image.getPointCloud();
+    ASSERT_EQ( cloud_pruned.size(), 2 );
+    }
 
 }
 

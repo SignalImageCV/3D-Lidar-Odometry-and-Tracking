@@ -117,3 +117,17 @@ target_link_libraries(test_drawSphere
   pthread
   )
 
+add_executable(test_drawVerticalPoints
+  TestDrawVerticalPoints.cpp
+  )
+target_link_libraries(test_drawVerticalPoints
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  ${QGLViewer_LIBRARIES}
+  ${catkin_LIBRARIES}
+  pthread
+  )
+

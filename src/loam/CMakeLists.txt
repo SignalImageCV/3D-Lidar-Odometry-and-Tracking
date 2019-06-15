@@ -2,6 +2,7 @@ add_library( loam_library
   MyMath.cpp
   ScanPoint.cpp
   DatasetManager.cpp
+  Visualizer.cpp
   features/SphericalDepthImage.cpp
   features/FeatureExtractor.cpp
   )
