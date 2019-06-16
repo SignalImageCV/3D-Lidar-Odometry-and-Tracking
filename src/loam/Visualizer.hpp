@@ -5,18 +5,25 @@
 #include "../loam/features/SphericalDepthImage.hpp"
 #include "../loam/features/FeatureExtractor.hpp"
 #include "../loam/DatasetManager.hpp"
+#include "../loam/MyMath.hpp"
 
 namespace Loam{
   class Visualizer {
     public:
 
+      static void drawingSubrutine(ViewerCanvasPtr canvas, const std::string& filename);
+
       static void drawingAxes(ViewerCanvasPtr canvas);
+
+      static void visualizeCondition( ViewerCanvasPtr canvas);
 
       static void visualizeSphere(ViewerCanvasPtr canvas,const string & filename);
 
       static void visualizeCloud( ViewerCanvasPtr canvas, const  string & filename);
 
+      static void visualizeFullClouds( ViewerCanvasPtr canvas, const  string & filename);
 
+      static void drawingSampledSmoothness( ViewerCanvasPtr canvas);
 
   };
 
