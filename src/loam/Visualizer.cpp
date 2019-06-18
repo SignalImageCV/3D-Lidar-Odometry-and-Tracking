@@ -338,12 +338,16 @@ namespace Loam{
     }
   }
 
-  void Visualizer::drawingSampledSmoothness( ViewerCanvasPtr canvas){
-    Eigen::Vector3f center( 0, 2, 0);
-    float length_edge = 1;
-    int precision = 9;
-    std::vector<ScanPoint> cube_points =
-      ScanPoint::generateCubeSampledScanPoints(center, length_edge, precision);
+  void Visualizer::visualizeCleanedClouds( ViewerCanvasPtr first_canvas, ViewerCanvasPtr second_canvas, const  string & filename){
+    const int num_rings =60;
+    const int num_points_ring= 2000;
+    const float epsilon_radius= 0.2;
+    const int epsilon_times= 10;
+    SphericalDepthImage sph_Image;
+    Point3fVectorCloud cleanedCloud;
+       
+    first_canvas->flush();
+    second_canvas->flush();
 
     int num_points_axes = 100;
     Point3fVectorCloud pointcloud_x_axis;
@@ -352,17 +356,104 @@ namespace Loam{
     pointcloud_x_axis.resize( num_points_axes);
     pointcloud_y_axis.resize( num_points_axes);
     pointcloud_z_axis.resize( num_points_axes);
-    float x = 0;
-    float y = 0;
-    float z = 0;
+    float x = 0;float y = 0;float z = 0;
     for (unsigned int i = 0; i < pointcloud_x_axis.size(); ++i) {
-      x += 0.2;
-      y += 0.2;
-      z += 0.2;
+      x += 0.1;
+      y += 0.1;
+      z += 0.1;
       pointcloud_x_axis[i].coordinates()=Vector3f( x,0,0);
       pointcloud_y_axis[i].coordinates()=Vector3f( 0,y,0);
       pointcloud_z_axis[i].coordinates()=Vector3f( 0,0,z);
     }
+    messages_registerTypes();
+    MessageFileSource src;
+    src.open(filename);
+    BaseSensorMessagePtr msg;
+
+    first_canvas->pushPointSize();
+    first_canvas->setPointSize(1.0);
+    second_canvas->pushPointSize();
+    second_canvas->setPointSize(1.0);
+    
+    while( (msg=src.getMessage()) && ViewerCoreSharedQGL::isRunning()){
+      PointCloud2Message* cloud = dynamic_cast<PointCloud2Message*>(msg.get());
+      if (cloud) {
+        Point3fVectorCloud current_point_cloud;
+        cloud->getPointCloud(current_point_cloud);
+  
+        sph_Image= SphericalDepthImage(
+            num_rings,num_points_ring,
+            epsilon_radius, epsilon_times,
+            current_point_cloud);
+        sph_Image.removeFlatSurfaces();
+        cleanedCloud = sph_Image.getPointCloud();
+
+        first_canvas->pushColor();
+        first_canvas->setColor(Vector3f(0,0,0));
+        first_canvas->putPoints(cleanedCloud);
+        first_canvas->pushColor();
+
+        second_canvas->pushColor();
+        second_canvas->setColor(Vector3f(0,0,0));
+        second_canvas->putPoints(current_point_cloud);
+        second_canvas->pushColor();
+
+
+        first_canvas->setColor(ColorPalette::color3fOrange());
+        first_canvas->putPoints( pointcloud_x_axis);
+        first_canvas->popAttribute();
+        first_canvas->pushColor();
+        first_canvas->setColor(ColorPalette::color3fGreen());
+        first_canvas->putPoints( pointcloud_y_axis);
+        first_canvas->popAttribute();
+        first_canvas->pushColor();
+        first_canvas->setColor(ColorPalette::color3fBlue());
+        first_canvas->putPoints( pointcloud_z_axis);
+        first_canvas->popAttribute();
+        first_canvas->flush();
+
+        second_canvas->setColor(ColorPalette::color3fOrange());
+        second_canvas->putPoints( pointcloud_x_axis);
+        second_canvas->popAttribute();
+        second_canvas->pushColor();
+        second_canvas->setColor(ColorPalette::color3fGreen());
+        second_canvas->putPoints( pointcloud_y_axis);
+        second_canvas->popAttribute();
+        second_canvas->pushColor();
+        second_canvas->setColor(ColorPalette::color3fBlue());
+        second_canvas->putPoints( pointcloud_z_axis);
+        second_canvas->popAttribute();
+        second_canvas->flush();
+      }
+    }
+  }
+
+
+  void Visualizer::drawingSampledSmoothness( ViewerCanvasPtr  canvas){
+    Eigen::Vector3f center( 0, 2, 0);
+    float length_edge = 1;
+    int precision = 9;
+    std::vector<ScanPoint> cube_points =
+      ScanPoint::generateCubeSampledScanPoints(center, length_edge, precision);
+
+    canvas->flush();
+    int num_points_axes = 100;
+    Point3fVectorCloud pointcloud_x_axis;
+    Point3fVectorCloud pointcloud_y_axis;
+    Point3fVectorCloud pointcloud_z_axis;
+    pointcloud_x_axis.resize( num_points_axes);
+    pointcloud_y_axis.resize( num_points_axes);
+    pointcloud_z_axis.resize( num_points_axes);
+    float x = 0;float y = 0;float z = 0;
+    for (unsigned int i = 0; i < pointcloud_x_axis.size(); ++i) {
+      x += 0.1;
+      y += 0.1;
+      z += 0.1;
+      pointcloud_x_axis[i].coordinates()=Vector3f( x,0,0);
+      pointcloud_y_axis[i].coordinates()=Vector3f( 0,y,0);
+      pointcloud_z_axis[i].coordinates()=Vector3f( 0,0,z);
+    }
+ 
     const int num_line_points = 50;
     vector<ScanPoint> line_points;
     line_points.reserve(num_line_points);

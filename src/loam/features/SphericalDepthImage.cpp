@@ -51,8 +51,8 @@ namespace Loam{
 
 
   void SphericalDepthImage::markVerticalPoints(){
-    for (int row = m_index_image.size() -1; row >= 0; --row){
-      for (unsigned int col= 0; col<m_index_image[0].size(); ++col){
+    for (unsigned int col= 0; col<m_index_image[0].size(); ++col){
+      for (int row = m_index_image.size() -1; row >= 0; --row){
         for ( auto& entry : m_index_image[row][col]){
           if( not entry.isVertical ){
             int num_points_falling_in_projection = 0;
@@ -123,11 +123,13 @@ namespace Loam{
     const double interval_elevation = static_cast<double>( (m_max_elevation - m_min_elevation) / m_num_vertical_rings );
     const float elevation_normalized = t_elevation - m_min_elevation;
     int u= static_cast<int>( floor( elevation_normalized/ interval_elevation ));
+    if ( u == -1){ u= 0; } 
     if ( u == m_num_vertical_rings){ --u;};
 
     const double interval_azimuth = static_cast<double>( 2*M_PI / m_num_points_ring);
     const double azimuth_normalized = t_azimuth + M_PI;
     int v= static_cast<int>( floor(azimuth_normalized / interval_azimuth));
+    if ( v == -1){ v= 0; } 
     if ( v == m_num_points_ring){ --v;};
 
     vector<int> result;
@@ -158,10 +160,16 @@ namespace Loam{
   }
 
   Vector3f SphericalDepthImage::directMappingFunc(const Vector3f & t_cart_coords){
+
+    const float azimuth = atan2( t_cart_coords.y(), t_cart_coords.x());
+
+    const float elevation = atan2(
+        sqrt(pow(t_cart_coords.x(),2)+pow(t_cart_coords.y(),2)),
+          t_cart_coords.z());
+
     return Vector3f(
-        atan2( t_cart_coords.y(), t_cart_coords.x()),
-        atan2( sqrt(pow(t_cart_coords.x(),2)+pow(t_cart_coords.y(),2)),
-          t_cart_coords.z()),
+        azimuth,
+        elevation,
         sqrt( pow(t_cart_coords.x(),2)+
           pow(t_cart_coords.y(),2)+
           pow( t_cart_coords.z(),2))

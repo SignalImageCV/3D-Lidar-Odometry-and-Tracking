@@ -9,6 +9,7 @@ target_link_libraries(test_runner
   loam_library
   srrg2_system_utils_library
   srrg2_boss_library
+  ${SRRG_QT_LIBRARIES}
   ${catkin_LIBRARIES}
   )
 

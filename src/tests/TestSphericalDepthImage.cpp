@@ -241,9 +241,8 @@ namespace Loam{
     ASSERT_NEAR( spherical_truth_5.x(), result_5.x(), 1e-3);
     ASSERT_NEAR( spherical_truth_5.y(), result_5.y(), 1e-3);
     ASSERT_NEAR( spherical_truth_5.z(), result_5.z(), 1e-3);
-
-
  }
+
 
   TEST( SphericalDepthImage, inverseMapping){
     Vector3f spherical_1= Vector3f( 0, 5*M_PI/6, 1);

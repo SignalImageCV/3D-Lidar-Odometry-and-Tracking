@@ -23,6 +23,9 @@ namespace Loam{
 
       static void visualizeFullClouds( ViewerCanvasPtr canvas, const  string & filename);
 
+      static void visualizeCleanedClouds(ViewerCanvasPtr first_canvas,
+          ViewerCanvasPtr second_canvas, const  string & filename);
+
       static void drawingSampledSmoothness( ViewerCanvasPtr canvas);
 
   };
