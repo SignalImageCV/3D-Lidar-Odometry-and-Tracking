@@ -4,6 +4,7 @@
 #include <srrg_boss/deserializer.h>
 #include <srrg_messages/instances.h>
 
+#include <srrg_qgl_viewport/viewer_core_shared_qgl.h>
 
 namespace Loam {
   using namespace std;
@@ -18,7 +19,8 @@ namespace Loam {
 
   public:
     DatasetManager( string filename);
-    Point3fVectorCloud  readMessageFromDataset();
+
+    PointNormalColor3fVectorCloud  readMessageFromDataset();
   };
 }
 

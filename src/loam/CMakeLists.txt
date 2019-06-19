@@ -5,6 +5,8 @@ add_library( loam_library
   Visualizer.cpp
   features/SphericalDepthImage.cpp
   features/FeatureExtractor.cpp
+  features/IntegralImage.cpp
+  features/DataPoint.cpp
   )
 
 target_link_libraries(loam_library

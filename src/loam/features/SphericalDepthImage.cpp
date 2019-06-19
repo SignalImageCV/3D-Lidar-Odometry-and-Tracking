@@ -6,7 +6,7 @@ namespace Loam{
           int num_points_ring,
           float epsilon_radius,
           int epsilon_times,
-          const Point3fVectorCloud & t_cloud):
+          const PointNormalColor3fVectorCloud  & t_cloud):
   m_num_vertical_rings( num_vertical_rings),
   m_num_points_ring( num_points_ring),
   m_epsilon_radius( epsilon_radius),
@@ -27,8 +27,8 @@ namespace Loam{
       for (unsigned int i = 0; i<m_cloud.size(); ++i){
         Vector3f spherical_coords = SphericalDepthImage::directMappingFunc( m_cloud[i].coordinates());
         vector<int> coords = mapSphericalCoordsInIndexImage( spherical_coords.x(), spherical_coords.y()); 
-        sphericalDepthPoint sp( i, spherical_coords);
-        m_index_image[coords[0]][coords[1]].push_back(sp);
+        DataPoint dp( i);
+        m_index_image[coords[0]][coords[1]].push_back(dp);
       }
     }
   }
@@ -54,16 +54,16 @@ namespace Loam{
     for (unsigned int col= 0; col<m_index_image[0].size(); ++col){
       for (int row = m_index_image.size() -1; row >= 0; --row){
         for ( auto& entry : m_index_image[row][col]){
-          if( not entry.isVertical ){
+          if( not entry.getIsVertical()){
             int num_points_falling_in_projection = 0;
-            Vector3f ref_coords = m_cloud[ entry.index_in_stl_container].coordinates();
+            Vector3f ref_coords = m_cloud[ entry.getIndexContainer()].coordinates();
             vector< vector< int>> curr_indexes;
             for (int curr_row = row; curr_row >= 0; --curr_row){
               int index_in_list = 0;
               for ( auto& curr_entry: m_index_image[curr_row][col]){
                 float x_ref = ref_coords[0];
                 float y_ref = ref_coords[1];
-                Vector3f curr_coords = m_cloud[ curr_entry.index_in_stl_container].coordinates();
+                Vector3f curr_coords = m_cloud[ curr_entry.getIndexContainer()].coordinates();
                 float x_curr = curr_coords[0];
                 float y_curr = curr_coords[1];
                 float distance = sqrt( pow( x_ref - x_curr, 2)+ pow( y_ref - y_curr, 2));
@@ -84,7 +84,7 @@ namespace Loam{
                 int counter = 0;
                 for( auto & p: m_index_image[indexes[0]][indexes[1]]){
                   if( counter == indexes[2]){
-                    p.isVertical = true;
+                    p.setIsVertical( true);
                   }
                   ++counter;
                 }
@@ -103,16 +103,17 @@ namespace Loam{
     for (unsigned int row =0; row <m_index_image.size() ; ++row){
       for (unsigned int col=0; col <m_index_image[0].size(); ++col){
         for ( auto& entry : m_index_image[row][col]){
-          if( entry.isVertical){
-            indexes_vertical_points.push_back( entry.index_in_stl_container);
+          if( entry.getIsVertical()){
+            indexes_vertical_points.push_back( entry.getIndexContainer());
           }
         }
       }
     }
-    Point3fVectorCloud cleanedCloud;
+    PointNormalColor3fVectorCloud cleanedCloud;
     cleanedCloud.resize( indexes_vertical_points.size());
     for( unsigned int i =0 ; i< cleanedCloud.size(); ++i){
       cleanedCloud[i].coordinates() = m_cloud[indexes_vertical_points[i]].coordinates();
+      cleanedCloud[i].color() = m_cloud[indexes_vertical_points[i]].color();
     }
     m_cloud = cleanedCloud;
   }
@@ -138,7 +139,7 @@ namespace Loam{
     return result;
   }
 
-  Vector2f SphericalDepthImage::extimateMinMaxElevation( const Point3fVectorCloud & cloud){
+  Vector2f SphericalDepthImage::extimateMinMaxElevation( const PointNormalColor3fVectorCloud & cloud){
     float min_elevation = 0;
     float max_elevation = 0;
     if (cloud.size()>0){

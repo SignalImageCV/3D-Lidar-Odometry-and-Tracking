@@ -13,11 +13,34 @@ namespace Loam{
     p.coordinates() = Vector3f( 2, 3,2);
     ASSERT_EQ( p.coordinates().y(), 3);
   }
-  TEST( Point3f, constructorColor ){
+  TEST( Point3f, constructorColorNormal ){
     PointNormalColor3f  p;
     p.coordinates() = Vector3f( 2, 3,2);
-    p.color() = Vector3f( 2, 3,2);
+    p.color() = Vector3f( 1, 3,2);
+    p.normal() =Vector3f( 4, 5,6);
     ASSERT_EQ( p.color().y(), 3);
+    ASSERT_EQ( p.normal().y(), 5);
+  }
+
+  TEST( PointVec, vector){
+    PointNormalColor3fVectorCloud points;
+    points.resize(2);
+
+    points[0].coordinates() = Vector3f( 1, 2,3);
+    points[0].color() = Vector3f( 11,12,13);
+    points[0].normal() = Vector3f( 21, 22,23);
+
+    points[1].coordinates() = Vector3f( 4, 5,6);
+    points[1].color() = Vector3f( 14,15,16);
+    points[1].normal() = Vector3f( 24, 25,26);
+
+    ASSERT_EQ( points[0].coordinates().y(), 2);
+    ASSERT_EQ( points[0].color().y(), 12);
+    ASSERT_EQ( points[0].normal().y(), 22);
+
+    ASSERT_EQ( points[1].coordinates().y(), 5);
+    ASSERT_EQ( points[1].color().y(), 15);
+    ASSERT_EQ( points[1].normal().y(), 25);
   }
 
 }

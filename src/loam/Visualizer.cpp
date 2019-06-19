@@ -6,96 +6,39 @@ using namespace srrg2_qgl_viewport;
 
 namespace Loam{
 
-  void Visualizer::drawingSubrutine(ViewerCanvasPtr canvas, const std::string& filename){
+  vector<PointNormalColor3fVectorCloud> Visualizer::createAxes(){
 
-    MessageFileSource src;
-    src.open(filename);
-    BaseSensorMessagePtr msg;
-    while( (msg=src.getMessage()) && ViewerCoreSharedQGL::isRunning()){
-      PointCloud2Message* cloud = dynamic_cast<PointCloud2Message*>(msg.get());
-      if (cloud) {
-        Point3fVectorCloud current_point_cloud;
-        cloud->getPointCloud(current_point_cloud);
-        canvas->pushColor();
-        canvas->setColor( Vector3f(0.f,0.f,0.f));
-        canvas->pushPointSize();
-        canvas->setPointSize(1.0);
-        canvas->putPoints( current_point_cloud );
-        canvas->popAttribute();
-        canvas->popAttribute();
-        canvas->flush();
-      }
-    }
-  }
-
-  void Visualizer::drawingAxes(ViewerCanvasPtr canvas ){
-
-    while(ViewerCoreSharedQGL::isRunning()){
-      int num_points = 100;
-      Point3fVectorCloud pointcloud_x_axis;
-      Point3fVectorCloud pointcloud_y_axis;
-      Point3fVectorCloud pointcloud_z_axis;
-      pointcloud_x_axis.resize( num_points);
-      pointcloud_y_axis.resize( num_points);
-      pointcloud_z_axis.resize( num_points);
-      float x = 0;
-      float y = 0;
-      float z = 0;
-	    
-      for (unsigned int i = 0; i < pointcloud_x_axis.size(); ++i) {
-        x += 0.1;
-        y += 0.1;
-        z += 0.1;
-        pointcloud_x_axis[i].coordinates()=Vector3f( x,0,0);
-        pointcloud_y_axis[i].coordinates()=Vector3f( 0,y,0);
-        pointcloud_z_axis[i].coordinates()=Vector3f( 0,0,z);
-      }
-
-      canvas->pushPointSize();
-      canvas->setPointSize(4.0);
-
-      canvas->pushColor();
-      canvas->setColor(ColorPalette::color3fOrange());
-      canvas->putPoints( pointcloud_x_axis);
-      canvas->popAttribute();
-
-      canvas->pushColor();
-      canvas->setColor(ColorPalette::color3fBlue());
-      canvas->putPoints( pointcloud_y_axis);
-      canvas->popAttribute();
-
-      canvas->pushColor();
-      canvas->setColor(ColorPalette::color3fGreen());
-      canvas->putPoints( pointcloud_z_axis);
-      canvas->popAttribute();
-
-      canvas->popAttribute();
-      canvas->flush();
-    }
-  }
-
-  void Visualizer::visualizeCondition( ViewerCanvasPtr canvas){
-
-    canvas->flush();
-    int num_points_axes = 100;
-    Point3fVectorCloud pointcloud_x_axis;
-    Point3fVectorCloud pointcloud_y_axis;
-    Point3fVectorCloud pointcloud_z_axis;
-    pointcloud_x_axis.resize( num_points_axes);
-    pointcloud_y_axis.resize( num_points_axes);
-    pointcloud_z_axis.resize( num_points_axes);
-    float x = 0;float y = 0;float z = 0;
-    for (unsigned int i = 0; i < pointcloud_x_axis.size(); ++i) {
+    vector< PointNormalColor3fVectorCloud> axes;
+    
+    int num_points = 100;
+    PointNormalColor3fVectorCloud pointcloud_x_axis;
+    PointNormalColor3fVectorCloud pointcloud_y_axis;
+    PointNormalColor3fVectorCloud pointcloud_z_axis;
+    pointcloud_x_axis.resize( num_points);
+    pointcloud_y_axis.resize( num_points);
+    pointcloud_z_axis.resize( num_points);
+    float x = 0;
+    float y = 0;
+    float z = 0;
+    for (unsigned int i = 0; i < num_points; ++i) {
       x += 0.1;
       y += 0.1;
       z += 0.1;
       pointcloud_x_axis[i].coordinates()=Vector3f( x,0,0);
+      pointcloud_x_axis[i].color()= ColorPalette::color3fDarkCyan();
       pointcloud_y_axis[i].coordinates()=Vector3f( 0,y,0);
+      pointcloud_y_axis[i].color()= ColorPalette::color3fDarkGreen();
       pointcloud_z_axis[i].coordinates()=Vector3f( 0,0,z);
+      pointcloud_z_axis[i].color()= ColorPalette::color3fDarkRed();
     }
+    axes.push_back(pointcloud_x_axis);
+    axes.push_back(pointcloud_y_axis);
+    axes.push_back(pointcloud_z_axis);
+    return axes;
+  }
 
+  PointNormalColor3fVectorCloud Visualizer::createCircle(const float radius = 1.){
     float j = 0;float k = 0; const float l = 0;
-    float radius = 1.;
     vector<Vector3f> circle_points;
     circle_points.reserve(360);
     for( float angle = 0; angle <= 2*M_PI; angle+= M_PI/180){
@@ -103,13 +46,53 @@ namespace Loam{
       k = radius* sin( angle); 
       circle_points.push_back( Vector3f( j, k, l));
     }
-    Point3fVectorCloud circle_point_cloud;
+    PointNormalColor3fVectorCloud circle_point_cloud;
     circle_point_cloud.resize( circle_points.size());
     for (unsigned int i = 0; i < circle_point_cloud.size(); ++i) {
       circle_point_cloud[i].coordinates() = circle_points[i];
+      circle_point_cloud[i].color() = ColorPalette::color3fBlack();
     }
-    canvas->pushPointSize();
-    canvas->setPointSize(2.0);
+    return circle_point_cloud;
+  }
+
+  void Visualizer::drawAxes(ViewerCanvasPtr canvas, const vector<PointNormalColor3fVectorCloud> & t_axes){
+    for( auto & axis: t_axes){
+      canvas->putPoints( axis);
+    }
+  }
+
+
+
+  void Visualizer::visualizeSubrutine(ViewerCanvasPtr canvas, const std::string& filename){
+
+    DatasetManager dM( filename);
+    while( ViewerCoreSharedQGL::isRunning()){
+      PointNormalColor3fVectorCloud point_cloud = dM.readMessageFromDataset();
+      if (point_cloud.size()>0) {
+        canvas->pushPointSize();
+        canvas->setPointSize(.5);
+        canvas->putPoints( point_cloud );
+        canvas->flush();
+      }
+    }
+  }
+
+  void Visualizer::visualizeAxes(ViewerCanvasPtr canvas ){
+
+    vector<PointNormalColor3fVectorCloud> axes =  Visualizer::createAxes();
+    while(ViewerCoreSharedQGL::isRunning()){
+      canvas->pushPointSize();
+      canvas->setPointSize(4.0);
+      Visualizer::drawAxes( canvas, axes);
+      canvas->flush();
+    }
+  }
+
+  void Visualizer::visualizeCondition( ViewerCanvasPtr canvas){
+
+    vector<PointNormalColor3fVectorCloud> axes =  Visualizer::createAxes();
+    PointNormalColor3fVectorCloud circle_point_cloud  = Visualizer::createCircle();
+
     float range_scan_section = M_PI/3;
     Vector3f curr_color = Vector3f::Zero();
     while( ViewerCoreSharedQGL::isRunning()){
@@ -126,162 +109,69 @@ namespace Loam{
             else{
               curr_color = Vector3f( 0.2,0.1,0.9);
             }
-            Point3fVectorCloud point_vec;
-            point_vec.resize(1);
-            point_vec[0].coordinates() = circle_point_cloud[j].coordinates();
-            canvas->pushColor();
-            canvas->setColor( curr_color);
-            canvas->putPoints(point_vec);
-            canvas->popAttribute();
+            circle_point_cloud[j].color() = curr_color;
           }
         }
-        canvas->popAttribute();
         canvas->pushPointSize();
-        canvas->setPointSize(3.0);
-        canvas->pushColor();
-        canvas->setColor(ColorPalette::color3fOrange());
-        canvas->putPoints( pointcloud_x_axis);
-        canvas->popAttribute();
-        canvas->pushColor();
-        canvas->setColor(ColorPalette::color3fGreen());
-        canvas->putPoints( pointcloud_y_axis);
-        canvas->popAttribute();
-        canvas->pushColor();
-        canvas->setColor(ColorPalette::color3fBlue());
-        canvas->putPoints( pointcloud_z_axis);
-        canvas->popAttribute();
-        canvas->popAttribute();
+        canvas->setPointSize(2.0);
+        canvas->putPoints( circle_point_cloud );
+
+        Visualizer::drawAxes( canvas, axes);
         canvas->flush();
       }
     }
   }
-
-
 
   void Visualizer::visualizeSphere( ViewerCanvasPtr canvas, const  string & filename){
+    DatasetManager dM( filename);
+    vector<PointNormalColor3fVectorCloud> axes =  Visualizer::createAxes();
 
-    canvas->flush();
-
-    int num_points_axes = 100;
-    Point3fVectorCloud pointcloud_x_axis;
-    Point3fVectorCloud pointcloud_y_axis;
-    Point3fVectorCloud pointcloud_z_axis;
-    pointcloud_x_axis.resize( num_points_axes);
-    pointcloud_y_axis.resize( num_points_axes);
-    pointcloud_z_axis.resize( num_points_axes);
-    float x = 0;float y = 0;float z = 0;
-    for (unsigned int i = 0; i < pointcloud_x_axis.size(); ++i) {
-      x += 0.1;
-      y += 0.1;
-      z += 0.1;
-      pointcloud_x_axis[i].coordinates()=Vector3f( x,0,0);
-      pointcloud_y_axis[i].coordinates()=Vector3f( 0,y,0);
-      pointcloud_z_axis[i].coordinates()=Vector3f( 0,0,z);
-    }
-
-    messages_registerTypes();
-    MessageFileSource src;
-    src.open(filename);
-    BaseSensorMessagePtr msg;
-    canvas->pushPointSize();
-    canvas->setPointSize(1.0);
     float normalized_radius = 5.;
-    msg=src.getMessage();
-    if ( msg){
-      PointCloud2Message* cloud = dynamic_cast<PointCloud2Message*>(msg.get());
-      Point3fVectorCloud point_cloud;
-      cloud->getPointCloud(point_cloud);
-      Point3fVectorCloud sphere_cloud;
-      sphere_cloud.resize( point_cloud.size());
-      for( int i = 0; i<point_cloud.size(); ++i){
-        Point3f p = point_cloud[i];
-        Vector3f spherical_coords = SphericalDepthImage::directMappingFunc( p.coordinates());
-        spherical_coords.z() = normalized_radius;
-        sphere_cloud[i].coordinates() = SphericalDepthImage::inverseMappingFunc( spherical_coords);
-      }
-       
-      while(  ViewerCoreSharedQGL::isRunning()){
-        canvas->pushColor();
-        canvas->setColor(Vector3f(0,0,0));
-        canvas->putPoints(sphere_cloud);
-        canvas->pushColor();
-        canvas->setColor(ColorPalette::color3fOrange());
-        canvas->putPoints( pointcloud_x_axis);
-        canvas->popAttribute();
-        canvas->pushColor();
-        canvas->setColor(ColorPalette::color3fGreen());
-        canvas->putPoints( pointcloud_y_axis);
-        canvas->popAttribute();
-        canvas->pushColor();
-        canvas->setColor(ColorPalette::color3fBlue());
-        canvas->putPoints( pointcloud_z_axis);
-        canvas->popAttribute();
-        canvas->flush();
-      }
+    PointNormalColor3fVectorCloud point_cloud = dM.readMessageFromDataset();
+
+    PointNormalColor3fVectorCloud sphere_cloud;
+    sphere_cloud.resize( point_cloud.size());
+    for(unsigned int i = 0; i<point_cloud.size(); ++i){
+      PointNormalColor3f p = point_cloud[i];
+      Vector3f spherical_coords = SphericalDepthImage::directMappingFunc( p.coordinates());
+      spherical_coords.z() = normalized_radius;
+      sphere_cloud[i].coordinates() = SphericalDepthImage::inverseMappingFunc( spherical_coords);
+      sphere_cloud[i].color() = p.color();
+    }
+     
+    while(  ViewerCoreSharedQGL::isRunning()){
+      canvas->putPoints(sphere_cloud);
+      Visualizer::drawAxes( canvas, axes);
+      canvas->flush();
     }
   }
-
-  void Visualizer::visualizeCloud( ViewerCanvasPtr canvas, const  string & filename){
-
+ 
+  void Visualizer::visualizeCloudSmoothness( ViewerCanvasPtr canvas, const  string & filename){
     canvas->flush();
-    int num_points_axes = 100;
-    Point3fVectorCloud pointcloud_x_axis;
-    Point3fVectorCloud pointcloud_y_axis;
-    Point3fVectorCloud pointcloud_z_axis;
-    pointcloud_x_axis.resize( num_points_axes);
-    pointcloud_y_axis.resize( num_points_axes);
-    pointcloud_z_axis.resize( num_points_axes);
-    float x = 0;float y = 0;float z = 0;
-    for (unsigned int i = 0; i < pointcloud_x_axis.size(); ++i) {
-      x += 0.1;
-      y += 0.1;
-      z += 0.1;
-      pointcloud_x_axis[i].coordinates()=Vector3f( x,0,0);
-      pointcloud_y_axis[i].coordinates()=Vector3f( 0,y,0);
-      pointcloud_z_axis[i].coordinates()=Vector3f( 0,0,z);
-    }
-    messages_registerTypes();
-    MessageFileSource src;
-    src.open(filename);
-    BaseSensorMessagePtr msg;
-
+    DatasetManager dM( filename);
+    vector<PointNormalColor3fVectorCloud> axes =  Visualizer::createAxes();
     float c;
     const Vector3f base_color = Vector3f( 0.4,0.4,0.4);
-    while( (msg=src.getMessage()) && ViewerCoreSharedQGL::isRunning()){
-      PointCloud2Message* cloud = dynamic_cast<PointCloud2Message*>(msg.get());
-      if (cloud) {
-        canvas->pushPointSize();
-        canvas->setPointSize(1.0);
+    
+    while( ViewerCoreSharedQGL::isRunning()){
 
-        Point3fVectorCloud current_point_cloud;
-        cloud->getPointCloud(current_point_cloud);
+      PointNormalColor3fVectorCloud current_point_cloud= dM.readMessageFromDataset();
+      if( current_point_cloud.size()> 0){
         for (unsigned int i = 0; i < current_point_cloud.size(); ++i) {
           cerr<<"point number :"<<i<<"\n";
           c = FeatureExtractor::computeSmoothness( current_point_cloud, i);
           Vector3f curr_color = base_color * c;
-          Point3fVectorCloud point_vec;
-          point_vec.resize(1);
-          point_vec[0].coordinates() = current_point_cloud[i].coordinates();
-          canvas->pushColor();
-          canvas->setColor( curr_color);
-          canvas->putPoints(point_vec);
-          canvas->popAttribute();
+          current_point_cloud[i].color() = curr_color;
         }
+
+        canvas->pushPointSize();
+        canvas->setPointSize(1.0);
+        canvas->putPoints( current_point_cloud );
+        canvas->popAttribute();
+
         canvas->pushPointSize();
         canvas->setPointSize(3.0);
-        canvas->pushColor();
-        canvas->setColor(ColorPalette::color3fOrange());
-        canvas->putPoints( pointcloud_x_axis);
-        canvas->popAttribute();
-        canvas->pushColor();
-        canvas->setColor(ColorPalette::color3fGreen());
-        canvas->putPoints( pointcloud_y_axis);
-        canvas->popAttribute();
-        canvas->pushColor();
-        canvas->setColor(ColorPalette::color3fBlue());
-        canvas->putPoints( pointcloud_z_axis);
-        canvas->popAttribute();
-        canvas->popAttribute();
+        Visualizer::drawAxes( canvas, axes);
         canvas->flush();
       }
     }
@@ -289,50 +179,14 @@ namespace Loam{
 
   void Visualizer::visualizeFullClouds( ViewerCanvasPtr canvas, const  string & filename){
 
-    canvas->flush();
-    int num_points_axes = 100;
-    Point3fVectorCloud pointcloud_x_axis;
-    Point3fVectorCloud pointcloud_y_axis;
-    Point3fVectorCloud pointcloud_z_axis;
-    pointcloud_x_axis.resize( num_points_axes);
-    pointcloud_y_axis.resize( num_points_axes);
-    pointcloud_z_axis.resize( num_points_axes);
-    float x = 0;float y = 0;float z = 0;
-    for (unsigned int i = 0; i < pointcloud_x_axis.size(); ++i) {
-      x += 0.1;
-      y += 0.1;
-      z += 0.1;
-      pointcloud_x_axis[i].coordinates()=Vector3f( x,0,0);
-      pointcloud_y_axis[i].coordinates()=Vector3f( 0,y,0);
-      pointcloud_z_axis[i].coordinates()=Vector3f( 0,0,z);
-    }
-    messages_registerTypes();
-    MessageFileSource src;
-    src.open(filename);
-    BaseSensorMessagePtr msg;
+    DatasetManager dM( filename);
+    vector<PointNormalColor3fVectorCloud> axes =  Visualizer::createAxes();
 
-    canvas->pushPointSize();
-    canvas->setPointSize(1.0);
-    while( (msg=src.getMessage()) && ViewerCoreSharedQGL::isRunning()){
-      PointCloud2Message* cloud = dynamic_cast<PointCloud2Message*>(msg.get());
-      if (cloud) {
-        Point3fVectorCloud current_point_cloud;
-        cloud->getPointCloud(current_point_cloud);
-        canvas->pushColor();
-        canvas->setColor(Vector3f(0,0,0));
+    while( ViewerCoreSharedQGL::isRunning()){
+      PointNormalColor3fVectorCloud current_point_cloud= dM.readMessageFromDataset();
+      if( current_point_cloud.size()> 0){
         canvas->putPoints(current_point_cloud);
-        canvas->pushColor();
-        canvas->setColor(ColorPalette::color3fOrange());
-        canvas->putPoints( pointcloud_x_axis);
-        canvas->popAttribute();
-        canvas->pushColor();
-        canvas->setColor(ColorPalette::color3fGreen());
-        canvas->putPoints( pointcloud_y_axis);
-        canvas->popAttribute();
-        canvas->pushColor();
-        canvas->setColor(ColorPalette::color3fBlue());
-        canvas->putPoints( pointcloud_z_axis);
-        canvas->popAttribute();
+        Visualizer::drawAxes(canvas, axes);
         canvas->flush();
       }
     }
@@ -341,88 +195,38 @@ namespace Loam{
   void Visualizer::visualizeCleanedClouds( ViewerCanvasPtr first_canvas, ViewerCanvasPtr second_canvas, const  string & filename){
     const int num_rings =60;
     const int num_points_ring= 2000;
-    const float epsilon_radius= 0.2;
+    const float epsilon_radius= 0.15; //another good value is 0.2
     const int epsilon_times= 10;
     SphericalDepthImage sph_Image;
-    Point3fVectorCloud cleanedCloud;
-       
-    first_canvas->flush();
-    second_canvas->flush();
+    DatasetManager dM( filename);
 
-    int num_points_axes = 100;
-    Point3fVectorCloud pointcloud_x_axis;
-    Point3fVectorCloud pointcloud_y_axis;
-    Point3fVectorCloud pointcloud_z_axis;
-    pointcloud_x_axis.resize( num_points_axes);
-    pointcloud_y_axis.resize( num_points_axes);
-    pointcloud_z_axis.resize( num_points_axes);
-    float x = 0;float y = 0;float z = 0;
-    for (unsigned int i = 0; i < pointcloud_x_axis.size(); ++i) {
-      x += 0.1;
-      y += 0.1;
-      z += 0.1;
-      pointcloud_x_axis[i].coordinates()=Vector3f( x,0,0);
-      pointcloud_y_axis[i].coordinates()=Vector3f( 0,y,0);
-      pointcloud_z_axis[i].coordinates()=Vector3f( 0,0,z);
-    }
-    messages_registerTypes();
-    MessageFileSource src;
-    src.open(filename);
-    BaseSensorMessagePtr msg;
+    vector<PointNormalColor3fVectorCloud> axes =  Visualizer::createAxes();
 
-    first_canvas->pushPointSize();
-    first_canvas->setPointSize(1.0);
-    second_canvas->pushPointSize();
-    second_canvas->setPointSize(1.0);
-    
-    while( (msg=src.getMessage()) && ViewerCoreSharedQGL::isRunning()){
-      PointCloud2Message* cloud = dynamic_cast<PointCloud2Message*>(msg.get());
-      if (cloud) {
-        Point3fVectorCloud current_point_cloud;
-        cloud->getPointCloud(current_point_cloud);
-  
+    while( ViewerCoreSharedQGL::isRunning()){
+
+      PointNormalColor3fVectorCloud current_point_cloud= dM.readMessageFromDataset();
+      if( current_point_cloud.size()> 0){
+ 
         sph_Image= SphericalDepthImage(
             num_rings,num_points_ring,
             epsilon_radius, epsilon_times,
             current_point_cloud);
         sph_Image.removeFlatSurfaces();
-        cleanedCloud = sph_Image.getPointCloud();
 
-        first_canvas->pushColor();
-        first_canvas->setColor(Vector3f(0,0,0));
+        PointNormalColor3fVectorCloud cleanedCloud= sph_Image.getPointCloud();
+
         first_canvas->putPoints(cleanedCloud);
-        first_canvas->pushColor();
 
-        second_canvas->pushColor();
-        second_canvas->setColor(Vector3f(0,0,0));
         second_canvas->putPoints(current_point_cloud);
-        second_canvas->pushColor();
 
+        first_canvas->pushPointSize();
+        first_canvas->setPointSize(3.0);
+        second_canvas->pushPointSize();
+        second_canvas->setPointSize(3.0);
+        Visualizer::drawAxes( first_canvas, axes);
+        Visualizer::drawAxes( second_canvas, axes);
 
-        first_canvas->setColor(ColorPalette::color3fOrange());
-        first_canvas->putPoints( pointcloud_x_axis);
-        first_canvas->popAttribute();
-        first_canvas->pushColor();
-        first_canvas->setColor(ColorPalette::color3fGreen());
-        first_canvas->putPoints( pointcloud_y_axis);
-        first_canvas->popAttribute();
-        first_canvas->pushColor();
-        first_canvas->setColor(ColorPalette::color3fBlue());
-        first_canvas->putPoints( pointcloud_z_axis);
-        first_canvas->popAttribute();
         first_canvas->flush();
-
-        second_canvas->setColor(ColorPalette::color3fOrange());
-        second_canvas->putPoints( pointcloud_x_axis);
-        second_canvas->popAttribute();
-        second_canvas->pushColor();
-        second_canvas->setColor(ColorPalette::color3fGreen());
-        second_canvas->putPoints( pointcloud_y_axis);
-        second_canvas->popAttribute();
-        second_canvas->pushColor();
-        second_canvas->setColor(ColorPalette::color3fBlue());
-        second_canvas->putPoints( pointcloud_z_axis);
-        second_canvas->popAttribute();
         second_canvas->flush();
       }
     }
@@ -436,28 +240,12 @@ namespace Loam{
     std::vector<ScanPoint> cube_points =
       ScanPoint::generateCubeSampledScanPoints(center, length_edge, precision);
 
-    canvas->flush();
-    int num_points_axes = 100;
-    Point3fVectorCloud pointcloud_x_axis;
-    Point3fVectorCloud pointcloud_y_axis;
-    Point3fVectorCloud pointcloud_z_axis;
-    pointcloud_x_axis.resize( num_points_axes);
-    pointcloud_y_axis.resize( num_points_axes);
-    pointcloud_z_axis.resize( num_points_axes);
-    float x = 0;float y = 0;float z = 0;
-    for (unsigned int i = 0; i < pointcloud_x_axis.size(); ++i) {
-      x += 0.1;
-      y += 0.1;
-      z += 0.1;
-      pointcloud_x_axis[i].coordinates()=Vector3f( x,0,0);
-      pointcloud_y_axis[i].coordinates()=Vector3f( 0,y,0);
-      pointcloud_z_axis[i].coordinates()=Vector3f( 0,0,z);
-    }
- 
+    vector<PointNormalColor3fVectorCloud> axes =  Visualizer::createAxes();
+
+    //line creation
     const int num_line_points = 50;
     vector<ScanPoint> line_points;
     line_points.reserve(num_line_points);
-
     const Eigen::Vector3f line_start( 0, 2, -10); 
     Eigen::Vector3f line_curr_point = line_start; 
     const Eigen::Vector3f line_direction(0, 0, 0.4);
@@ -466,10 +254,11 @@ namespace Loam{
       line_points.push_back( p);
       line_curr_point+= line_direction;
     }
-    Point3fVectorCloud pointcloud_line;
+    PointNormalColor3fVectorCloud pointcloud_line;
     pointcloud_line.resize( num_line_points);
     for (unsigned int j = 0; j < pointcloud_line.size(); ++j) {
       pointcloud_line[j].coordinates()=line_points[j].getCoords();
+      pointcloud_line[j].color()=ColorPalette::color3fDarkCyan();
     }
     std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >  colors;
     colors.resize(64);
@@ -522,34 +311,11 @@ namespace Loam{
           }
         }
       }
-      canvas->popAttribute();
       canvas->pushPointSize();
       canvas->setPointSize(3.0);
-      //x_axis
-      canvas->pushColor();
-      canvas->setColor(ColorPalette::color3fOrange());
-      canvas->putPoints( pointcloud_x_axis);
-      canvas->popAttribute();
-      //y_axis
-      canvas->pushColor();
-      canvas->setColor(ColorPalette::color3fGreen());
-      canvas->putPoints( pointcloud_y_axis);
-      canvas->popAttribute();
-      //z_axis
-      canvas->pushColor();
-      canvas->setColor(ColorPalette::color3fBlue());
-      canvas->putPoints( pointcloud_z_axis);
-      canvas->popAttribute();
-      //line
-      canvas->pushColor();
-      canvas->setColor( Vector3f(0.f,0.5f,0.f));
+      Visualizer::drawAxes( canvas, axes);
       canvas->putPoints( pointcloud_line);
-      canvas->popAttribute();
-
-      canvas->popAttribute();
       canvas->flush();
     }
   }
-
-
 }

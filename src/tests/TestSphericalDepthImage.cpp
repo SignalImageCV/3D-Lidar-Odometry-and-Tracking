@@ -9,10 +9,9 @@ namespace Loam{
       SphericalDepthImage Sph_Image_1;
       SphericalDepthImage Sph_Image_2;
       SphericalDepthImage Sph_Image_3;
-      Point3fVectorCloud cloud_1;
-      Point3fVectorCloud cloud_2;
-      Point3fVectorCloud cloud_3;
-      
+      PointNormalColor3fVectorCloud cloud_1;
+      PointNormalColor3fVectorCloud cloud_2;
+      PointNormalColor3fVectorCloud cloud_3;
       
       void SetUp() override {
         cloud_1.resize(2);
@@ -50,7 +49,7 @@ namespace Loam{
   class SDIFixture_simple2Rings: public testing::Test {
     protected:
       SphericalDepthImage sph_Image;
-      Point3fVectorCloud cloud;
+      PointNormalColor3fVectorCloud cloud;
       
       
       void SetUp() override {
@@ -77,7 +76,7 @@ namespace Loam{
   class SDIFixture_forIndexImage: public testing::Test {
     protected:
       SphericalDepthImage sph_Image;
-      Point3fVectorCloud cloud;
+      PointNormalColor3fVectorCloud cloud;
       
       
       void SetUp() override{
@@ -170,7 +169,7 @@ namespace Loam{
 
   TEST_F( SDIFixture_forIndexImage, mapBuildIndexImage){
     sph_Image.buildIndexImage();
-    vector<vector<list< sphericalDepthPoint >>> index_image_result = sph_Image.getIndexImage();
+    vector<vector<list< DataPoint >>> index_image_result = sph_Image.getIndexImage();
     ASSERT_TRUE( index_image_result.size() > 0 );
     ASSERT_EQ( index_image_result.size(), 4 );
     ASSERT_TRUE( index_image_result[0].size() >0 );
@@ -287,7 +286,7 @@ namespace Loam{
   class SDIFixture_removeFlatSurfaces: public testing::Test {
     protected:
       SphericalDepthImage sph_Image;
-      Point3fVectorCloud cloud;
+      PointNormalColor3fVectorCloud cloud;
       
       
       void SetUp() override{
@@ -320,10 +319,10 @@ namespace Loam{
 
    TEST_F( SDIFixture_removeFlatSurfaces, removeFlatSurfacesFunc){
 
-    Point3fVectorCloud cloud_raw = sph_Image.getPointCloud();
+    PointNormalColor3fVectorCloud cloud_raw = sph_Image.getPointCloud();
     ASSERT_EQ( cloud_raw.size(), 7 );
     sph_Image.removeFlatSurfaces();
-    Point3fVectorCloud cloud_pruned = sph_Image.getPointCloud();
+    PointNormalColor3fVectorCloud cloud_pruned = sph_Image.getPointCloud();
     ASSERT_EQ( cloud_pruned.size(), 2 );
     }
 

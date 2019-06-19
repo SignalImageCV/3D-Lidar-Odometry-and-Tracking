@@ -2,7 +2,7 @@
 
 namespace Loam{
 
-  FeatureExtractor::FeatureExtractor( Point3fVectorCloud & t_cloud ):
+  FeatureExtractor::FeatureExtractor( PointNormalColor3fVectorCloud & t_cloud ):
     FeatureExtractorInterface( ),
     m_cloud( t_cloud) {};
 
@@ -16,8 +16,8 @@ namespace Loam{
 
 
 
-  float FeatureExtractor::computeSmoothness( const Point3fVectorCloud & cloud, const int index_point){
-    Point3f curr_p = cloud[index_point];
+  float FeatureExtractor::computeSmoothness( const PointNormalColor3fVectorCloud & cloud, const int index_point){
+    PointNormalColor3f curr_p = cloud[index_point];
     float range_scan_section_rad = M_PI/6;
 
     const float theta = atan2( curr_p.coordinates().y(), curr_p.coordinates().x());

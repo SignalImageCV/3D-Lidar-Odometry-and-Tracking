@@ -12,11 +12,10 @@
 
 
 #include <iostream>
+using namespace std;
+using namespace srrg2_core;
 
 namespace Loam{
-  using namespace std;
-  using namespace srrg2_core;
-
 
   class  FeatureExtractorInterface{
 

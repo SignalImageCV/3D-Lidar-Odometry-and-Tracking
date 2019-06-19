@@ -9,7 +9,7 @@ int main( int argc, char** argv){
   string filename = "/home/dinies/temp/trial/tuttty.boss";
   ViewerCoreSharedQGL viewer(argc, argv);
   ViewerCanvasPtr canvas = viewer.getCanvas("drawingCloud");
-  std::thread processing_thread(Visualizer::visualizeCloud, canvas, filename);
+  std::thread processing_thread(Visualizer::visualizeCloudSmoothness, canvas, filename);
   viewer.startViewerServer();
   processing_thread.join();
   return 0;

@@ -9,7 +9,7 @@ int main( int argc, char** argv){
   messages_registerTypes();
   ViewerCoreSharedQGL viewer(argc, argv);
   ViewerCanvasPtr canvas = viewer.getCanvas("viewer_test");
-  std::thread processing_thread( Visualizer::drawingSubrutine, canvas, std::string(argv[1]));
+  std::thread processing_thread( Visualizer::visualizeSubrutine, canvas, std::string(argv[1]));
   viewer.startViewerServer();
   processing_thread.join();
 
