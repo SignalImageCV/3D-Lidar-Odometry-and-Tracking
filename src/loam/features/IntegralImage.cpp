@@ -34,6 +34,23 @@ namespace Loam{
     return accumulator;
   }
 
+  IntegralCell IntegralImage::getCellInsideBoundaries(
+      const int t_rowMin,const int t_rowMax,
+      const int t_colMin,const int t_colMax){
+    //if(
+    //todo check if the rmin and cmin are such that ought to take all the part,
+    //check if they become negative if decremented
+
+
+
+    IntegralCell a;
+    IntegralCell e;
+    IntegralCell x;
+    IntegralCell y;
+    IntegralCell d = a + e - x - y;
+    return d;
+  }
+
 
   void IntegralImage::buildIntegMatrix(){
     for( int r = 0; r < m_integ_matrix.size(); ++r){

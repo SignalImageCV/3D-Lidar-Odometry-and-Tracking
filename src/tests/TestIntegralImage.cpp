@@ -133,8 +133,6 @@ namespace Loam{
     ASSERT_FALSE( cell_a != cell_b);
   }
 
- 
-
   TEST_F( IntegralImageFixture, basicContruction){
     IntegralImage integ_img = IntegralImage( cloud , index_image ); 
     integ_img.buildIntegMatrix();
@@ -184,5 +182,91 @@ namespace Loam{
     ASSERT_TRUE( integ_matrix[1][1] == cell_11);
   }
 
+  TEST_F( IntegralImageFixture, getCellInsideBounds){
+
+    IntegralImage integ_img = IntegralImage( cloud , index_image ); 
+    integ_img.buildIntegMatrix();
+
+    Eigen::Matrix3f m_00;
+    m_00 <<
+      0, 0, 0,
+      0, 0, 0,
+      0, 0, 0;
+    Eigen::Matrix3f m_00_01;
+    m_00_01 <<
+      18, 15, 18,
+      15, 13, 15,
+      18, 15, 18;
+    Eigen::Matrix3f m_00_10;
+    m_00_10 <<
+      4, 4, 4,
+      4, 4, 4,
+      4, 4, 4;
+    Eigen::Matrix3f m_11;
+    m_11 <<
+      4, 4, -4,
+      4, 4, -4,
+     -4, -4, 4;
+
+    Eigen::Matrix3f m_10_11 ;
+    m_10_11 <<
+      8, 8, 0,
+      8, 8, 0,
+      0, 0, 8;
+    Eigen::Matrix3f m_01_11;
+    m_01_11 <<
+      22, 19, 14,
+      19, 17, 11,
+      14, 11, 22;
+
+    Eigen::Matrix3f m_00_01_10_11 ;
+    m_00_01_10_11 <<
+      26, 23, 18,
+      23, 21, 15,
+      18, 15, 26;
+
+
+
+    IntegralCell cell_bounded_00 = IntegralCell(
+        Eigen::Vector3f( 0.,0.,0.),
+        m_00,
+        0);
+    IntegralCell cell_bounded_00_01 = IntegralCell(
+        Eigen::Vector3f( 6.,5.,6.),
+        m_00_01,
+        2);
+    IntegralCell cell_bounded_00_10 = IntegralCell(
+        Eigen::Vector3f( -2.,-2.,-2.),
+        m_00_10,
+        1);
+    IntegralCell cell_bounded_11 = IntegralCell(
+        Eigen::Vector3f( 2.,2.,-2.),
+        m_11,
+        1);
+
+    IntegralCell cell_bounded_10_11 = IntegralCell(
+        Eigen::Vector3f( 0.,0.,-4.),
+        m_10_11,
+        2);
+    IntegralCell cell_bounded_01_11 = IntegralCell(
+        Eigen::Vector3f( 8.,7.,4.),
+        m_01_11,
+        3);
+    IntegralCell cell_bounded_00_01_10_11 = IntegralCell(
+        Eigen::Vector3f( 6.,5.,2.),
+        m_00_01_10_11,
+        4);
+
+
+    ASSERT_TRUE( integ_img.getCellInsideBoundaries(0,0,0,0)  == cell_bounded_00);
+    ASSERT_TRUE( integ_img.getCellInsideBoundaries(0,0,0,1)  == cell_bounded_00_01);
+    ASSERT_TRUE( integ_img.getCellInsideBoundaries(0,0,1,1)  == cell_bounded_00_01);
+    ASSERT_TRUE( integ_img.getCellInsideBoundaries(0,1,0,0)  == cell_bounded_00_10);
+    ASSERT_TRUE( integ_img.getCellInsideBoundaries(1,1,0,0)  == cell_bounded_00_10);
+    ASSERT_TRUE( integ_img.getCellInsideBoundaries(1,1,1,1)  == cell_bounded_11);
+    ASSERT_TRUE( integ_img.getCellInsideBoundaries(1,1,0,1)  == cell_bounded_10_11);
+    ASSERT_TRUE( integ_img.getCellInsideBoundaries(0,1,1,1)  == cell_bounded_01_11);
+    ASSERT_TRUE( integ_img.getCellInsideBoundaries(0,1,0,1)  == cell_bounded_00_01_10_11);
+  }
 }
 

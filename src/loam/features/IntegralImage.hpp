@@ -21,8 +21,11 @@ namespace Loam{
       IntegralCell fetchPointSum(const int r,const int c);
 
       inline vector<vector<IntegralCell>> getIntegMat(){return m_integ_matrix;};
-
-
+      
+      IntegralCell getCellInsideBoundaries(
+        const int t_rowMin,const int t_rowMax,
+        const int t_colMin,const int t_colMax);
+ 
   };
 }
   
