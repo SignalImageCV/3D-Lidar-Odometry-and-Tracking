@@ -1,6 +1,7 @@
 catkin_add_gtest(test_runner 
   TestDatasetManager.cpp
   TestSphericalDepthImage.cpp
+  TestIntegralImage.cpp
   TestPoint3f.cpp
   TestDataPoint.cpp
   Starter.cpp

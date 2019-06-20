@@ -6,6 +6,7 @@ add_library( loam_library
   features/SphericalDepthImage.cpp
   features/FeatureExtractor.cpp
   features/IntegralImage.cpp
+  features/IntegralCell.cpp
   features/DataPoint.cpp
   )
 
