@@ -37,16 +37,31 @@ namespace Loam{
   IntegralCell IntegralImage::getCellInsideBoundaries(
       const int t_rowMin,const int t_rowMax,
       const int t_colMin,const int t_colMax){
-    //if(
-    //todo check if the rmin and cmin are such that ought to take all the part,
-    //check if they become negative if decremented
-
-
-
     IntegralCell a;
     IntegralCell e;
     IntegralCell x;
     IntegralCell y;
+    if( t_rowMin-1 < 0 and t_colMin-1 <0){
+      a = IntegralCell();
+      e = m_integ_matrix[t_rowMax][t_colMax];
+      x = IntegralCell();
+      y = IntegralCell();
+    }else if( t_rowMin-1 < 0){
+      a = IntegralCell();
+      e = m_integ_matrix[t_rowMax][t_colMax];
+      x = IntegralCell();
+      y = m_integ_matrix[t_rowMax][t_colMin-1];
+    }else if( t_colMin-1 < 0){
+      a = IntegralCell();
+      e = m_integ_matrix[t_rowMax][t_colMax];
+      x = m_integ_matrix[t_rowMin-1][t_colMax];
+      y = IntegralCell();
+    }else{
+      a = m_integ_matrix[t_rowMin-1][t_colMin-1];
+      e = m_integ_matrix[t_rowMax][t_colMax];
+      x = m_integ_matrix[t_rowMin-1][t_colMax];
+      y = m_integ_matrix[t_rowMax][t_colMin-1];
+    }
     IntegralCell d = a + e - x - y;
     return d;
   }

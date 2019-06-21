@@ -258,6 +258,7 @@ namespace Loam{
         4);
 
 
+
     ASSERT_TRUE( integ_img.getCellInsideBoundaries(0,0,0,0)  == cell_bounded_00);
     ASSERT_TRUE( integ_img.getCellInsideBoundaries(0,0,0,1)  == cell_bounded_00_01);
     ASSERT_TRUE( integ_img.getCellInsideBoundaries(0,0,1,1)  == cell_bounded_00_01);

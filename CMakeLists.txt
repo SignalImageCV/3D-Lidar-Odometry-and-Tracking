@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
   srrg2_qgl_viewport
  )
 
+set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
+
 include(${srrg_cmake_modules_INCLUDE_DIRS}/CMakeCompileOptions.txt)
 
 find_package(Eigen3 REQUIRED)
