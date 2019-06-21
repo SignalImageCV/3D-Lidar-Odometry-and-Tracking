@@ -19,14 +19,15 @@ namespace Loam{
     Vector2f min_max_elevation = extimateMinMaxElevation( t_cloud);
     m_min_elevation = min_max_elevation.x();
     m_max_elevation = min_max_elevation.y();
+    m_min_neighboors_for_normal = 2;
+    m_depth_differential_threshold = 1.;
   }
 
 
   void SphericalDepthImage::buildIndexImage(){
     if (m_cloud.size()>0){
       for (unsigned int i = 0; i<m_cloud.size(); ++i){
-        Vector3f spherical_coords = SphericalDepthImage::directMappingFunc( m_cloud[i].coordinates());
-        vector<int> coords = mapSphericalCoordsInIndexImage( spherical_coords.x(), spherical_coords.y()); 
+        vector<int> coords = mapCartesianCoordsInIndexImage( m_cloud[i].coordinates());
         DataPoint dp( i);
         m_index_image[coords[0]][coords[1]].push_back(dp);
       }
@@ -118,6 +119,233 @@ namespace Loam{
     m_cloud = cleanedCloud;
   }
 
+  bool SphericalDepthImage::expandBoundariesUp( DataPoint & t_starting_point, int & t_neighboors_count){
+
+    vector<int> curr_boundaries = t_starting_point.getBoundaries();
+
+    const int old_row_min = curr_boundaries[0];
+    const int old_row_max = curr_boundaries[1];
+    const int old_col_min = curr_boundaries[2];
+    const int old_col_max = curr_boundaries[3];
+    const int new_row_min = old_row_min - 1;
+    if( new_row_min < 0){
+      return false;
+    }
+
+    const Eigen::Vector3f starting_cartesian_coords =
+      m_cloud[t_starting_point.getIndexContainer()].coordinates();
+    const Eigen::Vector3f starting_spherical_coords =
+      SphericalDepthImage::directMappingFunc( starting_cartesian_coords);
+    bool hasExpanded= true;
+
+    int current_added_neighboors = 0;
+    for( unsigned int c = old_col_min; c < old_col_max; ++c){
+      for( auto & entry: m_index_image[new_row_min][c]){
+        const Eigen::Vector3f other_cartesian_coords =
+          m_cloud[ entry.getIndexContainer()].coordinates();
+        const Eigen::Vector3f other_spherical_coords =
+          SphericalDepthImage::directMappingFunc( other_cartesian_coords);
+
+        if ( abs( starting_spherical_coords.z() - other_spherical_coords.z()) >
+            m_depth_differential_threshold){
+          hasExpanded= false;
+        }
+        else{
+          ++current_added_neighboors;
+        }
+      }
+    }
+    if (hasExpanded){
+      vector<int> new_boundaries = { new_row_min, old_row_max, old_col_min, old_col_max };
+      t_starting_point.setBoundaries( new_boundaries);
+      t_neighboors_count += current_added_neighboors;
+    }
+    return hasExpanded;
+  }
+
+
+
+
+  bool SphericalDepthImage::expandBoundariesDown( DataPoint & t_starting_point,int & t_neighboors_count){
+
+    vector<int> curr_boundaries = t_starting_point.getBoundaries();
+
+    const int old_row_min = curr_boundaries[0];
+    const int old_row_max = curr_boundaries[1];
+    const int old_col_min = curr_boundaries[2];
+    const int old_col_max = curr_boundaries[3];
+    const int new_row_max = old_row_max + 1;
+    if( new_row_max >= m_index_image.size()){
+      return false;
+    }
+
+
+    const Eigen::Vector3f starting_cartesian_coords =
+      m_cloud[t_starting_point.getIndexContainer()].coordinates();
+    const Eigen::Vector3f starting_spherical_coords =
+      SphericalDepthImage::directMappingFunc( starting_cartesian_coords);
+    bool hasExpanded= true;
+
+    int current_added_neighboors = 0;
+    for( unsigned int c = old_col_min; c < old_col_max; ++c){
+      for( auto & entry: m_index_image[new_row_max][c]){
+        const Eigen::Vector3f other_cartesian_coords =
+          m_cloud[ entry.getIndexContainer()].coordinates();
+        const Eigen::Vector3f other_spherical_coords =
+          SphericalDepthImage::directMappingFunc( other_cartesian_coords);
+
+        if ( abs( starting_spherical_coords.z() - other_spherical_coords.z()) >
+            m_depth_differential_threshold){
+          hasExpanded= false;
+        }
+        else{
+          ++current_added_neighboors;
+        }
+      }
+    }
+    if (hasExpanded){
+      vector<int> new_boundaries = { old_row_min, new_row_max, old_col_min, old_col_max };
+      t_starting_point.setBoundaries( new_boundaries);
+      t_neighboors_count += current_added_neighboors;
+    }
+    return hasExpanded;
+  }
+
+
+  bool SphericalDepthImage::expandBoundariesLeft( DataPoint & t_starting_point,int & t_neighboors_count){
+
+    vector<int> curr_boundaries = t_starting_point.getBoundaries();
+
+    const int old_row_min = curr_boundaries[0];
+    const int old_row_max = curr_boundaries[1];
+    const int old_col_min = curr_boundaries[2];
+    const int old_col_max = curr_boundaries[3];
+    const int new_col_min = old_col_min - 1;
+    if( new_col_min <0 ){
+      return false;
+    }
+
+    const Eigen::Vector3f starting_cartesian_coords =
+      m_cloud[t_starting_point.getIndexContainer()].coordinates();
+    const Eigen::Vector3f starting_spherical_coords =
+      SphericalDepthImage::directMappingFunc( starting_cartesian_coords);
+    bool hasExpanded= true;
+
+    int current_added_neighboors = 0;
+    for( unsigned int r = old_row_min; r < old_row_max; ++r){
+      for( auto & entry: m_index_image[r][new_col_min]){
+        const Eigen::Vector3f other_cartesian_coords =
+          m_cloud[ entry.getIndexContainer()].coordinates();
+        const Eigen::Vector3f other_spherical_coords =
+          SphericalDepthImage::directMappingFunc( other_cartesian_coords);
+
+        if ( abs( starting_spherical_coords.z() - other_spherical_coords.z()) >
+            m_depth_differential_threshold){
+          hasExpanded= false;
+        }
+        else{
+          ++current_added_neighboors;
+        }
+      }
+    }
+    if (hasExpanded){
+      vector<int> new_boundaries = { old_row_min, old_row_max, new_col_min, old_col_max };
+      t_starting_point.setBoundaries( new_boundaries);
+      t_neighboors_count += current_added_neighboors;
+    }
+    return hasExpanded;
+  }
+
+
+  bool SphericalDepthImage::expandBoundariesRight( DataPoint & t_starting_point,int & t_neighboors_count){
+
+    vector<int> curr_boundaries = t_starting_point.getBoundaries();
+
+    const int old_row_min = curr_boundaries[0];
+    const int old_row_max = curr_boundaries[1];
+    const int old_col_min = curr_boundaries[2];
+    const int old_col_max = curr_boundaries[3];
+    const int new_col_max = old_col_max + 1;
+
+    if( new_col_max >= m_index_image[0].size()){
+      return 0;
+    }
+    const Eigen::Vector3f starting_cartesian_coords =
+      m_cloud[t_starting_point.getIndexContainer()].coordinates();
+    const Eigen::Vector3f starting_spherical_coords =
+      SphericalDepthImage::directMappingFunc( starting_cartesian_coords);
+    bool hasExpanded= true;
+    int current_added_neighboors = 0;
+
+    for( unsigned int r = old_row_min; r < old_row_max; ++r){
+      for( auto & entry: m_index_image[r][new_col_max]){
+        const Eigen::Vector3f other_cartesian_coords =
+          m_cloud[ entry.getIndexContainer()].coordinates();
+        const Eigen::Vector3f other_spherical_coords =
+          SphericalDepthImage::directMappingFunc( other_cartesian_coords);
+
+        if ( abs( starting_spherical_coords.z() - other_spherical_coords.z()) >
+            m_depth_differential_threshold){
+          hasExpanded= false;
+        }
+        else{
+          ++current_added_neighboors;
+        }
+      }
+    }
+    if (hasExpanded){
+      vector<int> new_boundaries = { old_row_min, old_row_max, old_col_min, new_col_max };
+      t_starting_point.setBoundaries( new_boundaries);
+      t_neighboors_count += current_added_neighboors;
+    }
+    return hasExpanded;
+  }
+
+
+
+  void SphericalDepthImage::discoverBoundaryIndexes(){
+
+    for (int row =0; row <m_index_image.size() ; ++row){
+      for (int col=0; col <m_index_image[0].size(); ++col){
+        for ( auto& entry : m_index_image[row][col]){
+          vector<int> curr_boundaries = { row, row, col, col};
+          entry.setBoundaries( curr_boundaries);
+          int neighboors_count = 0;
+          bool topFree = true;
+          bool downFree = true;
+          bool leftFree = true;
+          bool rightFree = true;
+          int direction_counter = 0;
+          int iteration_counter= 0;
+          const int iteration_limit = 100;
+          while (
+              neighboors_count < m_min_neighboors_for_normal and
+              (topFree or downFree or leftFree or rightFree) and
+              iteration_counter < iteration_limit
+              ){
+            switch( direction_counter % 4){
+              case(0):
+               topFree =  expandBoundariesUp( entry, neighboors_count);
+               break;
+              case(1):
+               downFree =  expandBoundariesDown( entry, neighboors_count);
+               break;
+              case(2):
+               leftFree =  expandBoundariesLeft( entry, neighboors_count);
+               break;
+              case(3):
+               rightFree =  expandBoundariesRight( entry, neighboors_count);
+               break;
+            }
+            ++direction_counter;
+            ++iteration_counter;
+            std::cerr<<iteration_counter;
+          }
+        }
+      }
+    }
+  }
+
   vector<int> SphericalDepthImage::mapSphericalCoordsInIndexImage(
       const float t_azimuth, const float t_elevation ){
 
@@ -138,6 +366,13 @@ namespace Loam{
     result.push_back(v);
     return result;
   }
+
+  vector<int> SphericalDepthImage::mapCartesianCoordsInIndexImage(
+      const Eigen::Vector3f & t_coords){
+    Vector3f spherical_coords = SphericalDepthImage::directMappingFunc( t_coords);
+    return  mapSphericalCoordsInIndexImage( spherical_coords.x(), spherical_coords.y()); 
+  }
+ 
 
   Vector2f SphericalDepthImage::extimateMinMaxElevation( const PointNormalColor3fVectorCloud & cloud){
     float min_elevation = 0;

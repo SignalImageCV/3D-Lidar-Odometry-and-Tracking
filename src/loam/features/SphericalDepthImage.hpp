@@ -20,6 +20,8 @@ namespace Loam{
        float m_min_elevation;
        float m_max_elevation;
        float m_epsilon_radius;
+       float m_depth_differential_threshold;
+       int m_min_neighboors_for_normal;
        int m_epsilon_times;
        PointNormalColor3fVectorCloud m_cloud;
 
@@ -41,16 +43,25 @@ namespace Loam{
       void removeFlatSurfaces();
       void markVerticalPoints();
       void removeNonVerticalPoints();
+      void discoverBoundaryIndexes();
+
+      bool expandBoundariesUp( DataPoint & t_starting_point,int & t_neighboors_count);
+      bool expandBoundariesDown( DataPoint & t_starting_point,int & t_neighboors_count);
+      bool expandBoundariesLeft( DataPoint & t_starting_point,int & t_neighboors_count);
+      bool expandBoundariesRight( DataPoint & t_starting_point,int & t_neighboors_count);
 
       vector<int> mapSphericalCoordsInIndexImage(
           const float t_azimuth, const float t_elevation);
+
+      vector<int> mapCartesianCoordsInIndexImage(
+          const Vector3f & t_coords);
  
       static Vector2f extimateMinMaxElevation( const PointNormalColor3fVectorCloud & cloud);
 
-      //they maps a point from cartesian coords in spherical ones
       static  Vector3f directMappingFunc(const Vector3f & t_cart_coords);
-      //  and from  spherical coords to cartesian ones
+
       static  Vector3f inverseMappingFunc(const Vector3f & t_spher_coords);
+
 
 
       inline const vector<vector<list<DataPoint>>> & getIndexImage(){ return m_index_image;};
@@ -61,6 +72,7 @@ namespace Loam{
 
       inline void setPointCloud( const PointNormalColor3fVectorCloud & t_cloud){ m_cloud = t_cloud;};
 
+      inline list<DataPoint> getListDataPointsAt( const int t_row, const int t_col){ return m_index_image[t_row][t_col];};
    };
 }
 
