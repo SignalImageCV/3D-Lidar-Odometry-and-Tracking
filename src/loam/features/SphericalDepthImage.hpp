@@ -3,13 +3,23 @@
 #include <srrg_messages/instances.h>
 
 #include "DataPoint.hpp"
+#include "IntegralImage.hpp"
 
 using namespace std;
 using namespace srrg2_core;
 
 
 namespace Loam{
-  
+
+  typedef struct sphericalImage_params_tag{
+     int num_vertical_rings;
+     int num_points_ring;
+     int epsilon_times;
+     float epsilon_radius;
+     float depth_differential_threshold;
+     int min_neighboors_for_normal;
+  }sphericalImage_params;
+
 
   class SphericalDepthImage {
      protected:
@@ -19,31 +29,33 @@ namespace Loam{
        int m_num_points_ring;
        float m_min_elevation;
        float m_max_elevation;
+       int m_epsilon_times;
        float m_epsilon_radius;
        float m_depth_differential_threshold;
        int m_min_neighboors_for_normal;
-       int m_epsilon_times;
        PointNormalColor3fVectorCloud m_cloud;
 
      public:
       SphericalDepthImage()= default;
 
       SphericalDepthImage(
-          int num_vertical_rings,
-          int num_points_ring,
-          float epsilon_radius,
-          int epsilon_times,
-          const PointNormalColor3fVectorCloud & cloud);
+          const PointNormalColor3fVectorCloud & cloud,
+          const sphericalImage_params t_params);
 
       ~SphericalDepthImage() = default;
+
+      void removeFlatSurfaces();
+      void collectNormals();
 
       void buildIndexImage();
       void resetIndexImage();
 
-      void removeFlatSurfaces();
       void markVerticalPoints();
       void removeNonVerticalPoints();
+
       void discoverBoundaryIndexes();
+      void removePointsWithoutNormal();
+      void computePointNormals();
 
       bool expandBoundariesUp( DataPoint & t_starting_point,int & t_neighboors_count);
       bool expandBoundariesDown( DataPoint & t_starting_point,int & t_neighboors_count);

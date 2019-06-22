@@ -2,26 +2,43 @@
 
 namespace Loam{
   SphericalDepthImage::SphericalDepthImage(
-          int num_vertical_rings,
-          int num_points_ring,
-          float epsilon_radius,
-          int epsilon_times,
-          const PointNormalColor3fVectorCloud  & t_cloud):
-  m_num_vertical_rings( num_vertical_rings),
-  m_num_points_ring( num_points_ring),
-  m_epsilon_radius( epsilon_radius),
-  m_epsilon_times( epsilon_times),
+          const PointNormalColor3fVectorCloud  & t_cloud,
+          const sphericalImage_params t_params
+          ):
+  m_num_vertical_rings( t_params.num_vertical_rings),
+  m_num_points_ring( t_params.num_points_ring),
+  m_epsilon_times( t_params.epsilon_times),
+  m_epsilon_radius( t_params.epsilon_radius),
+  m_depth_differential_threshold( t_params.depth_differential_threshold ),//1.;
+  m_min_neighboors_for_normal( t_params.min_neighboors_for_normal), //2;
   m_cloud( t_cloud){
-    m_index_image.resize( num_vertical_rings);
+    m_index_image.resize( t_params.num_vertical_rings);
     for ( auto & v : m_index_image){
-      v.resize( num_points_ring);
+      v.resize( t_params.num_points_ring);
     }
     Vector2f min_max_elevation = extimateMinMaxElevation( t_cloud);
     m_min_elevation = min_max_elevation.x();
     m_max_elevation = min_max_elevation.y();
-    m_min_neighboors_for_normal = 2;
-    m_depth_differential_threshold = 1.;
   }
+
+
+  void SphericalDepthImage::removeFlatSurfaces(){
+    buildIndexImage();
+    markVerticalPoints();
+    removeNonVerticalPoints();
+    resetIndexImage();
+    buildIndexImage();
+  }
+
+
+  void SphericalDepthImage::collectNormals(){
+    discoverBoundaryIndexes();
+    removePointsWithoutNormal();
+    resetIndexImage();
+    buildIndexImage();
+    computePointNormals();
+    
+ }
 
 
   void SphericalDepthImage::buildIndexImage(){
@@ -41,15 +58,6 @@ namespace Loam{
       }
     }
   }
-
-  void SphericalDepthImage::removeFlatSurfaces(){
-    buildIndexImage();
-    markVerticalPoints();
-    removeNonVerticalPoints();
-    resetIndexImage();
-    buildIndexImage();
-  }
-
 
   void SphericalDepthImage::markVerticalPoints(){
     for (unsigned int col= 0; col<m_index_image[0].size(); ++col){
@@ -97,7 +105,6 @@ namespace Loam{
     }
   }
 
-
   void SphericalDepthImage::removeNonVerticalPoints(){
     vector< int> indexes_vertical_points;
     indexes_vertical_points.reserve( m_cloud.size() );
@@ -115,6 +122,29 @@ namespace Loam{
     for( unsigned int i =0 ; i< cleanedCloud.size(); ++i){
       cleanedCloud[i].coordinates() = m_cloud[indexes_vertical_points[i]].coordinates();
       cleanedCloud[i].color() = m_cloud[indexes_vertical_points[i]].color();
+    }
+    m_cloud = cleanedCloud;
+  }
+
+
+
+  void SphericalDepthImage::removePointsWithoutNormal(){
+    vector< int> indexes_points_with_normal;
+    indexes_points_with_normal.reserve( m_cloud.size() );
+    for (unsigned int row =0; row <m_index_image.size() ; ++row){
+      for (unsigned int col=0; col <m_index_image[0].size(); ++col){
+        for ( auto& entry : m_index_image[row][col]){
+          if( entry.getHasNormal()){
+            indexes_points_with_normal.push_back( entry.getIndexContainer());
+          }
+        }
+      }
+    }
+    PointNormalColor3fVectorCloud cleanedCloud;
+    cleanedCloud.resize( indexes_points_with_normal.size());
+    for( unsigned int i =0 ; i< cleanedCloud.size(); ++i){
+      cleanedCloud[i].coordinates() = m_cloud[indexes_points_with_normal[i]].coordinates();
+      cleanedCloud[i].color() = m_cloud[indexes_points_with_normal[i]].color();
     }
     m_cloud = cleanedCloud;
   }
@@ -212,7 +242,7 @@ namespace Loam{
   }
 
 
-  bool SphericalDepthImage::expandBoundariesLeft( DataPoint & t_starting_point,int & t_neighboors_count){
+  bool SphericalDepthImage::expandBoundariesRight( DataPoint & t_starting_point,int & t_neighboors_count){
 
     vector<int> curr_boundaries = t_starting_point.getBoundaries();
 
@@ -257,7 +287,7 @@ namespace Loam{
   }
 
 
-  bool SphericalDepthImage::expandBoundariesRight( DataPoint & t_starting_point,int & t_neighboors_count){
+  bool SphericalDepthImage::expandBoundariesLeft( DataPoint & t_starting_point,int & t_neighboors_count){
 
     vector<int> curr_boundaries = t_starting_point.getBoundaries();
 
@@ -317,7 +347,7 @@ namespace Loam{
           bool rightFree = true;
           int direction_counter = 0;
           int iteration_counter= 0;
-          const int iteration_limit = 100;
+          const int iteration_limit = m_index_image.size()+ m_index_image[0].size() ;
           while (
               neighboors_count < m_min_neighboors_for_normal and
               (topFree or downFree or leftFree or rightFree) and
@@ -339,8 +369,37 @@ namespace Loam{
             }
             ++direction_counter;
             ++iteration_counter;
-            std::cerr<<iteration_counter;
           }
+          entry.setHasNormal(neighboors_count >=  m_min_neighboors_for_normal);
+        }
+      }
+    }
+  }
+
+  void  SphericalDepthImage::computePointNormals(){
+    IntegralImage integ_img = IntegralImage( m_cloud, m_index_image);
+    integ_img.buildIntegMatrix();
+    
+    for (int row =0; row <m_index_image.size() ; ++row){
+      for (int col=0; col <m_index_image[0].size(); ++col){
+        for ( auto& entry : m_index_image[row][col]){
+          int min_row = entry.getBoundaries()[0];
+          int max_row = entry.getBoundaries()[1];
+          int min_col = entry.getBoundaries()[2];
+          int max_col = entry.getBoundaries()[3];
+
+          IntegralCell cell = integ_img.getCellInsideBoundaries( min_row, max_row, min_col, max_col);
+          Eigen::Vector3f  p_sum = cell.getPsum();
+          Eigen::Matrix3f p_quad = cell.getPquad();
+          int p_num = cell.getPnum();
+
+          Eigen::Vector3f mu = p_sum/p_num;
+          Eigen::Matrix3f S = p_quad/p_num;
+          Eigen::Matrix3f sigma = S - mu.transpose() * mu;
+          Eigen::JacobiSVD<MatrixXf> svd(sigma);
+          Eigen::Matrix3f R = svd.matrixU();
+          Eigen::Vector3f smallestEigenVec= R.row(2);
+          m_cloud[ entry.getIndexContainer()].normal() = smallestEigenVec;
         }
       }
     }

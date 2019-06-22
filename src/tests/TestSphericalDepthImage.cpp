@@ -64,10 +64,26 @@ namespace Loam{
         const float epsilon_radius= 2;
         const int epsilon_times= 3;
      
+  typedef struct sphericalImage_params_tag{
+     int num_vertical_rings;
+     int num_points_ring;
+     float epsilon_radius;
+     int epsilon_times;
+     int min_neighboors_for_normal;
+     float depth_differential_threshold;
+  }sphericalImage_params;
+
+  //todo continue to use param struct dor every spherical image initialization
+ const  sphericalImage_params  params {
+    6, //num_rings
+    24, //num_points_ring
+    3, //epsilon_times
+    2., //epsilon_radius
+    1., //depth_differential_thresh
+    2}; // min_neighboors_for_normal
+
         sph_Image= SphericalDepthImage(
-            num_rings,num_points_ring,
-            epsilon_radius, epsilon_times,
-            cloud);
+            cloud,params );
       }
    
     };
@@ -199,11 +215,10 @@ namespace Loam{
     ASSERT_EQ( index_image_result[3][18].size(),1 );
     ASSERT_EQ( index_image_result[2][18].size(),0 );
     ASSERT_EQ( index_image_result[3][19].size(),0 );
+
   }
 
-
   TEST( SphericalDepthImage, directMapping){
- 
     Vector3f cartesian_1 = Vector3f( 1./2, 0, -sqrt(3)/2);
     Vector3f spherical_truth_1 = Vector3f( 0, 5*M_PI/6, 1);
     Vector3f result_1 = SphericalDepthImage::directMappingFunc(cartesian_1 );
@@ -240,8 +255,8 @@ namespace Loam{
     ASSERT_NEAR( spherical_truth_5.x(), result_5.x(), 1e-3);
     ASSERT_NEAR( spherical_truth_5.y(), result_5.y(), 1e-3);
     ASSERT_NEAR( spherical_truth_5.z(), result_5.z(), 1e-3);
- }
 
+  }
 
   TEST( SphericalDepthImage, inverseMapping){
     Vector3f spherical_1= Vector3f( 0, 5*M_PI/6, 1);
@@ -279,7 +294,6 @@ namespace Loam{
     ASSERT_NEAR(cartesian_truth_5.x(), result_5.x(), 1e-3);
     ASSERT_NEAR(cartesian_truth_5.y(), result_5.y(), 1e-3);
     ASSERT_NEAR(cartesian_truth_5.z(), result_5.z(), 1e-3);
- 
 
   }
 
@@ -317,14 +331,14 @@ namespace Loam{
       }
     };
 
-   TEST_F( SDIFixture_removeFlatSurfaces, removeFlatSurfacesFunc){
+  TEST_F( SDIFixture_removeFlatSurfaces, removeFlatSurfacesFunc){
 
     PointNormalColor3fVectorCloud cloud_raw = sph_Image.getPointCloud();
     ASSERT_EQ( cloud_raw.size(), 7 );
     sph_Image.removeFlatSurfaces();
     PointNormalColor3fVectorCloud cloud_pruned = sph_Image.getPointCloud();
     ASSERT_EQ( cloud_pruned.size(), 2 );
-    }
+   }
   
   class SDIFixture_normalComputation: public testing::Test {
     protected:
@@ -384,62 +398,57 @@ namespace Loam{
       }
     };
 
-    TEST_F( SDIFixture_normalComputation, findBoundariesHorizontalLine){
-      sph_Image_horizontal.buildIndexImage();
-      sph_Image_horizontal.discoverBoundaryIndexes();
+  TEST_F( SDIFixture_normalComputation, findBoundariesHorizontalLine){
+    sph_Image_horizontal.buildIndexImage();
+    sph_Image_horizontal.discoverBoundaryIndexes();
 
-      vector<int> indexes_starting_point=  sph_Image_horizontal.mapCartesianCoordsInIndexImage(cloud_horizontal[0].coordinates());
+    vector<int> indexes_starting_point=  sph_Image_horizontal.mapCartesianCoordsInIndexImage(cloud_horizontal[0].coordinates());
 
-      vector<int> indexes_first_point_in_boundaries =  sph_Image_horizontal.mapCartesianCoordsInIndexImage(cloud_horizontal[3].coordinates());
-      int index_first_column_in_boundaries = indexes_first_point_in_boundaries[1];
-      std::cerr<< "i f p i"<< indexes_first_point_in_boundaries[0]<<"\n";
-      std::cerr<< "i f p i"<< indexes_first_point_in_boundaries[1]<<"\n";
-      
-      vector<int> indexes_first_point_out_boundaries =  sph_Image_horizontal.mapCartesianCoordsInIndexImage(cloud_horizontal[4].coordinates());
-      int index_first_column_out_boundaries = indexes_first_point_out_boundaries[1];
-      std::cerr<< "i f p o"<< indexes_first_point_out_boundaries[0]<<"\n";
-      std::cerr<< "i f p o"<< indexes_first_point_out_boundaries[1]<<"\n";
-   
-      list<DataPoint>  list = sph_Image_horizontal.getListDataPointsAt(indexes_starting_point[0],indexes_starting_point[1]);
+    vector<int> indexes_first_point_in_boundaries =  sph_Image_horizontal.mapCartesianCoordsInIndexImage(cloud_horizontal[3].coordinates());
+    int index_first_column_in_boundaries = indexes_first_point_in_boundaries[1];
+    vector<int> indexes_first_point_out_boundaries =  sph_Image_horizontal.mapCartesianCoordsInIndexImage(cloud_horizontal[4].coordinates());
+    int index_first_column_out_boundaries = indexes_first_point_out_boundaries[1];
+  
+    list<DataPoint>  list = sph_Image_horizontal.getListDataPointsAt(indexes_starting_point[0],indexes_starting_point[1]);
 
 
-      ASSERT_EQ( list.size(), 1 );
-      if( list.size() ==1){
-        DataPoint starting_point = list.front();
-        vector<int> bounds = starting_point.getBoundaries();
+    ASSERT_EQ( list.size(), 1 );
+    if( list.size() ==1){
+      DataPoint starting_point = list.front();
+      vector<int> bounds = starting_point.getBoundaries();
 
-        ASSERT_EQ( bounds[2] , index_first_column_in_boundaries );
-        ASSERT_EQ( bounds[3] , index_first_column_out_boundaries -1);
-     }
-  }
-
-    TEST_F( SDIFixture_normalComputation, findBoundariesVerticalLine){
-      sph_Image_vertical.buildIndexImage();
-      sph_Image_vertical.discoverBoundaryIndexes();
-
-      vector<int> indexes_starting_point=  sph_Image_vertical.mapCartesianCoordsInIndexImage(cloud_vertical[0].coordinates());
-
-      vector<int> indexes_last_point_out_boundaries =  sph_Image_vertical.mapCartesianCoordsInIndexImage(cloud_vertical[4].coordinates());
-      int index_last_row_out_boundaries = indexes_last_point_out_boundaries[0];
-      std::cerr<< "i l p o"<< indexes_last_point_out_boundaries[0]<<"\n";
-      std::cerr<< "i l p o"<< indexes_last_point_out_boundaries[1]<<"\n";
- 
-      vector<int> indexes_last_point_in_boundaries =  sph_Image_vertical.mapCartesianCoordsInIndexImage(cloud_vertical[3].coordinates());
-      int index_last_row_in_boundaries = indexes_last_point_in_boundaries[0];
-      std::cerr<< "i l p i"<< indexes_last_point_in_boundaries[0]<<"\n";
-      std::cerr<< "i l p i"<< indexes_last_point_in_boundaries[1]<<"\n";
- 
-
-      list<DataPoint>  list = sph_Image_vertical.getListDataPointsAt(indexes_starting_point[0],indexes_starting_point[1]);
-
-      ASSERT_EQ( list.size(), 1 );
-      if( list.size() ==1){
-        DataPoint starting_point = list.front();
-        vector<int> bounds = starting_point.getBoundaries();
-
-        ASSERT_EQ( bounds[0] , index_last_row_out_boundaries+1);
-        ASSERT_EQ( bounds[1] , index_last_row_in_boundaries);
+      ASSERT_EQ( bounds[2] , index_first_column_in_boundaries );
+      ASSERT_EQ( bounds[3] , index_first_column_out_boundaries -1);
     }
+ }
+
+  TEST_F( SDIFixture_normalComputation, findBoundariesVerticalLine){
+    sph_Image_vertical.buildIndexImage();
+    sph_Image_vertical.discoverBoundaryIndexes();
+
+    vector<int> indexes_starting_point=  sph_Image_vertical.mapCartesianCoordsInIndexImage(cloud_vertical[0].coordinates());
+
+    vector<int> indexes_last_point_out_boundaries =  sph_Image_vertical.mapCartesianCoordsInIndexImage(cloud_vertical[4].coordinates());
+    int index_last_row_out_boundaries = indexes_last_point_out_boundaries[0];
+
+    vector<int> indexes_last_point_in_boundaries =  sph_Image_vertical.mapCartesianCoordsInIndexImage(cloud_vertical[3].coordinates());
+    int index_last_row_in_boundaries = indexes_last_point_in_boundaries[0];
+
+    list<DataPoint>  list = sph_Image_vertical.getListDataPointsAt(indexes_starting_point[0],indexes_starting_point[1]);
+
+    ASSERT_EQ( list.size(), 1 );
+    if( list.size() ==1){
+      DataPoint starting_point = list.front();
+      vector<int> bounds = starting_point.getBoundaries();
+
+      ASSERT_EQ( bounds[0] , index_last_row_out_boundaries+1);
+      ASSERT_EQ( bounds[1] , index_last_row_in_boundaries);
+    }
+    sph_Image_vertical.removePointsWithoutNormal();
+    sph_Image_vertical.resetIndexImage();
+    sph_Image_vertical.buildIndexImage();
+    ASSERT_EQ( sph_Image_vertical.getPointCloud().size(), 3);
   }
+
 }
 
