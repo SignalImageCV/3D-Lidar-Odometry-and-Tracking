@@ -17,27 +17,27 @@ namespace Loam{
     m_max_elevation = min_max_elevation.y();
   }
 
+  void SphericalDepthImage::executeOperations(){
+    removeFlatSurfaces();
+    collectNormals();
+  }
 
   void SphericalDepthImage::removeFlatSurfaces(){
-    buildIndexImage();
+    initializeIndexImage();
     markVerticalPoints();
     removeNonVerticalPoints();
-    resetIndexImage();
-    buildIndexImage();
   }
 
 
   void SphericalDepthImage::collectNormals(){
     discoverBoundaryIndexes();
     removePointsWithoutNormal();
-    resetIndexImage();
-    buildIndexImage();
     computePointNormals();
     
  }
 
 
-  void SphericalDepthImage::buildIndexImage(){
+  void SphericalDepthImage::initializeIndexImage(){
     if (m_cloud.size()>0){
       for (unsigned int i = 0; i<m_cloud.size(); ++i){
         vector<int> coords = mapCartesianCoordsInIndexImage( m_cloud[i].coordinates());
@@ -102,47 +102,80 @@ namespace Loam{
   }
 
   void SphericalDepthImage::removeNonVerticalPoints(){
-    vector< int> indexes_vertical_points;
-    indexes_vertical_points.reserve( m_cloud.size() );
+
+    vector<vector< list< DataPoint >>> new_index_img;
+    new_index_img.resize( m_params.num_vertical_rings);
+    for ( auto & v : new_index_img){
+      v.resize( m_params.num_points_ring);
+    }
+   
+    vector< PointNormalColor3f > onlyVerticalPoints; 
+    onlyVerticalPoints.reserve( m_cloud.size());
+    int index_container = 0;
+
     for (unsigned int row =0; row <m_index_image.size() ; ++row){
       for (unsigned int col=0; col <m_index_image[0].size(); ++col){
         for ( auto& entry : m_index_image[row][col]){
           if( entry.getIsVertical()){
-            indexes_vertical_points.push_back( entry.getIndexContainer());
+            DataPoint copyOfEntry = DataPoint(entry);
+            copyOfEntry.setIndexContainer( index_container);
+            onlyVerticalPoints.push_back(m_cloud[entry.getIndexContainer()]);
+            new_index_img[row][col].push_back( copyOfEntry);
+            ++index_container;
           }
         }
       }
     }
+    
     PointNormalColor3fVectorCloud cleanedCloud;
-    cleanedCloud.resize( indexes_vertical_points.size());
+    cleanedCloud.resize( onlyVerticalPoints.size());
     for( unsigned int i =0 ; i< cleanedCloud.size(); ++i){
-      cleanedCloud[i].coordinates() = m_cloud[indexes_vertical_points[i]].coordinates();
-      cleanedCloud[i].color() = m_cloud[indexes_vertical_points[i]].color();
+      cleanedCloud[i].coordinates() = onlyVerticalPoints[i].coordinates();
+      cleanedCloud[i].color() = onlyVerticalPoints[i].color();
+      cleanedCloud[i].normal() = onlyVerticalPoints[i].normal();
     }
     m_cloud = cleanedCloud;
+    m_index_image = new_index_img;
   }
 
 
 
   void SphericalDepthImage::removePointsWithoutNormal(){
-    vector< int> indexes_points_with_normal;
-    indexes_points_with_normal.reserve( m_cloud.size() );
+
+    vector<vector< list< DataPoint >>> new_index_img;
+    new_index_img.resize( m_params.num_vertical_rings);
+    for ( auto & v : new_index_img){
+      v.resize( m_params.num_points_ring);
+    }
+   
+    vector< PointNormalColor3f > pointsWithNormals; 
+    pointsWithNormals.reserve( m_cloud.size());
+    int index_container = 0;
+
     for (unsigned int row =0; row <m_index_image.size() ; ++row){
       for (unsigned int col=0; col <m_index_image[0].size(); ++col){
         for ( auto& entry : m_index_image[row][col]){
           if( entry.getHasNormal()){
-            indexes_points_with_normal.push_back( entry.getIndexContainer());
+            DataPoint copyOfEntry = DataPoint(entry);
+            copyOfEntry.setIndexContainer( index_container);
+            pointsWithNormals.push_back(m_cloud[entry.getIndexContainer()]);
+            new_index_img[row][col].push_back( copyOfEntry);
+            ++index_container;
           }
         }
       }
     }
+    
     PointNormalColor3fVectorCloud cleanedCloud;
-    cleanedCloud.resize( indexes_points_with_normal.size());
+    cleanedCloud.resize( pointsWithNormals.size());
     for( unsigned int i =0 ; i< cleanedCloud.size(); ++i){
-      cleanedCloud[i].coordinates() = m_cloud[indexes_points_with_normal[i]].coordinates();
-      cleanedCloud[i].color() = m_cloud[indexes_points_with_normal[i]].color();
+      cleanedCloud[i].coordinates() = pointsWithNormals[i].coordinates();
+      cleanedCloud[i].color() = pointsWithNormals[i].color();
+      cleanedCloud[i].normal() = pointsWithNormals[i].normal();
     }
     m_cloud = cleanedCloud;
+    m_index_image = new_index_img;
+
   }
 
   bool SphericalDepthImage::expandBoundariesUp( DataPoint & t_starting_point, int & t_neighboors_count){
@@ -392,7 +425,8 @@ namespace Loam{
           Eigen::Vector3f mu = p_sum/p_num;
           Eigen::Matrix3f S = p_quad/p_num;
           Eigen::Matrix3f sigma = S - mu * mu.transpose();
-          Eigen::JacobiSVD<MatrixXf> svd(sigma);
+          Eigen::JacobiSVD<Eigen::Matrix3f> svd(sigma, Eigen::ComputeFullU | Eigen::ComputeFullV);
+
           Eigen::Matrix3f R = svd.matrixU();
           Eigen::Vector3f smallestEigenVec= R.row(2);
           m_cloud[ entry.getIndexContainer()].normal() = smallestEigenVec;

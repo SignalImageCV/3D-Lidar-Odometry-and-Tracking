@@ -20,9 +20,12 @@ namespace Loam{
 
       static void visualizeSubrutine(ViewerCanvasPtr canvas, const std::string& filename);
 
+
       static void visualizeAxes(ViewerCanvasPtr canvas);
 
       static void visualizeCondition( ViewerCanvasPtr canvas);
+
+      static void visualizePointsWithNormals(ViewerCanvasPtr canvas);
 
       static void visualizeSphere(ViewerCanvasPtr canvas,const string & filename);
 
@@ -31,6 +34,9 @@ namespace Loam{
       static void visualizeFullClouds( ViewerCanvasPtr canvas, const  string & filename);
 
       static void visualizeCleanedClouds(ViewerCanvasPtr first_canvas,
+          ViewerCanvasPtr second_canvas, const  string & filename);
+
+      static void visualizeCleanedWithNormals(ViewerCanvasPtr first_canvas,
           ViewerCanvasPtr second_canvas, const  string & filename);
 
       static void drawingSampledSmoothness( ViewerCanvasPtr canvas);

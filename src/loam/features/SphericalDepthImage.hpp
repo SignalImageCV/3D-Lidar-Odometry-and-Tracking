@@ -64,10 +64,13 @@ namespace Loam{
 
       ~SphericalDepthImage() = default;
 
+      void executeOperations();
+
       void removeFlatSurfaces();
       void collectNormals();
 
-      void buildIndexImage();
+
+      void initializeIndexImage();
       void resetIndexImage();
 
       void markVerticalPoints();

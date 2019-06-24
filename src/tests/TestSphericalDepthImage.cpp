@@ -163,8 +163,8 @@ namespace Loam{
 
   }
 
-  TEST_F( SDIFixture_forIndexImage, mapBuildIndexImage){
-    sph_Image.buildIndexImage();
+  TEST_F( SDIFixture_forIndexImage, mapInitializeIndexImage){
+    sph_Image.initializeIndexImage();
     vector<vector<list< DataPoint >>> index_image_result = sph_Image.getIndexImage();
     ASSERT_TRUE( index_image_result.size() > 0 );
     ASSERT_EQ( index_image_result.size(), 4 );
@@ -379,7 +379,7 @@ namespace Loam{
     };
 
   TEST_F( SDIFixture_normalComputation, findBoundariesHorizontalLine){
-    sph_Image_horizontal.buildIndexImage();
+    sph_Image_horizontal.initializeIndexImage();
     sph_Image_horizontal.discoverBoundaryIndexes();
 
     vector<int> indexes_starting_point=  sph_Image_horizontal.mapCartesianCoordsInIndexImage(cloud_horizontal[0].coordinates());
@@ -403,7 +403,7 @@ namespace Loam{
  }
 
   TEST_F( SDIFixture_normalComputation, findBoundariesVerticalLine){
-    sph_Image_vertical.buildIndexImage();
+    sph_Image_vertical.initializeIndexImage();
     sph_Image_vertical.discoverBoundaryIndexes();
 
     vector<int> indexes_starting_point=  sph_Image_vertical.mapCartesianCoordsInIndexImage(cloud_vertical[0].coordinates());
@@ -425,8 +425,6 @@ namespace Loam{
       ASSERT_EQ( bounds[1] , index_last_row_in_boundaries);
     }
     sph_Image_vertical.removePointsWithoutNormal();
-    sph_Image_vertical.resetIndexImage();
-    sph_Image_vertical.buildIndexImage();
     ASSERT_EQ( sph_Image_vertical.getPointCloud().size(), 3);
   }
 

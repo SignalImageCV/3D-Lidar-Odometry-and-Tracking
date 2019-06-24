@@ -122,6 +122,35 @@ namespace Loam{
     }
   }
 
+  void Visualizer::visualizePointsWithNormals(ViewerCanvasPtr canvas){
+    vector<PointNormalColor3fVectorCloud> axes = Visualizer::createAxes();
+
+    const int num_line_points = 10;
+    vector<ScanPoint> line_points;
+    line_points.reserve(num_line_points);
+    const Eigen::Vector3f line_start( 0, 2, -10); 
+    Eigen::Vector3f line_curr_point = line_start; 
+    const Eigen::Vector3f line_direction(0, 0, 0.4);
+    const Eigen::Vector3f normal(0., -1., 0.);
+    for (unsigned int i = 0; i < num_line_points; ++i) {
+      ScanPoint p( 0, i, line_curr_point);
+      line_points.push_back( p);
+      line_curr_point+= line_direction;
+    }
+    PointNormalColor3fVectorCloud pointcloud_line;
+    pointcloud_line.resize( num_line_points);
+    for (unsigned int j = 0; j < pointcloud_line.size(); ++j) {
+      pointcloud_line[j].coordinates()=line_points[j].getCoords();
+      pointcloud_line[j].color()=ColorPalette::color3fDarkCyan();
+      pointcloud_line[j].normal()=normal;
+    }
+     while(  ViewerCoreSharedQGL::isRunning()){
+      canvas->putPoints(pointcloud_line);
+      Visualizer::drawAxes( canvas, axes);
+      canvas->flush();
+    }
+  }
+
   void Visualizer::visualizeSphere( ViewerCanvasPtr canvas, const  string & filename){
     DatasetManager dM( filename);
     vector<PointNormalColor3fVectorCloud> axes =  Visualizer::createAxes();
@@ -234,6 +263,52 @@ namespace Loam{
       }
     }
   }
+
+  void Visualizer::visualizeCleanedWithNormals(ViewerCanvasPtr first_canvas,
+          ViewerCanvasPtr second_canvas, const  string & filename){
+
+    const sphericalImage_params params(
+      60, //num_vertical_rings
+      2000, //num_points_ring
+      10, //epsilon_times
+      0.15, //epsilon_radius
+      0.1, //depth_differential_threshold
+      8  //min_neighboors_for_normal
+    );
+        
+    SphericalDepthImage sph_Image;
+    DatasetManager dM( filename);
+
+    vector<PointNormalColor3fVectorCloud> axes =  Visualizer::createAxes();
+
+    while( ViewerCoreSharedQGL::isRunning()){
+
+      PointNormalColor3fVectorCloud current_point_cloud= dM.readMessageFromDataset();
+      if( current_point_cloud.size()> 0){
+
+ 
+        sph_Image= SphericalDepthImage(current_point_cloud,params);
+        sph_Image.executeOperations();
+
+        PointNormalColor3fVectorCloud resulting_cloud= sph_Image.getPointCloud();
+
+        first_canvas->putPoints(resulting_cloud);
+
+        second_canvas->putPoints(current_point_cloud);
+
+        first_canvas->pushPointSize();
+        first_canvas->setPointSize(3.0);
+        second_canvas->pushPointSize();
+        second_canvas->setPointSize(3.0);
+        Visualizer::drawAxes( first_canvas, axes);
+        Visualizer::drawAxes( second_canvas, axes);
+
+        first_canvas->flush();
+        second_canvas->flush();
+      }
+    }
+  }
+
 
 
   void Visualizer::drawingSampledSmoothness( ViewerCanvasPtr  canvas){

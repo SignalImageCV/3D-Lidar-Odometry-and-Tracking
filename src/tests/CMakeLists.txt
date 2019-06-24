@@ -4,6 +4,7 @@ catkin_add_gtest(test_runner
   TestIntegralImage.cpp
   TestPoint3f.cpp
   TestDataPoint.cpp
+  TestEigenSvd.cpp
   Starter.cpp
   )
 
@@ -133,4 +134,19 @@ target_link_libraries(test_drawVerticalPoints
   ${catkin_LIBRARIES}
   pthread
   )
+
+add_executable(test_drawNormals
+  TestDrawNormals.cpp
+  )
+target_link_libraries(test_drawNormals
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  ${QGLViewer_LIBRARIES}
+  ${catkin_LIBRARIES}
+  pthread
+  )
+
 

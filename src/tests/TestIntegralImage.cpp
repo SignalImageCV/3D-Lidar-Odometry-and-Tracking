@@ -32,7 +32,7 @@ namespace Loam{
         );
      
         SphericalDepthImage  sph_Image = SphericalDepthImage(cloud,params);
-        sph_Image.buildIndexImage();
+        sph_Image.initializeIndexImage();
         index_image = sph_Image.getIndexImage();
       }
     };
