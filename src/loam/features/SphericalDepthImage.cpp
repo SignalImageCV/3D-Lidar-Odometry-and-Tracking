@@ -5,13 +5,9 @@ namespace Loam{
           const PointNormalColor3fVectorCloud  & t_cloud,
           const sphericalImage_params t_params
           ):
-  m_num_vertical_rings( t_params.num_vertical_rings),
-  m_num_points_ring( t_params.num_points_ring),
-  m_epsilon_times( t_params.epsilon_times),
-  m_epsilon_radius( t_params.epsilon_radius),
-  m_depth_differential_threshold( t_params.depth_differential_threshold ),//1.;
-  m_min_neighboors_for_normal( t_params.min_neighboors_for_normal), //2;
-  m_cloud( t_cloud){
+  m_cloud( t_cloud),
+  m_params( t_params)
+  {
     m_index_image.resize( t_params.num_vertical_rings);
     for ( auto & v : m_index_image){
       v.resize( t_params.num_points_ring);
@@ -76,7 +72,7 @@ namespace Loam{
                 float x_curr = curr_coords[0];
                 float y_curr = curr_coords[1];
                 float distance = sqrt( pow( x_ref - x_curr, 2)+ pow( y_ref - y_curr, 2));
-                if( distance < m_epsilon_radius){
+                if( distance < m_params.epsilon_radius){
                   ++num_points_falling_in_projection;
                   vector<int> curr_index;
                   curr_index.reserve(3);
@@ -88,7 +84,7 @@ namespace Loam{
                 ++index_in_list;
               }
             }
-            if( num_points_falling_in_projection >= m_epsilon_times){
+            if( num_points_falling_in_projection >= m_params.epsilon_times){
               for( auto & indexes: curr_indexes){
                 int counter = 0;
                 for( auto & p: m_index_image[indexes[0]][indexes[1]]){
@@ -177,7 +173,7 @@ namespace Loam{
           SphericalDepthImage::directMappingFunc( other_cartesian_coords);
 
         if ( abs( starting_spherical_coords.z() - other_spherical_coords.z()) >
-            m_depth_differential_threshold){
+            m_params.depth_differential_threshold){
           hasExpanded= false;
         }
         else{
@@ -225,7 +221,7 @@ namespace Loam{
           SphericalDepthImage::directMappingFunc( other_cartesian_coords);
 
         if ( abs( starting_spherical_coords.z() - other_spherical_coords.z()) >
-            m_depth_differential_threshold){
+            m_params.depth_differential_threshold){
           hasExpanded= false;
         }
         else{
@@ -270,7 +266,7 @@ namespace Loam{
           SphericalDepthImage::directMappingFunc( other_cartesian_coords);
 
         if ( abs( starting_spherical_coords.z() - other_spherical_coords.z()) >
-            m_depth_differential_threshold){
+           m_params.depth_differential_threshold ){
           hasExpanded= false;
         }
         else{
@@ -315,7 +311,7 @@ namespace Loam{
           SphericalDepthImage::directMappingFunc( other_cartesian_coords);
 
         if ( abs( starting_spherical_coords.z() - other_spherical_coords.z()) >
-            m_depth_differential_threshold){
+            m_params.depth_differential_threshold ){
           hasExpanded= false;
         }
         else{
@@ -349,7 +345,7 @@ namespace Loam{
           int iteration_counter= 0;
           const int iteration_limit = m_index_image.size()+ m_index_image[0].size() ;
           while (
-              neighboors_count < m_min_neighboors_for_normal and
+              neighboors_count <  m_params.min_neighboors_for_normal and
               (topFree or downFree or leftFree or rightFree) and
               iteration_counter < iteration_limit
               ){
@@ -370,7 +366,7 @@ namespace Loam{
             ++direction_counter;
             ++iteration_counter;
           }
-          entry.setHasNormal(neighboors_count >=  m_min_neighboors_for_normal);
+          entry.setHasNormal(neighboors_count >=  m_params.min_neighboors_for_normal);
         }
       }
     }
@@ -395,7 +391,7 @@ namespace Loam{
 
           Eigen::Vector3f mu = p_sum/p_num;
           Eigen::Matrix3f S = p_quad/p_num;
-          Eigen::Matrix3f sigma = S - mu.transpose() * mu;
+          Eigen::Matrix3f sigma = S - mu * mu.transpose();
           Eigen::JacobiSVD<MatrixXf> svd(sigma);
           Eigen::Matrix3f R = svd.matrixU();
           Eigen::Vector3f smallestEigenVec= R.row(2);
@@ -408,17 +404,18 @@ namespace Loam{
   vector<int> SphericalDepthImage::mapSphericalCoordsInIndexImage(
       const float t_azimuth, const float t_elevation ){
 
-    const double interval_elevation = static_cast<double>( (m_max_elevation - m_min_elevation) / m_num_vertical_rings );
+    const double interval_elevation = static_cast<double>(
+        (m_max_elevation - m_min_elevation) / m_params.num_vertical_rings);
     const float elevation_normalized = t_elevation - m_min_elevation;
     int u= static_cast<int>( floor( elevation_normalized/ interval_elevation ));
     if ( u == -1){ u= 0; } 
-    if ( u == m_num_vertical_rings){ --u;};
+    if ( u == m_params.num_vertical_rings ){ --u;};
 
-    const double interval_azimuth = static_cast<double>( 2*M_PI / m_num_points_ring);
+    const double interval_azimuth = static_cast<double>( 2*M_PI / m_params.num_points_ring);
     const double azimuth_normalized = t_azimuth + M_PI;
     int v= static_cast<int>( floor(azimuth_normalized / interval_azimuth));
     if ( v == -1){ v= 0; } 
-    if ( v == m_num_points_ring){ --v;};
+    if ( v == m_params.num_points_ring){ --v;};
 
     vector<int> result;
     result.push_back(u);

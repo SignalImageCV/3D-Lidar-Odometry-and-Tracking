@@ -22,15 +22,16 @@ namespace Loam{
         cloud[2].coordinates() = coords_p_3;
         cloud[3].coordinates() = coords_p_4;
 
-        const int num_rings =2;
-        const int num_points_ring= 2;
-        const float epsilon_radius= 0;
-        const int epsilon_times= 0;
-
-        SphericalDepthImage  sph_Image = SphericalDepthImage(
-            num_rings,num_points_ring,
-            epsilon_radius, epsilon_times,
-            cloud);
+        const sphericalImage_params params(
+          2, //num_vertical_rings
+          2, //num_points_ring
+          1, //epsilon_times
+          1, //epsilon_radius
+          1, //depth_differential_threshold
+          1  //min_neighboors_for_normal
+        );
+     
+        SphericalDepthImage  sph_Image = SphericalDepthImage(cloud,params);
         sph_Image.buildIndexImage();
         index_image = sph_Image.getIndexImage();
       }

@@ -18,6 +18,30 @@ namespace Loam{
      float epsilon_radius;
      float depth_differential_threshold;
      int min_neighboors_for_normal;
+     sphericalImage_params_tag(
+         const int t_num_vertical_rings,
+         const int t_num_points_ring,
+         const int t_epsilon_times,
+         const float t_epsilon_radius,
+         const float t_depth_differential_threshold,
+         const int t_min_neighboors_for_normal):
+       num_vertical_rings( t_num_vertical_rings),
+       num_points_ring( t_num_points_ring),
+       epsilon_times( t_epsilon_times),
+       epsilon_radius( t_epsilon_radius),
+       depth_differential_threshold(
+           t_depth_differential_threshold),
+       min_neighboors_for_normal(
+           t_min_neighboors_for_normal)
+    {}
+     sphericalImage_params_tag():
+       num_vertical_rings( -1),
+       num_points_ring( -1),
+       epsilon_times( -1),
+       epsilon_radius( -1),
+       depth_differential_threshold(-1),
+       min_neighboors_for_normal(-1)
+    {}
   }sphericalImage_params;
 
 
@@ -25,15 +49,11 @@ namespace Loam{
      protected:
        //this matrix is both the index matrix I and the spherical depth matrix D
        vector<vector< list< DataPoint >>> m_index_image;
-       int m_num_vertical_rings;
-       int m_num_points_ring;
+       PointNormalColor3fVectorCloud m_cloud;
+       sphericalImage_params m_params;
        float m_min_elevation;
        float m_max_elevation;
-       int m_epsilon_times;
-       float m_epsilon_radius;
-       float m_depth_differential_threshold;
-       int m_min_neighboors_for_normal;
-       PointNormalColor3fVectorCloud m_cloud;
+      
 
      public:
       SphericalDepthImage()= default;

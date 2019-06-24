@@ -27,22 +27,18 @@ namespace Loam{
         cloud_2[1].coordinates() = coords_p_2;
         cloud_3[0].coordinates() = coords_p_1;
         cloud_3[1].coordinates() = coords_p_3;
-        const int num_rings =2;
-        const int num_points_ring= 1;
-        const float epsilon_radius= 2;
-        const int epsilon_times= 3;
-        Sph_Image_1= SphericalDepthImage(
-            num_rings,num_points_ring,
-            epsilon_radius, epsilon_times,
-            cloud_1);
-        Sph_Image_2= SphericalDepthImage(
-            num_rings,num_points_ring,
-            epsilon_radius,epsilon_times,
-            cloud_2);
-        Sph_Image_3= SphericalDepthImage(
-            num_rings,num_points_ring,
-            epsilon_radius,epsilon_times,
-            cloud_3);
+       
+        const sphericalImage_params params(
+          2, //num_vertical_rings
+          1, //num_points_ring
+          3, //epsilon_times
+          2, //epsilon_radius
+          1, //depth_differential_threshold
+          2  //min_neighboors_for_normal
+        );
+        Sph_Image_1= SphericalDepthImage(cloud_1, params);
+        Sph_Image_2= SphericalDepthImage(cloud_2,params);
+        Sph_Image_3= SphericalDepthImage(cloud_3,params);
       }
     };
 
@@ -59,31 +55,15 @@ namespace Loam{
         cloud[0].coordinates() = coords_p_1;
         cloud[1].coordinates() = coords_p_2;
      
-        const int num_rings =6;
-        const int num_points_ring= 24;
-        const float epsilon_radius= 2;
-        const int epsilon_times= 3;
-     
-  typedef struct sphericalImage_params_tag{
-     int num_vertical_rings;
-     int num_points_ring;
-     float epsilon_radius;
-     int epsilon_times;
-     int min_neighboors_for_normal;
-     float depth_differential_threshold;
-  }sphericalImage_params;
-
-  //todo continue to use param struct dor every spherical image initialization
- const  sphericalImage_params  params {
-    6, //num_rings
-    24, //num_points_ring
-    3, //epsilon_times
-    2., //epsilon_radius
-    1., //depth_differential_thresh
-    2}; // min_neighboors_for_normal
-
-        sph_Image= SphericalDepthImage(
-            cloud,params );
+        const sphericalImage_params params(
+          6, //num_vertical_rings
+          24, //num_points_ring
+          3, //epsilon_times
+          2, //epsilon_radius
+          1, //depth_differential_threshold
+          2  //min_neighboors_for_normal
+        );
+        sph_Image= SphericalDepthImage(cloud,params );
       }
    
     };
@@ -115,15 +95,15 @@ namespace Loam{
         cloud[6].coordinates() = coords_p_7;
         cloud[7].coordinates() = coords_p_8;
      
-        const int num_rings =4;
-        const int num_points_ring= 24;
-        const float epsilon_radius= 2;
-        const int epsilon_times= 3;
- 
-        sph_Image= SphericalDepthImage(
-            num_rings,num_points_ring,
-            epsilon_radius, epsilon_times,
-            cloud);
+        const sphericalImage_params params(
+          4, //num_vertical_rings
+          24, //num_points_ring
+          3, //epsilon_times
+          2, //epsilon_radius
+          1, //depth_differential_threshold
+          2  //min_neighboors_for_normal
+        );
+        sph_Image= SphericalDepthImage(cloud,params);
       }
     };
 
@@ -320,14 +300,16 @@ namespace Loam{
         cloud[5].coordinates() = coords_p_6;
         cloud[6].coordinates() = coords_p_7;
      
-        const int num_rings =10;
-        const int num_points_ring= 200;
-        const float epsilon_radius= 2;
-        const int epsilon_times= 2;
-        sph_Image= SphericalDepthImage(
-            num_rings,num_points_ring,
-            epsilon_radius, epsilon_times,
-            cloud);
+        const sphericalImage_params params(
+          10, //num_vertical_rings
+          200, //num_points_ring
+          2, //epsilon_times
+          2, //epsilon_radius
+          1, //depth_differential_threshold
+          2  //min_neighboors_for_normal
+        );
+      
+        sph_Image= SphericalDepthImage(cloud,params);
       }
     };
 
@@ -379,22 +361,20 @@ namespace Loam{
         cloud_vertical[2].coordinates() = coords_p_3_v;
         cloud_vertical[3].coordinates() = coords_p_4_v;
         cloud_vertical[4].coordinates() = coords_p_5_v;
-    
-        const int num_rings = 105;
-        const int num_points_ring= 360;
-        
-        const float epsilon_radius= 0;
-        const int epsilon_times= 0;
+        const sphericalImage_params params(
+          105, //num_vertical_rings
+          360, //num_points_ring
+          0, //epsilon_times
+          0, //epsilon_radius
+          1, //depth_differential_threshold
+          2  //min_neighboors_for_normal
+        );
+      
 
-        sph_Image_horizontal= SphericalDepthImage(
-            num_rings,num_points_ring,
-            epsilon_radius, epsilon_times,
-            cloud_horizontal);
 
-        sph_Image_vertical= SphericalDepthImage(
-            num_rings,num_points_ring,
-            epsilon_radius, epsilon_times,
-            cloud_vertical);
+        sph_Image_horizontal= SphericalDepthImage(cloud_horizontal,params);
+
+        sph_Image_vertical= SphericalDepthImage(cloud_vertical,params);
       }
     };
 

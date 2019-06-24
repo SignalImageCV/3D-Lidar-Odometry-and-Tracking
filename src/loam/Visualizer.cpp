@@ -193,10 +193,15 @@ namespace Loam{
   }
 
   void Visualizer::visualizeCleanedClouds( ViewerCanvasPtr first_canvas, ViewerCanvasPtr second_canvas, const  string & filename){
-    const int num_rings =60;
-    const int num_points_ring= 2000;
-    const float epsilon_radius= 0.15; //another good value is 0.2
-    const int epsilon_times= 10;
+    const sphericalImage_params params(
+      60, //num_vertical_rings
+      2000, //num_points_ring
+      10, //epsilon_times
+      0.15, //epsilon_radius
+      1, //depth_differential_threshold
+      2  //min_neighboors_for_normal
+    );
+        
     SphericalDepthImage sph_Image;
     DatasetManager dM( filename);
 
@@ -206,11 +211,9 @@ namespace Loam{
 
       PointNormalColor3fVectorCloud current_point_cloud= dM.readMessageFromDataset();
       if( current_point_cloud.size()> 0){
+
  
-        sph_Image= SphericalDepthImage(
-            num_rings,num_points_ring,
-            epsilon_radius, epsilon_times,
-            current_point_cloud);
+        sph_Image= SphericalDepthImage(current_point_cloud,params);
         sph_Image.removeFlatSurfaces();
 
         PointNormalColor3fVectorCloud cleanedCloud= sph_Image.getPointCloud();
