@@ -149,4 +149,17 @@ target_link_libraries(test_drawNormals
   pthread
   )
 
+add_executable(test_drawPointWithNormal
+  TestDrawPointWithNormal.cpp
+  )
+target_link_libraries(test_drawPointWithNormal
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  ${QGLViewer_LIBRARIES}
+  ${catkin_LIBRARIES}
+  pthread
+  )
 
