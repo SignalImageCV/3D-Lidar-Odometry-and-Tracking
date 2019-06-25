@@ -10,8 +10,10 @@ int main( int argc, char** argv){
   string filename = "/home/dinies/temp/trial/tuttty.boss";
   ViewerCoreSharedQGL viewer(argc, argv);
   ViewerCanvasPtr canvas = viewer.getCanvas("PointsWithNormals");
+
   std::thread processing_thread(
-      Visualizer::visualizePointsWithNormals,canvas,filename);
+      Visualizer::visualizePointsWithNormals,canvas);
+
   viewer.startViewerServer();
   processing_thread.join();
   return 0;

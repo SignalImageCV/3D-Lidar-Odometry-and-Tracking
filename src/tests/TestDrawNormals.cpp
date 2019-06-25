@@ -11,8 +11,10 @@ int main( int argc, char** argv){
   ViewerCoreSharedQGL viewer(argc, argv);
   ViewerCanvasPtr canvas1 = viewer.getCanvas("noFlatPlusnormals");
   ViewerCanvasPtr canvas2 = viewer.getCanvas("rawScene");
+
   std::thread processing_thread(
       Visualizer::visualizeCleanedWithNormals,canvas1,canvas2,filename);
+
   viewer.startViewerServer();
   processing_thread.join();
   return 0;

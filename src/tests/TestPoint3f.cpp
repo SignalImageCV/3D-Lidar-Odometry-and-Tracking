@@ -43,6 +43,25 @@ namespace Loam{
     ASSERT_EQ( points[1].normal().y(), 25);
   }
 
+  TEST( PointVec, vectorCreateIncrementally){
+    PointNormalColor3fVectorCloud points;
+    points.reserve(3);
+
+    ASSERT_EQ( points.size(), 0);
+    for(unsigned int i=0; i < 3; ++i){
+      PointNormalColor3f p;
+      p.coordinates() = Vector3f( 1*i, 2*i, 3*i);
+      p.color() = Vector3f( 11,12,13);
+      p.normal() = Vector3f( 21, 22,23);
+      points.push_back( p);
+    }
+    ASSERT_EQ( points.size(), 3);
+    ASSERT_EQ( points[1].coordinates().y(), 2);
+    ASSERT_EQ( points[1].color().y(), 12);
+    ASSERT_EQ( points[1].normal().y(), 22);
+ 
+  }
+
 }
 
 

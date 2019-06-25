@@ -14,9 +14,11 @@ namespace Loam{
     PointNormalColor3fVectorCloud pointcloud_x_axis;
     PointNormalColor3fVectorCloud pointcloud_y_axis;
     PointNormalColor3fVectorCloud pointcloud_z_axis;
-    pointcloud_x_axis.resize( num_points);
-    pointcloud_y_axis.resize( num_points);
-    pointcloud_z_axis.resize( num_points);
+
+    pointcloud_x_axis.reserve( num_points);
+    pointcloud_y_axis.reserve( num_points);
+    pointcloud_z_axis.reserve( num_points);
+
     float x = 0;
     float y = 0;
     float z = 0;
@@ -24,13 +26,22 @@ namespace Loam{
       x += 0.1;
       y += 0.1;
       z += 0.1;
-      pointcloud_x_axis[i].coordinates()=Vector3f( x,0,0);
-      pointcloud_x_axis[i].color()= ColorPalette::color3fDarkCyan();
-      pointcloud_y_axis[i].coordinates()=Vector3f( 0,y,0);
-      pointcloud_y_axis[i].color()= ColorPalette::color3fDarkGreen();
-      pointcloud_z_axis[i].coordinates()=Vector3f( 0,0,z);
-      pointcloud_z_axis[i].color()= ColorPalette::color3fDarkRed();
-    }
+      PointNormalColor3f p_x;
+      PointNormalColor3f p_y;
+      PointNormalColor3f p_z;
+
+      p_x.coordinates()=Vector3f( x,0,0);
+      p_x.color()= ColorPalette::color3fDarkCyan();
+      p_y.coordinates()=Vector3f( 0,y,0);
+      p_y.color()= ColorPalette::color3fDarkGreen();
+      p_z.coordinates()=Vector3f( 0,0,z);
+      p_z.color()= ColorPalette::color3fDarkRed();
+
+      pointcloud_x_axis.push_back( p_x);
+      pointcloud_y_axis.push_back( p_y);
+      pointcloud_z_axis.push_back( p_z);
+
+   }
     axes.push_back(pointcloud_x_axis);
     axes.push_back(pointcloud_y_axis);
     axes.push_back(pointcloud_z_axis);
@@ -38,20 +49,22 @@ namespace Loam{
   }
 
   PointNormalColor3fVectorCloud Visualizer::createCircle(const float radius = 1.){
+
+    PointNormalColor3fVectorCloud circle_point_cloud;
+    circle_point_cloud.reserve(360);
+    
     float j = 0;float k = 0; const float l = 0;
     vector<Vector3f> circle_points;
     circle_points.reserve(360);
     for( float angle = 0; angle <= 2*M_PI; angle+= M_PI/180){
       j = radius* cos( angle); 
       k = radius* sin( angle); 
-      circle_points.push_back( Vector3f( j, k, l));
+      PointNormalColor3f p;
+      p.coordinates() = Vector3f( j, k, l);
+      p.color() = ColorPalette::color3fBlack();
+      circle_point_cloud.push_back( p);
     }
-    PointNormalColor3fVectorCloud circle_point_cloud;
-    circle_point_cloud.resize( circle_points.size());
-    for (unsigned int i = 0; i < circle_point_cloud.size(); ++i) {
-      circle_point_cloud[i].coordinates() = circle_points[i];
-      circle_point_cloud[i].color() = ColorPalette::color3fBlack();
-    }
+
     return circle_point_cloud;
   }
 
@@ -61,6 +74,22 @@ namespace Loam{
     }
   }
 
+
+  void Visualizer::drawNormals(ViewerCanvasPtr canvas, const PointNormalColor3fVectorCloud & t_points){
+
+    PointNormalColor3fVectorCloud normalPoints;
+
+
+
+
+
+
+
+
+
+
+
+  }
 
 
   void Visualizer::visualizeSubrutine(ViewerCanvasPtr canvas, const std::string& filename){
@@ -123,29 +152,36 @@ namespace Loam{
   }
 
   void Visualizer::visualizePointsWithNormals(ViewerCanvasPtr canvas){
+
     vector<PointNormalColor3fVectorCloud> axes = Visualizer::createAxes();
 
+    //vector<ScanPoint> line_points;
+    //line_points.reserve(num_line_points);
+
+
+
     const int num_line_points = 10;
-    vector<ScanPoint> line_points;
+    PointNormalColor3fVectorCloud line_points;
     line_points.reserve(num_line_points);
-    const Eigen::Vector3f line_start( 0, 2, -10); 
+
+    const Eigen::Vector3f line_start( 0, 0, 4); 
+    const Eigen::Vector3f line_direction(0, 1, 0);
+
+    const Eigen::Vector3f normal(5., 5., 0.);
+
     Eigen::Vector3f line_curr_point = line_start; 
-    const Eigen::Vector3f line_direction(0, 0, 0.4);
-    const Eigen::Vector3f normal(0., -1., 0.);
-    for (unsigned int i = 0; i < num_line_points; ++i) {
-      ScanPoint p( 0, i, line_curr_point);
+    
+    for (float i = 0; i < num_line_points; ++i) {
+      ;
+      PointNormalColor3f p;
+      p.coordinates() = line_curr_point;
+      p.color()= ColorPalette::color3fBlack();
       line_points.push_back( p);
       line_curr_point+= line_direction;
     }
-    PointNormalColor3fVectorCloud pointcloud_line;
-    pointcloud_line.resize( num_line_points);
-    for (unsigned int j = 0; j < pointcloud_line.size(); ++j) {
-      pointcloud_line[j].coordinates()=line_points[j].getCoords();
-      pointcloud_line[j].color()=ColorPalette::color3fDarkCyan();
-      pointcloud_line[j].normal()=normal;
-    }
-     while(  ViewerCoreSharedQGL::isRunning()){
-      canvas->putPoints(pointcloud_line);
+    while(  ViewerCoreSharedQGL::isRunning()){
+      canvas->putPoints(line_points);
+      Visualizer::drawNormals( canvas, line_points);
       Visualizer::drawAxes( canvas, axes);
       canvas->flush();
     }

@@ -18,6 +18,8 @@ namespace Loam{
 
       static void drawAxes(ViewerCanvasPtr canvas, const vector<PointNormalColor3fVectorCloud> & t_axes);
 
+      static void drawNormals(ViewerCanvasPtr canvas, const PointNormalColor3fVectorCloud & t_points);
+
       static void visualizeSubrutine(ViewerCanvasPtr canvas, const std::string& filename);
 
 
@@ -25,7 +27,7 @@ namespace Loam{
 
       static void visualizeCondition( ViewerCanvasPtr canvas);
 
-      static void visualizePointsWithNormals(ViewerCanvasPtr canvas);
+      static void visualizePointsWithNormals( ViewerCanvasPtr canvas);
 
       static void visualizeSphere(ViewerCanvasPtr canvas,const string & filename);
 
@@ -33,8 +35,10 @@ namespace Loam{
 
       static void visualizeFullClouds( ViewerCanvasPtr canvas, const  string & filename);
 
+
       static void visualizeCleanedClouds(ViewerCanvasPtr first_canvas,
           ViewerCanvasPtr second_canvas, const  string & filename);
+
 
       static void visualizeCleanedWithNormals(ViewerCanvasPtr first_canvas,
           ViewerCanvasPtr second_canvas, const  string & filename);
