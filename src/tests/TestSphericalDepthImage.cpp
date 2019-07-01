@@ -1,5 +1,9 @@
 #include <gtest/gtest.h>
 #include "../loam/features/SphericalDepthImage.hpp"
+#include "../loam/Visualizer.hpp"
+#include "../loam/features/Line.hpp"
+#include "../loam/features/Plane.hpp"
+
 
 using namespace testing;
 namespace Loam{
@@ -428,5 +432,88 @@ namespace Loam{
     ASSERT_EQ( sph_Image_vertical.getPointCloud().size(), 3);
   }
 
+  class SDIFixture_clustering: public testing::Test {
+    protected:
+      SphericalDepthImage sph_Image;
+      PointNormalColor3fVectorCloud cloud;
+
+      void SetUp() override{
+
+        const sphericalImage_params params(
+          105, //num_vertical_rings
+          360, //num_points_ring
+          0, //epsilon_times
+          0, //epsilon_radius
+          1, //depth_differential_threshold
+          2  //min_neighboors_for_normal
+        );
+
+        //add these to the struct 
+        //5 epsilon c
+        //0.1 epsilon d
+        //0.02 epsilon n
+        //~~ epsilon dl
+        //~~ epsilon dp
+
+
+
+        PointNormalColor3fVectorCloud noise;
+        noise.resize(7);
+        Vector3f coords_p_1 = Vector3f(4., 4., 4. );
+        Vector3f coords_p_2 = Vector3f(3., 3., 8. );
+        Vector3f coords_p_3 = Vector3f(1., 1., 5. );
+        Vector3f coords_p_4 = Vector3f(7., 1., 2. );
+        Vector3f coords_p_5 = Vector3f(7., 7., 3. );
+        Vector3f coords_p_6 = Vector3f(1., 7., 4. );
+        Vector3f coords_p_7 = Vector3f(3., 5., 0. );
+        noise[0].coordinates() = coords_p_1;
+        noise[1].coordinates() = coords_p_2;
+        noise[2].coordinates() = coords_p_3;
+        noise[3].coordinates() = coords_p_4;
+        noise[4].coordinates() = coords_p_5;
+        noise[5].coordinates() = coords_p_6;
+        noise[6].coordinates() = coords_p_7;
+ 
+
+        PointNormalColor3fVectorCloud l1 = Visualizer::createLine(
+            Vector3f( 2.,3.,1.), Vector3f( 0.,0.,1.), 2, 0.5);
+        PointNormalColor3fVectorCloud l2 = Visualizer::createLine(
+            Vector3f( -4.,-2.,-2.), Vector3f( 0.,0.,-1.), 6, 1);
+        PointNormalColor3fVectorCloud p1 = Visualizer::createPlane(
+            Vector3f( 2.,-7.,0.), Vector3f( 1.,0.,0.),
+            Vector3f( 0.,0.,1.), 2, 3, 0.5, 0.5);
+  
+
+        cloud.insert(
+          cloud.end(),
+          std::make_move_iterator( l1.begin()),
+          std::make_move_iterator( l1.end())
+          );
+
+        cloud.insert(
+          cloud.end(),
+          std::make_move_iterator( l2.begin()),
+          std::make_move_iterator( l2.end())
+          );
+
+        cloud.insert(
+          cloud.end(),
+          std::make_move_iterator( p1.begin()),
+          std::make_move_iterator( p1.end())
+          );
+
+        sph_Image = SphericalDepthImage(cloud,params);
+
+      }
+
+    };
+
+  TEST_F( SDIFixture_clustering, clusterizeFeatures){
+    sph_Image.initializeIndexImage();
+    sph_Image.collectNormals();
+    std::vector<Matchable> matchables = sph_Image.clusterizeCloud();
+
+    ASSERT_EQ( matchables.size(), 2 );
+  }
 }
 

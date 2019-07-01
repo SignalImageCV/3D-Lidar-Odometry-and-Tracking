@@ -4,6 +4,8 @@
 
 #include "DataPoint.hpp"
 #include "IntegralImage.hpp"
+#include "Line.hpp"
+#include "Plane.hpp"
 
 using namespace std;
 using namespace srrg2_core;
@@ -74,16 +76,23 @@ namespace Loam{
       void resetIndexImage();
 
       void markVerticalPoints();
-      void removeNonVerticalPoints();
 
-      void discoverBoundaryIndexes();
+      void removeNonVerticalPoints();
       void removePointsWithoutNormal();
-      void computePointNormals();
+
 
       bool expandBoundariesUp( DataPoint & t_starting_point,int & t_neighboors_count);
       bool expandBoundariesDown( DataPoint & t_starting_point,int & t_neighboors_count);
       bool expandBoundariesLeft( DataPoint & t_starting_point,int & t_neighboors_count);
       bool expandBoundariesRight( DataPoint & t_starting_point,int & t_neighboors_count);
+      void discoverBoundaryIndexes();
+
+      void computePointNormals();
+
+
+
+      vector<Matchable> clusterizeCloud();
+
 
       vector<int> mapSphericalCoordsInIndexImage(
           const float t_azimuth, const float t_elevation);

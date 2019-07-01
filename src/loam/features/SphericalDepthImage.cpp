@@ -28,7 +28,6 @@ namespace Loam{
     removeNonVerticalPoints();
   }
 
-
   void SphericalDepthImage::collectNormals(){
     discoverBoundaryIndexes();
     removePointsWithoutNormal();
@@ -109,9 +108,9 @@ namespace Loam{
       v.resize( m_params.num_points_ring);
     }
    
-    vector< PointNormalColor3f > onlyVerticalPoints; 
-    onlyVerticalPoints.reserve( m_cloud.size());
     int index_container = 0;
+    PointNormalColor3fVectorCloud cleanedCloud;
+    cleanedCloud.reserve( m_cloud.size());
 
     for (unsigned int row =0; row <m_index_image.size() ; ++row){
       for (unsigned int col=0; col <m_index_image[0].size(); ++col){
@@ -119,20 +118,12 @@ namespace Loam{
           if( entry.getIsVertical()){
             DataPoint copyOfEntry = DataPoint(entry);
             copyOfEntry.setIndexContainer( index_container);
-            onlyVerticalPoints.push_back(m_cloud[entry.getIndexContainer()]);
+            cleanedCloud.push_back( m_cloud[entry.getIndexContainer()]);
             new_index_img[row][col].push_back( copyOfEntry);
             ++index_container;
           }
         }
       }
-    }
-    
-    PointNormalColor3fVectorCloud cleanedCloud;
-    cleanedCloud.resize( onlyVerticalPoints.size());
-    for( unsigned int i =0 ; i< cleanedCloud.size(); ++i){
-      cleanedCloud[i].coordinates() = onlyVerticalPoints[i].coordinates();
-      cleanedCloud[i].color() = onlyVerticalPoints[i].color();
-      cleanedCloud[i].normal() = onlyVerticalPoints[i].normal();
     }
     m_cloud = cleanedCloud;
     m_index_image = new_index_img;
@@ -147,35 +138,26 @@ namespace Loam{
     for ( auto & v : new_index_img){
       v.resize( m_params.num_points_ring);
     }
-   
-    vector< PointNormalColor3f > pointsWithNormals; 
-    pointsWithNormals.reserve( m_cloud.size());
-    int index_container = 0;
 
+    int index_container = 0;
+    PointNormalColor3fVectorCloud cleanedCloud;
+    cleanedCloud.reserve( m_cloud.size());
+   
     for (unsigned int row =0; row <m_index_image.size() ; ++row){
       for (unsigned int col=0; col <m_index_image[0].size(); ++col){
         for ( auto& entry : m_index_image[row][col]){
           if( entry.getHasNormal()){
             DataPoint copyOfEntry = DataPoint(entry);
             copyOfEntry.setIndexContainer( index_container);
-            pointsWithNormals.push_back(m_cloud[entry.getIndexContainer()]);
+            cleanedCloud.push_back( m_cloud[entry.getIndexContainer()]);
             new_index_img[row][col].push_back( copyOfEntry);
             ++index_container;
           }
         }
       }
     }
-    
-    PointNormalColor3fVectorCloud cleanedCloud;
-    cleanedCloud.resize( pointsWithNormals.size());
-    for( unsigned int i =0 ; i< cleanedCloud.size(); ++i){
-      cleanedCloud[i].coordinates() = pointsWithNormals[i].coordinates();
-      cleanedCloud[i].color() = pointsWithNormals[i].color();
-      cleanedCloud[i].normal() = pointsWithNormals[i].normal();
-    }
     m_cloud = cleanedCloud;
     m_index_image = new_index_img;
-
   }
 
   bool SphericalDepthImage::expandBoundariesUp( DataPoint & t_starting_point, int & t_neighboors_count){
@@ -279,10 +261,14 @@ namespace Loam{
     const int old_row_max = curr_boundaries[1];
     const int old_col_min = curr_boundaries[2];
     const int old_col_max = curr_boundaries[3];
-    const int new_col_min = old_col_min - 1;
+    int new_col_min = old_col_min - 1;
     if( new_col_min <0 ){
+      new_col_min = m_index_image[0].size()-1;
+    }
+    if( new_col_min == old_col_max){
       return false;
     }
+
 
     const Eigen::Vector3f starting_cartesian_coords =
       m_cloud[t_starting_point.getIndexContainer()].coordinates();
@@ -324,11 +310,15 @@ namespace Loam{
     const int old_row_max = curr_boundaries[1];
     const int old_col_min = curr_boundaries[2];
     const int old_col_max = curr_boundaries[3];
-    const int new_col_max = old_col_max + 1;
+    int new_col_max = old_col_max + 1;
 
-    if( new_col_max >= m_index_image[0].size()){
-      return 0;
+    if( new_col_max  >= m_index_image[0].size()){
+      new_col_max = 0;
     }
+    if( new_col_max == old_col_min){
+      return false;
+    }
+
     const Eigen::Vector3f starting_cartesian_coords =
       m_cloud[t_starting_point.getIndexContainer()].coordinates();
     const Eigen::Vector3f starting_spherical_coords =
@@ -359,8 +349,6 @@ namespace Loam{
     }
     return hasExpanded;
   }
-
-
 
   void SphericalDepthImage::discoverBoundaryIndexes(){
 
@@ -429,10 +417,38 @@ namespace Loam{
 
           Eigen::Matrix3f R = svd.matrixU();
           Eigen::Vector3f smallestEigenVec= R.row(2);
-          m_cloud[ entry.getIndexContainer()].normal() = smallestEigenVec;
+
+          Eigen::Vector3f p_coords =  m_cloud[ entry.getIndexContainer()].coordinates();
+          if ( (p_coords + smallestEigenVec).norm() >  p_coords.norm() ){
+            m_cloud[ entry.getIndexContainer()].normal() =  - smallestEigenVec;
+          }
+          else{
+            m_cloud[ entry.getIndexContainer()].normal() = smallestEigenVec;
+          }
         }
       }
     }
+  }
+
+  vector<Matchable>  SphericalDepthImage::clusterizeCloud(){
+    vector<Matchable> matchables;
+
+    // choose if : make interalimage a class member or returning it from
+    // the compute normal method and require it as a param in clusterizecloud
+
+    // expand boundaries with an alternative decision method and confronting
+    // the border with the new points not only the center as before
+    // this implies 4 different expansion funcs ( code duplication) 
+    // and another findBoundaries func ( code duplication)
+    
+
+    // use a strategy to keep trak of the points already considered
+    // they will be choosen randomly, maybe keep a vector of indexes
+    // of the already chosen to use afterward
+    //
+    //
+    //
+    return matchables;
   }
 
   vector<int> SphericalDepthImage::mapSphericalCoordsInIndexImage(

@@ -48,6 +48,21 @@ target_link_libraries(test_drawAxes
   pthread
   )
 
+add_executable(test_drawLinesPlanes
+  TestDrawLinesPlanes.cpp
+  )
+target_link_libraries(test_drawLinesPlanes
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  ${QGLViewer_LIBRARIES}
+  ${catkin_LIBRARIES}
+  pthread
+  )
+
+
 
 add_executable(test_fullCloud
   TestDrawFullClouds.cpp

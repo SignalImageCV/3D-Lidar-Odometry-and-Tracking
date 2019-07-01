@@ -68,6 +68,96 @@ namespace Loam{
     return circle_point_cloud;
   }
 
+  PointNormalColor3fVectorCloud Visualizer::createLine(
+      const Vector3f & center_point,
+      const Vector3f & direction,
+      const float length,
+      const float precision){
+
+    const int num_points = length/precision;
+    PointNormalColor3fVectorCloud linePoints;
+    linePoints.reserve( num_points);
+
+    Vector3f normalized_direction = direction/ direction.norm();
+
+    const Vector3f right_direction  = normalized_direction;
+    const Vector3f left_direction  = -normalized_direction;
+
+    Vector3f left_edge_coords = center_point+ left_direction*precision/2;
+    Vector3f right_edge_coords = center_point+ right_direction*precision/2;
+
+    for ( unsigned int i=0; i<num_points/2; ++i){
+
+      PointNormalColor3f left_edge_point;
+      PointNormalColor3f right_edge_point;
+
+      left_edge_point.coordinates() = left_edge_coords;
+      left_edge_point.color() = ColorPalette::color3fBlack();
+      right_edge_point.coordinates() = right_edge_coords;
+      right_edge_point.color() = ColorPalette::color3fBlack();
+
+      linePoints.push_back( left_edge_point);
+      linePoints.push_back( right_edge_point);
+
+      left_edge_coords += left_direction* precision;
+      right_edge_coords += right_direction* precision;
+
+
+    }
+
+    return linePoints;
+  }
+
+  PointNormalColor3fVectorCloud Visualizer::createPlane(
+      const Vector3f & center_point,
+      const Vector3f & first_direction,
+      const Vector3f & second_direction,
+      const float length_firstDir,
+      const float length_secondDir,
+      const float precision_firstDir,
+      const float precision_secondDir){
+
+    const int num_points_firstDir = length_firstDir/ precision_firstDir;
+    const int num_points_secondDir = length_secondDir/ precision_secondDir;
+    const int tot_num_points = num_points_firstDir * num_points_secondDir;
+
+    PointNormalColor3fVectorCloud planePoints;
+    planePoints.reserve( tot_num_points);
+
+    Vector3f normalized_direction = first_direction/ first_direction.norm();
+
+    const Vector3f right_direction  = normalized_direction;
+    const Vector3f left_direction  = -normalized_direction;
+
+    Vector3f left_edge_coords = center_point+ left_direction*precision_firstDir/2;
+    Vector3f right_edge_coords = center_point+ right_direction*precision_firstDir/2;
+
+    for ( unsigned int i=0; i<num_points_firstDir/2; ++i){
+
+      PointNormalColor3fVectorCloud left_line = Visualizer::createLine(
+          left_edge_coords, second_direction, length_secondDir, precision_secondDir);
+
+      PointNormalColor3fVectorCloud right_line = Visualizer::createLine(
+          right_edge_coords, second_direction, length_secondDir, precision_secondDir);
+
+      planePoints.insert(
+          planePoints.end(),
+          std::make_move_iterator( left_line.begin()),
+          std::make_move_iterator( left_line.end())
+          );
+
+      planePoints.insert(
+          planePoints.end(),
+          std::make_move_iterator( right_line.begin()),
+          std::make_move_iterator( right_line.end())
+          );
+      left_edge_coords += left_direction* precision_firstDir;
+      right_edge_coords += right_direction* precision_firstDir;
+    }
+    return planePoints;
+  }
+
+
   void Visualizer::drawAxes(ViewerCanvasPtr canvas, const vector<PointNormalColor3fVectorCloud> & t_axes){
     for( auto & axis: t_axes){
       canvas->putPoints( axis);
@@ -77,19 +167,34 @@ namespace Loam{
 
   void Visualizer::drawNormals(ViewerCanvasPtr canvas, const PointNormalColor3fVectorCloud & t_points){
 
+    std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >  colors;
+    colors.resize(64);
+    for(size_t i=0; i < colors.size(); ++i) {
+      colors[i]= Vector3f( 2.f*float(i)/64, 2.f*(1.0 - float(i)/64), 0.f);
+    }
+
+
+    const int starting_color_index = 20;
+    const int num_normal_points = 10;
     PointNormalColor3fVectorCloud normalPoints;
+    normalPoints.reserve( t_points.size() * num_normal_points);
+    for( auto & p: t_points){
 
+      Eigen::Vector3f normal_vec = p.normal();
+     
+      Eigen::Vector3f normal_direction = Vector3f(normal_vec / num_normal_points);
 
-
-
-
-
-
-
-
-
-
-  }
+      Eigen::Vector3f curr_normal_p= p.coordinates(); 
+      for(int i = 0; i< num_normal_points; ++i){
+        curr_normal_p += normal_direction;
+        PointNormalColor3f new_point;
+        new_point.coordinates() = curr_normal_p;
+        new_point.color() = colors[i+ starting_color_index];
+        normalPoints.push_back( new_point);
+      }
+    }
+    canvas->putPoints( normalPoints);
+ }
 
 
   void Visualizer::visualizeSubrutine(ViewerCanvasPtr canvas, const std::string& filename){
@@ -117,9 +222,27 @@ namespace Loam{
     }
   }
 
+  void Visualizer::visualizeLinesPlanes(ViewerCanvasPtr canvas){
+
+    PointNormalColor3fVectorCloud l1 = Visualizer::createLine(
+        Vector3f( 7.,7.,7.), Vector3f( 0.,-1.,0.), 10, 0.01);
+    PointNormalColor3fVectorCloud l2 = Visualizer::createLine(
+        Vector3f( -7.,7.,-7.), Vector3f( 0.,1.,1.), 30, 0.01);
+    PointNormalColor3fVectorCloud p1 = Visualizer::createPlane(
+        Vector3f( 2.,-7.,0.), Vector3f( 1.,0.,0.), Vector3f( 0.,0.,1.),
+        10, 20, 0.1, 0.1);
+    while(ViewerCoreSharedQGL::isRunning()){
+      canvas->pushPointSize();
+      canvas->setPointSize(2.0);
+      canvas->putPoints( l1);
+      canvas->putPoints( l2);
+      canvas->putPoints( p1);
+      canvas->flush();
+    }
+  }
+
   void Visualizer::visualizeCondition( ViewerCanvasPtr canvas){
 
-    vector<PointNormalColor3fVectorCloud> axes =  Visualizer::createAxes();
     PointNormalColor3fVectorCloud circle_point_cloud  = Visualizer::createCircle();
 
     float range_scan_section = M_PI/3;
@@ -144,21 +267,12 @@ namespace Loam{
         canvas->pushPointSize();
         canvas->setPointSize(2.0);
         canvas->putPoints( circle_point_cloud );
-
-        Visualizer::drawAxes( canvas, axes);
         canvas->flush();
       }
     }
   }
 
   void Visualizer::visualizePointsWithNormals(ViewerCanvasPtr canvas){
-
-    vector<PointNormalColor3fVectorCloud> axes = Visualizer::createAxes();
-
-    //vector<ScanPoint> line_points;
-    //line_points.reserve(num_line_points);
-
-
 
     const int num_line_points = 10;
     PointNormalColor3fVectorCloud line_points;
@@ -167,22 +281,21 @@ namespace Loam{
     const Eigen::Vector3f line_start( 0, 0, 4); 
     const Eigen::Vector3f line_direction(0, 1, 0);
 
-    const Eigen::Vector3f normal(5., 5., 0.);
+    const Eigen::Vector3f normal(1., 1., 0.);
 
     Eigen::Vector3f line_curr_point = line_start; 
     
     for (float i = 0; i < num_line_points; ++i) {
-      ;
       PointNormalColor3f p;
       p.coordinates() = line_curr_point;
       p.color()= ColorPalette::color3fBlack();
+      p.normal()= normal;
       line_points.push_back( p);
       line_curr_point+= line_direction;
     }
     while(  ViewerCoreSharedQGL::isRunning()){
       canvas->putPoints(line_points);
-      Visualizer::drawNormals( canvas, line_points);
-      Visualizer::drawAxes( canvas, axes);
+      Visualizer::drawNormals(canvas, line_points);
       canvas->flush();
     }
   }
@@ -202,6 +315,7 @@ namespace Loam{
       spherical_coords.z() = normalized_radius;
       sphere_cloud[i].coordinates() = SphericalDepthImage::inverseMappingFunc( spherical_coords);
       sphere_cloud[i].color() = p.color();
+      sphere_cloud[i].normal() = p.normal();
     }
      
     while(  ViewerCoreSharedQGL::isRunning()){
@@ -214,7 +328,7 @@ namespace Loam{
   void Visualizer::visualizeCloudSmoothness( ViewerCanvasPtr canvas, const  string & filename){
     canvas->flush();
     DatasetManager dM( filename);
-    vector<PointNormalColor3fVectorCloud> axes =  Visualizer::createAxes();
+
     float c;
     const Vector3f base_color = Vector3f( 0.4,0.4,0.4);
     
@@ -236,7 +350,6 @@ namespace Loam{
 
         canvas->pushPointSize();
         canvas->setPointSize(3.0);
-        Visualizer::drawAxes( canvas, axes);
         canvas->flush();
       }
     }
@@ -245,13 +358,11 @@ namespace Loam{
   void Visualizer::visualizeFullClouds( ViewerCanvasPtr canvas, const  string & filename){
 
     DatasetManager dM( filename);
-    vector<PointNormalColor3fVectorCloud> axes =  Visualizer::createAxes();
 
     while( ViewerCoreSharedQGL::isRunning()){
       PointNormalColor3fVectorCloud current_point_cloud= dM.readMessageFromDataset();
       if( current_point_cloud.size()> 0){
         canvas->putPoints(current_point_cloud);
-        Visualizer::drawAxes(canvas, axes);
         canvas->flush();
       }
     }
@@ -270,7 +381,6 @@ namespace Loam{
     SphericalDepthImage sph_Image;
     DatasetManager dM( filename);
 
-    vector<PointNormalColor3fVectorCloud> axes =  Visualizer::createAxes();
 
     while( ViewerCoreSharedQGL::isRunning()){
 
@@ -286,13 +396,6 @@ namespace Loam{
         first_canvas->putPoints(cleanedCloud);
 
         second_canvas->putPoints(current_point_cloud);
-
-        first_canvas->pushPointSize();
-        first_canvas->setPointSize(3.0);
-        second_canvas->pushPointSize();
-        second_canvas->setPointSize(3.0);
-        Visualizer::drawAxes( first_canvas, axes);
-        Visualizer::drawAxes( second_canvas, axes);
 
         first_canvas->flush();
         second_canvas->flush();
@@ -315,8 +418,6 @@ namespace Loam{
     SphericalDepthImage sph_Image;
     DatasetManager dM( filename);
 
-    vector<PointNormalColor3fVectorCloud> axes =  Visualizer::createAxes();
-
     while( ViewerCoreSharedQGL::isRunning()){
 
       PointNormalColor3fVectorCloud current_point_cloud= dM.readMessageFromDataset();
@@ -329,15 +430,9 @@ namespace Loam{
         PointNormalColor3fVectorCloud resulting_cloud= sph_Image.getPointCloud();
 
         first_canvas->putPoints(resulting_cloud);
+        Visualizer::drawNormals( first_canvas,  resulting_cloud);
 
         second_canvas->putPoints(current_point_cloud);
-
-        first_canvas->pushPointSize();
-        first_canvas->setPointSize(3.0);
-        second_canvas->pushPointSize();
-        second_canvas->setPointSize(3.0);
-        Visualizer::drawAxes( first_canvas, axes);
-        Visualizer::drawAxes( second_canvas, axes);
 
         first_canvas->flush();
         second_canvas->flush();
@@ -358,21 +453,20 @@ namespace Loam{
 
     //line creation
     const int num_line_points = 50;
+    PointNormalColor3fVectorCloud pointcloud_line;
+    pointcloud_line.reserve( num_line_points);
     vector<ScanPoint> line_points;
     line_points.reserve(num_line_points);
     const Eigen::Vector3f line_start( 0, 2, -10); 
     Eigen::Vector3f line_curr_point = line_start; 
     const Eigen::Vector3f line_direction(0, 0, 0.4);
     for (unsigned int i = 0; i < num_line_points; ++i) {
-      ScanPoint p( 0, i, line_curr_point);
-      line_points.push_back( p);
+      PointNormalColor3f p;
+      p.coordinates()  = line_curr_point;
+      p.color() = ColorPalette::color3fDarkCyan();
+      p.normal() = Vector3f::Zero();
+      pointcloud_line.push_back(p);
       line_curr_point+= line_direction;
-    }
-    PointNormalColor3fVectorCloud pointcloud_line;
-    pointcloud_line.resize( num_line_points);
-    for (unsigned int j = 0; j < pointcloud_line.size(); ++j) {
-      pointcloud_line[j].coordinates()=line_points[j].getCoords();
-      pointcloud_line[j].color()=ColorPalette::color3fDarkCyan();
     }
     std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >  colors;
     colors.resize(64);

@@ -16,6 +16,21 @@ namespace Loam{
 
       static PointNormalColor3fVectorCloud createCircle(const float radius);
 
+      static PointNormalColor3fVectorCloud createLine(
+          const Vector3f & center_point,
+          const Vector3f & direction,
+          const float length,
+          const float precision);
+
+      static PointNormalColor3fVectorCloud createPlane(
+          const Vector3f & center_point,
+          const Vector3f & first_direction,
+          const Vector3f & second_direction,
+          const float length_firstDir,
+          const float length_secondDir,
+          const float precision_firstDir,
+          const float precision_secondDir);
+
       static void drawAxes(ViewerCanvasPtr canvas, const vector<PointNormalColor3fVectorCloud> & t_axes);
 
       static void drawNormals(ViewerCanvasPtr canvas, const PointNormalColor3fVectorCloud & t_points);
@@ -23,7 +38,9 @@ namespace Loam{
       static void visualizeSubrutine(ViewerCanvasPtr canvas, const std::string& filename);
 
 
-      static void visualizeAxes(ViewerCanvasPtr canvas);
+      static void visualizeAxes( ViewerCanvasPtr canvas);
+
+      static void visualizeLinesPlanes( ViewerCanvasPtr canvas);
 
       static void visualizeCondition( ViewerCanvasPtr canvas);
 
