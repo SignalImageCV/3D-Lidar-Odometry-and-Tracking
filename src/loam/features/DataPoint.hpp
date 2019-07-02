@@ -15,7 +15,7 @@ namespace Loam{
           const int t_index,
           const bool t_isVert,
           const bool t_hasNormal,
-          const bool t_isTaken
+          const bool t_isClustered
           );
       
   };

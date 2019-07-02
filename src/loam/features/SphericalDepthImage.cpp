@@ -28,10 +28,10 @@ namespace Loam{
     removeNonVerticalPoints();
   }
 
-  void SphericalDepthImage::collectNormals(){
-    discoverBoundaryIndexes();
+  IntegralImage SphericalDepthImage::collectNormals(){
+    discoverNormalsBoundaryIndexes();
     removePointsWithoutNormal();
-    computePointNormals();
+    return computePointNormals();
     
  }
 
@@ -160,7 +160,7 @@ namespace Loam{
     m_index_image = new_index_img;
   }
 
-  bool SphericalDepthImage::expandBoundariesUp( DataPoint & t_starting_point, int & t_neighboors_count){
+  bool SphericalDepthImage::expandNormalBoundariesUp( DataPoint & t_starting_point, int & t_neighboors_count){
 
     vector<int> curr_boundaries = t_starting_point.getBoundaries();
 
@@ -207,7 +207,7 @@ namespace Loam{
 
 
 
-  bool SphericalDepthImage::expandBoundariesDown( DataPoint & t_starting_point,int & t_neighboors_count){
+  bool SphericalDepthImage::expandNormalBoundariesDown( DataPoint & t_starting_point,int & t_neighboors_count){
 
     vector<int> curr_boundaries = t_starting_point.getBoundaries();
 
@@ -253,7 +253,7 @@ namespace Loam{
   }
 
 
-  bool SphericalDepthImage::expandBoundariesRight( DataPoint & t_starting_point,int & t_neighboors_count){
+  bool SphericalDepthImage::expandNormalBoundariesRight( DataPoint & t_starting_point,int & t_neighboors_count){
 
     vector<int> curr_boundaries = t_starting_point.getBoundaries();
 
@@ -302,7 +302,7 @@ namespace Loam{
   }
 
 
-  bool SphericalDepthImage::expandBoundariesLeft( DataPoint & t_starting_point,int & t_neighboors_count){
+  bool SphericalDepthImage::expandNormalBoundariesLeft( DataPoint & t_starting_point,int & t_neighboors_count){
 
     vector<int> curr_boundaries = t_starting_point.getBoundaries();
 
@@ -350,7 +350,7 @@ namespace Loam{
     return hasExpanded;
   }
 
-  void SphericalDepthImage::discoverBoundaryIndexes(){
+  void SphericalDepthImage::discoverNormalsBoundaryIndexes(){
 
     for (int row =0; row <m_index_image.size() ; ++row){
       for (int col=0; col <m_index_image[0].size(); ++col){
@@ -372,16 +372,16 @@ namespace Loam{
               ){
             switch( direction_counter % 4){
               case(0):
-               topFree =  expandBoundariesUp( entry, neighboors_count);
+               topFree =  expandNormalBoundariesUp( entry, neighboors_count);
                break;
               case(1):
-               downFree =  expandBoundariesDown( entry, neighboors_count);
+               downFree =  expandNormalBoundariesDown( entry, neighboors_count);
                break;
               case(2):
-               leftFree =  expandBoundariesLeft( entry, neighboors_count);
+               leftFree =  expandNormalBoundariesLeft( entry, neighboors_count);
                break;
               case(3):
-               rightFree =  expandBoundariesRight( entry, neighboors_count);
+               rightFree =  expandNormalBoundariesRight( entry, neighboors_count);
                break;
             }
             ++direction_counter;
@@ -393,7 +393,7 @@ namespace Loam{
     }
   }
 
-  void  SphericalDepthImage::computePointNormals(){
+  IntegralImage SphericalDepthImage::computePointNormals(){
     IntegralImage integ_img = IntegralImage( m_cloud, m_index_image);
     integ_img.buildIntegMatrix();
     
@@ -428,27 +428,357 @@ namespace Loam{
         }
       }
     }
+    return integ_img;
   }
 
-  vector<Matchable>  SphericalDepthImage::clusterizeCloud(){
+  vector<Matchable>  SphericalDepthImage::clusterizeCloud( IntegralImage & t_integ_img){
+
+    //choose better values
     vector<Matchable> matchables;
+    matchables.reserve( m_cloud.size());
 
-    // choose if : make interalimage a class member or returning it from
-    // the compute normal method and require it as a param in clusterizecloud
+    vector< vector< int>> goodSeeds;
+    goodSeeds.reserve( m_cloud.size());
 
-    // expand boundaries with an alternative decision method and confronting
-    // the border with the new points not only the center as before
-    // this implies 4 different expansion funcs ( code duplication) 
-    // and another findBoundaries func ( code duplication)
+    vector<int> goodIndexes;
+    goodIndexes.resize( m_cloud.size());
+    for( unsigned int i =0; i< goodIndexes.size(); ++i){
+      goodIndexes[i] = i;
+    }
+    //choose better values
+    int alreadyClustered_hits_in_a_row = 0;
+    const int limit_hits_in_a_row = 3;
+    const int iterations_limit= m_cloud.size(); 
+    int iteration_count= 0; 
+    const int threshold_minimum_points_left = 10; 
+
+    while ( iteration_count < iterations_limit and goodIndexes.size() > threshold_minimum_points_left){
+
+      if( alreadyClustered_hits_in_a_row > limit_hits_in_a_row){
+        goodIndexes = fetchGoodSeedIndexes();
+      }
+
+      std::random_device rd;
+      std::mt19937 gen( rd());
+      std::uniform_int_distribution<> dis(0, goodIndexes.size() -1);
+      int k  = goodIndexes[ dis( gen )];
+
+      vector<int> indexImage_coords =  mapCartesianCoordsInIndexImage( m_cloud[k].coordinates());
+      int counter_list_pos = 0;
+      for( auto & elem: m_index_image[indexImage_coords[0]][indexImage_coords[1]]){
+        if( elem.getIndexContainer() == k and 
+            not elem.getIsClustered()){
+          alreadyClustered_hits_in_a_row = 0;
+          const int seed_row = indexImage_coords[0];
+          const int seed_col = indexImage_coords[1] ;
+          const int seed_list_pos = counter_list_pos ;
+          bool validClusterFlag = discoverClusterBoundaryIndexes(seed_row, seed_col, seed_list_pos); 
+          if( validClusterFlag ){
+            vector<int> seed = { seed_row, seed_col, seed_list_pos};
+            goodSeeds.push_back( seed);
+          }
+        }
+        ++counter_list_pos;
+      }
+    }
+
+    for( auto & seed: goodSeeds){
+      const int seed_row = seed[0];
+      const int seed_col = seed[1] ;
+      const int seed_list_pos = seed[2];
+         
+      auto curr_seed = std::next( m_index_image[seed_row][seed_col].begin(), seed_list_pos);
+
+      vector<int> boundaries = curr_seed->getBoundaries();
+
+      const int row_min = boundaries[0];
+      const int row_max = boundaries[1];
+      const int col_min = boundaries[2];
+      const int col_max = boundaries[3];
+   
+      IntegralCell cell = t_integ_img.getCellInsideBoundaries( row_min, row_max, col_min, col_max);
+
+      Eigen::Vector3f  p_sum = cell.getPsum();
+      Eigen::Matrix3f p_quad = cell.getPquad();
+      int p_num = cell.getPnum();
+
+      Eigen::Vector3f mu = p_sum/p_num;
+      Eigen::Matrix3f S = p_quad/p_num;
+      Eigen::Matrix3f sigma = S - mu * mu.transpose();
+
+      //todoooo
+
+ 
+      //  match it with a line
+      //  match it with a plane
+      //  build an according matchable
+      //  add the matchable to the list to be returned
     
-
-    // use a strategy to keep trak of the points already considered
-    // they will be choosen randomly, maybe keep a vector of indexes
-    // of the already chosen to use afterward
-    //
-    //
-    //
+    } 
     return matchables;
+  }
+
+
+  vector<int> SphericalDepthImage::fetchGoodSeedIndexes(){
+    vector<int> goodIndexes;
+    goodIndexes.reserve( m_cloud.size());
+
+    for (unsigned int row =0; row <m_index_image.size() ; ++row){
+      for (unsigned int col=0; col <m_index_image[0].size(); ++col){
+        for ( auto& entry : m_index_image[row][col]){
+          if( not entry.getIsClustered()){
+            goodIndexes.push_back( entry.getIndexContainer());
+          }
+        }
+      }
+    }
+    return goodIndexes;
+  }
+
+
+  bool SphericalDepthImage::expandClusterBoundariesUp( DataPoint & t_seed_point,int & t_included_points_count){
+
+    vector<int> curr_boundaries = t_seed_point.getBoundaries();
+
+    const int old_row_min = curr_boundaries[0];
+    const int old_row_max = curr_boundaries[1];
+    const int old_col_min = curr_boundaries[2];
+    const int old_col_max = curr_boundaries[3];
+    const int new_row_min = old_row_min - 1;
+    if( new_row_min < 0){
+      return false;
+    }
+
+    bool hasExpanded= true;
+    int current_added_points = 0;
+
+    for( unsigned int c = old_col_min; c < old_col_max; ++c){
+      for( auto & new_entry: m_index_image[new_row_min][c]){
+        const Eigen::Vector3f new_cart_coords = 
+          m_cloud[ new_entry.getIndexContainer()].coordinates();
+        const Eigen::Vector3f new_normal = 
+          m_cloud[ new_entry.getIndexContainer()].normal();
+        for( auto & old_entry: m_index_image[old_row_min][c]){
+          const Eigen::Vector3f old_cart_coords = 
+            m_cloud[ old_entry.getIndexContainer()].coordinates();
+          const Eigen::Vector3f old_normal = 
+            m_cloud[ old_entry.getIndexContainer()].normal();
+       
+
+          if (new_entry.getIsClustered() or
+              (new_cart_coords - old_cart_coords).norm() > m_params.epsilon_d or
+              new_normal.transpose() * old_normal < m_params.epsilon_n){
+            hasExpanded= false;
+          }
+        }
+        ++current_added_points;
+      }
+    }
+       
+    if (hasExpanded){
+      vector<int> new_boundaries = { new_row_min, old_row_max, old_col_min, old_col_max };
+      t_seed_point.setBoundaries( new_boundaries);
+      t_included_points_count += current_added_points;
+    }
+    return hasExpanded;
+  }
+  bool SphericalDepthImage::expandClusterBoundariesDown( DataPoint & t_seed_point,int & t_included_points_count){
+    vector<int> curr_boundaries = t_seed_point.getBoundaries();
+
+    const int old_row_min = curr_boundaries[0];
+    const int old_row_max = curr_boundaries[1];
+    const int old_col_min = curr_boundaries[2];
+    const int old_col_max = curr_boundaries[3];
+    const int new_row_max = old_row_max + 1;
+    if( new_row_max >= m_index_image.size()){
+      return false;
+    }
+      
+
+    bool hasExpanded= true;
+    int current_added_points= 0;
+    for( unsigned int c = old_col_min; c < old_col_max; ++c){
+      for( auto & new_entry: m_index_image[new_row_max][c]){
+        const Eigen::Vector3f new_cart_coords = 
+          m_cloud[ new_entry.getIndexContainer()].coordinates();
+        const Eigen::Vector3f new_normal = 
+          m_cloud[ new_entry.getIndexContainer()].normal();
+        for( auto & old_entry: m_index_image[old_row_max][c]){
+          const Eigen::Vector3f old_cart_coords = 
+            m_cloud[ old_entry.getIndexContainer()].coordinates();
+          const Eigen::Vector3f old_normal = 
+            m_cloud[ old_entry.getIndexContainer()].normal();
+       
+          if (new_entry.getIsClustered() or
+              (new_cart_coords - old_cart_coords).norm() > m_params.epsilon_d or
+              new_normal.transpose() * old_normal < m_params.epsilon_n){
+            hasExpanded= false;
+          }
+        }
+        ++current_added_points;
+      }
+    }
+    if (hasExpanded){
+      vector<int> new_boundaries = { old_row_min, new_row_max, old_col_min, old_col_max };
+      t_seed_point.setBoundaries( new_boundaries);
+      t_included_points_count+= current_added_points;
+    }
+    return hasExpanded;
+  }
+
+  bool SphericalDepthImage::expandClusterBoundariesLeft( DataPoint & t_seed_point,int & t_included_points_count){
+
+    vector<int> curr_boundaries = t_seed_point.getBoundaries();
+
+    const int old_row_min = curr_boundaries[0];
+    const int old_row_max = curr_boundaries[1];
+    const int old_col_min = curr_boundaries[2];
+    const int old_col_max = curr_boundaries[3];
+    int new_col_min = old_col_min - 1;
+    if( new_col_min <0 ){
+      new_col_min = m_index_image[0].size()-1;
+    }
+    if( new_col_min == old_col_max){
+      return false;
+    }
+
+
+    bool hasExpanded= true;
+    int current_added_points = 0;
+    for( unsigned int r = old_row_min; r < old_row_max; ++r){
+
+      for( auto & new_entry: m_index_image[r][new_col_min]){
+        const Eigen::Vector3f new_cart_coords = 
+          m_cloud[ new_entry.getIndexContainer()].coordinates();
+        const Eigen::Vector3f new_normal = 
+          m_cloud[ new_entry.getIndexContainer()].normal();
+        for( auto & old_entry: m_index_image[r][old_col_min]){
+          const Eigen::Vector3f old_cart_coords = 
+            m_cloud[ old_entry.getIndexContainer()].coordinates();
+          const Eigen::Vector3f old_normal = 
+            m_cloud[ old_entry.getIndexContainer()].normal();
+       
+          if (new_entry.getIsClustered() or
+              (new_cart_coords - old_cart_coords).norm() > m_params.epsilon_d or
+              new_normal.transpose() * old_normal < m_params.epsilon_n){
+            hasExpanded= false;
+          }
+        }
+        ++current_added_points;
+      }
+    }
+    if (hasExpanded){
+      vector<int> new_boundaries = { old_row_min, old_row_max, new_col_min, old_col_max };
+      t_seed_point.setBoundaries( new_boundaries);
+      t_included_points_count+= current_added_points;
+    }
+    return hasExpanded;
+  }
+
+  bool SphericalDepthImage::expandClusterBoundariesRight( DataPoint & t_seed_point,int & t_included_points_count){
+
+    vector<int> curr_boundaries = t_seed_point.getBoundaries();
+    const int old_row_min = curr_boundaries[0];
+    const int old_row_max = curr_boundaries[1];
+    const int old_col_min = curr_boundaries[2];
+    const int old_col_max = curr_boundaries[3];
+    int new_col_max = old_col_max + 1;
+
+    if( new_col_max  >= m_index_image[0].size()){
+      new_col_max = 0;
+    }
+    if( new_col_max == old_col_min){
+      return false;
+    }
+
+    bool hasExpanded= true;
+    int current_added_points= 0;
+    for( unsigned int r = old_row_min; r < old_row_max; ++r){
+      for( auto & new_entry: m_index_image[r][new_col_max]){
+        const Eigen::Vector3f new_cart_coords = 
+          m_cloud[ new_entry.getIndexContainer()].coordinates();
+        const Eigen::Vector3f new_normal = 
+          m_cloud[ new_entry.getIndexContainer()].normal();
+        for( auto & old_entry: m_index_image[r][old_col_max]){
+          const Eigen::Vector3f old_cart_coords = 
+            m_cloud[ old_entry.getIndexContainer()].coordinates();
+          const Eigen::Vector3f old_normal = 
+            m_cloud[ old_entry.getIndexContainer()].normal();
+       
+          if (new_entry.getIsClustered() or
+              (new_cart_coords - old_cart_coords).norm() > m_params.epsilon_d or
+              new_normal.transpose() * old_normal < m_params.epsilon_n){
+            hasExpanded= false;
+          }
+        }
+        ++current_added_points;
+      }
+    }
+    if (hasExpanded){
+      vector<int> new_boundaries = { old_row_min, old_row_max, old_col_min, new_col_max };
+      t_seed_point.setBoundaries( new_boundaries);
+      t_included_points_count += current_added_points;
+    }
+    return hasExpanded;
+  }
+
+  bool SphericalDepthImage::discoverClusterBoundaryIndexes(const int t_seed_row, const int t_seed_col, const int t_seed_list_position) {
+    
+    vector<int> curr_boundaries = { t_seed_row, t_seed_row, t_seed_col, t_seed_col};
+
+    auto curr_seed= std::next( m_index_image[t_seed_row][t_seed_col].begin(), t_seed_list_position);
+    curr_seed->setBoundaries( curr_boundaries);
+
+    int num_included_points = 0;
+    bool topFree = true;
+    bool downFree = true;
+    bool leftFree = true;
+    bool rightFree = true;
+    int direction_counter = 0;
+    int iteration_counter= 0;
+    const int iteration_limit = m_index_image.size()+ m_index_image[0].size() ;
+    while (
+      (topFree or downFree or leftFree or rightFree) and
+      iteration_counter < iteration_limit ){
+        switch( direction_counter % 4){
+          case(0):
+            topFree = expandClusterBoundariesUp( *curr_seed, num_included_points);
+            break;
+          case(1):
+            downFree = expandClusterBoundariesDown( *curr_seed, num_included_points);
+            break;
+          case(2):
+            leftFree = expandClusterBoundariesLeft( *curr_seed, num_included_points);
+            break;
+          case(3):
+            rightFree = expandClusterBoundariesRight( *curr_seed, num_included_points);
+            break;
+          }
+        ++direction_counter;
+        ++iteration_counter;
+    }
+    markClusteredPoints( *curr_seed);
+    return num_included_points >=  m_params.epsilon_c;
+  }
+
+
+  void SphericalDepthImage::markClusteredPoints(DataPoint & t_seed_point){
+
+    vector<int> boundaries = t_seed_point.getBoundaries();
+
+    const int row_min = boundaries[0];
+    const int row_max = boundaries[1];
+    const int col_min = boundaries[2];
+    const int col_max = boundaries[3];
+
+
+    for( unsigned int r = row_min; r < row_max; ++r){
+      for( unsigned int c = col_min; c < col_max; ++c){
+        for( auto & elem: m_index_image[r][c]){
+          elem.setIsClustered( true);
+        }
+      }
+    }
   }
 
   vector<int> SphericalDepthImage::mapSphericalCoordsInIndexImage(

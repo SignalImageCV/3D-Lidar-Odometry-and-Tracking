@@ -1,6 +1,8 @@
 #pragma once
 #include <srrg_system_utils/system_utils.h>
 #include <srrg_messages/instances.h>
+#include <random>
+
 
 #include "DataPoint.hpp"
 #include "IntegralImage.hpp"
@@ -20,13 +22,24 @@ namespace Loam{
      float epsilon_radius;
      float depth_differential_threshold;
      int min_neighboors_for_normal;
+     int epsilon_c;
+     float epsilon_d;
+     float epsilon_n;
+     float epsilon_dl;
+     float epsilon_dp;
      sphericalImage_params_tag(
          const int t_num_vertical_rings,
          const int t_num_points_ring,
          const int t_epsilon_times,
          const float t_epsilon_radius,
          const float t_depth_differential_threshold,
-         const int t_min_neighboors_for_normal):
+         const int t_min_neighboors_for_normal,
+         const int t_epsilon_c,
+         const float t_epsilon_d,
+         const float t_epsilon_n,
+         const float t_epsilon_dl,
+         const float t_epsilon_dp
+         ):
        num_vertical_rings( t_num_vertical_rings),
        num_points_ring( t_num_points_ring),
        epsilon_times( t_epsilon_times),
@@ -34,7 +47,12 @@ namespace Loam{
        depth_differential_threshold(
            t_depth_differential_threshold),
        min_neighboors_for_normal(
-           t_min_neighboors_for_normal)
+           t_min_neighboors_for_normal),
+       epsilon_c( t_epsilon_c),
+       epsilon_d( t_epsilon_d),
+       epsilon_n( t_epsilon_n),
+       epsilon_dl( t_epsilon_dl),
+       epsilon_dp( t_epsilon_dp)
     {}
      sphericalImage_params_tag():
        num_vertical_rings( -1),
@@ -42,7 +60,12 @@ namespace Loam{
        epsilon_times( -1),
        epsilon_radius( -1),
        depth_differential_threshold(-1),
-       min_neighboors_for_normal(-1)
+       min_neighboors_for_normal(-1),
+       epsilon_c(-1),
+       epsilon_d(-1),
+       epsilon_n(-1),
+       epsilon_dl(-1),
+       epsilon_dp(-1)
     {}
   }sphericalImage_params;
 
@@ -69,7 +92,7 @@ namespace Loam{
       void executeOperations();
 
       void removeFlatSurfaces();
-      void collectNormals();
+      IntegralImage collectNormals();
 
 
       void initializeIndexImage();
@@ -81,17 +104,24 @@ namespace Loam{
       void removePointsWithoutNormal();
 
 
-      bool expandBoundariesUp( DataPoint & t_starting_point,int & t_neighboors_count);
-      bool expandBoundariesDown( DataPoint & t_starting_point,int & t_neighboors_count);
-      bool expandBoundariesLeft( DataPoint & t_starting_point,int & t_neighboors_count);
-      bool expandBoundariesRight( DataPoint & t_starting_point,int & t_neighboors_count);
-      void discoverBoundaryIndexes();
+      bool expandNormalBoundariesUp( DataPoint & t_starting_point,int & t_neighboors_count);
+      bool expandNormalBoundariesDown( DataPoint & t_starting_point,int & t_neighboors_count);
+      bool expandNormalBoundariesLeft( DataPoint & t_starting_point,int & t_neighboors_count);
+      bool expandNormalBoundariesRight( DataPoint & t_starting_point,int & t_neighboors_count);
+      void discoverNormalsBoundaryIndexes();
 
-      void computePointNormals();
+      IntegralImage computePointNormals();
 
+      vector<Matchable> clusterizeCloud(IntegralImage & t_integ_img);
+      bool expandClusterBoundariesUp( DataPoint & t_seed_point,int & t_included_points_count);
+      bool expandClusterBoundariesDown( DataPoint & t_seed_point,int & t_included_points_count);
+      bool expandClusterBoundariesLeft( DataPoint & t_seed_point,int & t_included_points_count);
+      bool expandClusterBoundariesRight( DataPoint & t_seed_point,int & t_included_points_count);
+      bool discoverClusterBoundaryIndexes(const int t_seed_row, const int t_seed_col, const int t_seed_list_position);
 
+      void markClusteredPoints(DataPoint & t_seed_point);
 
-      vector<Matchable> clusterizeCloud();
+      vector<int> fetchGoodSeedIndexes();
 
 
       vector<int> mapSphericalCoordsInIndexImage(

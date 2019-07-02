@@ -31,6 +31,7 @@ namespace Loam{
         cloud_2[1].coordinates() = coords_p_2;
         cloud_3[0].coordinates() = coords_p_1;
         cloud_3[1].coordinates() = coords_p_3;
+
        
         const sphericalImage_params params(
           2, //num_vertical_rings
@@ -38,7 +39,12 @@ namespace Loam{
           3, //epsilon_times
           2, //epsilon_radius
           1, //depth_differential_threshold
-          2  //min_neighboors_for_normal
+          2,  //min_neighboors_for_normal
+          5, //epsilon_c
+          0.1, //epsilon_d
+          0.02, //epsilon_n
+          1, //epsilon_dl
+          1 //epsilon_dp
         );
         Sph_Image_1= SphericalDepthImage(cloud_1, params);
         Sph_Image_2= SphericalDepthImage(cloud_2,params);
@@ -65,7 +71,12 @@ namespace Loam{
           3, //epsilon_times
           2, //epsilon_radius
           1, //depth_differential_threshold
-          2  //min_neighboors_for_normal
+          2, //min_neighboors_for_normal
+          5, //epsilon_c
+          0.1, //epsilon_d
+          0.02, //epsilon_n
+          1, //epsilon_dl
+          1 //epsilon_dp
         );
         sph_Image= SphericalDepthImage(cloud,params );
       }
@@ -105,7 +116,12 @@ namespace Loam{
           3, //epsilon_times
           2, //epsilon_radius
           1, //depth_differential_threshold
-          2  //min_neighboors_for_normal
+          2,  //min_neighboors_for_normal
+          5, //epsilon_c
+          0.1, //epsilon_d
+          0.02, //epsilon_n
+          1, //epsilon_dl
+          1 //epsilon_dp
         );
         sph_Image= SphericalDepthImage(cloud,params);
       }
@@ -310,7 +326,12 @@ namespace Loam{
           2, //epsilon_times
           2, //epsilon_radius
           1, //depth_differential_threshold
-          2  //min_neighboors_for_normal
+          2,  //min_neighboors_for_normal
+          5, //epsilon_c
+          0.1, //epsilon_d
+          0.02, //epsilon_n
+          1, //epsilon_dl
+          1 //epsilon_dp
         );
       
         sph_Image= SphericalDepthImage(cloud,params);
@@ -371,7 +392,12 @@ namespace Loam{
           0, //epsilon_times
           0, //epsilon_radius
           1, //depth_differential_threshold
-          2  //min_neighboors_for_normal
+          2,  //min_neighboors_for_normal
+          5, //epsilon_c
+          0.1, //epsilon_d
+          0.02, //epsilon_n
+          1, //epsilon_dl
+          1 //epsilon_dp
         );
       
 
@@ -384,7 +410,7 @@ namespace Loam{
 
   TEST_F( SDIFixture_normalComputation, findBoundariesHorizontalLine){
     sph_Image_horizontal.initializeIndexImage();
-    sph_Image_horizontal.discoverBoundaryIndexes();
+    sph_Image_horizontal.discoverNormalsBoundaryIndexes();
 
     vector<int> indexes_starting_point=  sph_Image_horizontal.mapCartesianCoordsInIndexImage(cloud_horizontal[0].coordinates());
 
@@ -408,7 +434,7 @@ namespace Loam{
 
   TEST_F( SDIFixture_normalComputation, findBoundariesVerticalLine){
     sph_Image_vertical.initializeIndexImage();
-    sph_Image_vertical.discoverBoundaryIndexes();
+    sph_Image_vertical.discoverNormalsBoundaryIndexes();
 
     vector<int> indexes_starting_point=  sph_Image_vertical.mapCartesianCoordsInIndexImage(cloud_vertical[0].coordinates());
 
@@ -445,16 +471,13 @@ namespace Loam{
           0, //epsilon_times
           0, //epsilon_radius
           1, //depth_differential_threshold
-          2  //min_neighboors_for_normal
+          2,  //min_neighboors_for_normal
+          5, //epsilon_c
+          0.1, //epsilon_d
+          0.02, //epsilon_n
+          1, //epsilon_dl
+          1 //epsilon_dp
         );
-
-        //add these to the struct 
-        //5 epsilon c
-        //0.1 epsilon d
-        //0.02 epsilon n
-        //~~ epsilon dl
-        //~~ epsilon dp
-
 
 
         PointNormalColor3fVectorCloud noise;
@@ -510,8 +533,8 @@ namespace Loam{
 
   TEST_F( SDIFixture_clustering, clusterizeFeatures){
     sph_Image.initializeIndexImage();
-    sph_Image.collectNormals();
-    std::vector<Matchable> matchables = sph_Image.clusterizeCloud();
+    IntegralImage integ_img =  sph_Image.collectNormals();
+    std::vector<Matchable> matchables = sph_Image.clusterizeCloud( integ_img);
 
     ASSERT_EQ( matchables.size(), 2 );
   }

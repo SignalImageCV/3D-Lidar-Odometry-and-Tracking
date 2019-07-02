@@ -28,7 +28,12 @@ namespace Loam{
           1, //epsilon_times
           1, //epsilon_radius
           1, //depth_differential_threshold
-          1  //min_neighboors_for_normal
+          1,  //min_neighboors_for_normal
+          5, //epsilon_c
+          0.1, //epsilon_d
+          0.02, //epsilon_n
+          1, //epsilon_dl
+          1 //epsilon_dp
         );
      
         SphericalDepthImage  sph_Image = SphericalDepthImage(cloud,params);
