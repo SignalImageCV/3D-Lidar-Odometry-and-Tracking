@@ -9,12 +9,12 @@ namespace Loam{
      {}
 
   float Line::computeDistance(const  PointNormalColor3f & t_point){
-    //if it is correct then, for the sake of optimization,pass the svd object in costruction
-
-    const Eigen::Matrix3f sigma = R_m * Omega_m * R_m.transpose();
-    const Eigen::JacobiSVD<Eigen::Matrix3f> svd(sigma, Eigen::ComputeFullU | Eigen::ComputeFullV);
-    const Eigen::Vector3f ls_error = svd.solve( t_point.coordinates());
-    return ls_error.norm();
+    const float distance_lineCenter_point = ( t_point.coordinates() - p_m).norm();
+    const Eigen::Vector3f unit_vec_lineCenter_point =  ( t_point.coordinates() - p_m).normalized();
+    const Eigen::Vector3f unit_vec_line_direction = R_m.row(0).normalized();
+    const float angle_between_unit_vecs =
+      acos( unit_vec_line_direction.dot( unit_vec_lineCenter_point));
+    return distance_lineCenter_point * sin( angle_between_unit_vecs);
   }
 
   float Line::computeEigenvalueConstraint(){

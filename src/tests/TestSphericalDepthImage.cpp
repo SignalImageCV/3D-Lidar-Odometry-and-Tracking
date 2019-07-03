@@ -481,7 +481,7 @@ namespace Loam{
           0, //epsilon_times
           0, //epsilon_radius
           1, //depth_differential_threshold
-          2,  //min_neighboors_for_normal
+          4,  //min_neighboors_for_normal
           5, //epsilon_c
           0.1, //epsilon_d
           0.02, //epsilon_n
@@ -519,17 +519,17 @@ namespace Loam{
             Vector3f( 0.,0.,1.), 2, 3, 0.5, 0.5);
   
 
-        cloud.insert(
-          cloud.end(),
-          std::make_move_iterator( l1.begin()),
-          std::make_move_iterator( l1.end())
-          );
+        //cloud.insert(
+         // cloud.end(),
+         // std::make_move_iterator( l1.begin()),
+         // std::make_move_iterator( l1.end())
+         // );
 
-        cloud.insert(
-          cloud.end(),
-          std::make_move_iterator( l2.begin()),
-          std::make_move_iterator( l2.end())
-          );
+        //cloud.insert(
+         // cloud.end(),
+         // std::make_move_iterator( l2.begin()),
+         // std::make_move_iterator( l2.end())
+         // );
 
         cloud.insert(
           cloud.end(),
@@ -543,12 +543,12 @@ namespace Loam{
 
     };
 
- // TEST_F( SDIFixture_clustering, clusterizeFeatures){
-  //  sph_Image.initializeIndexImage();
-  //  IntegralImage integ_img =  sph_Image.collectNormals();
-  //  std::vector<Matchable> matchables = sph_Image.clusterizeCloud( integ_img);
+  TEST_F( SDIFixture_clustering, clusterizeFeatures){
+    sph_Image.initializeIndexImage();
+    IntegralImage integ_img =  sph_Image.collectNormals();
+    std::vector<Matchable> matchables = sph_Image.clusterizeCloud( integ_img);
 
-  //  ASSERT_EQ( matchables.size(), 2 );
- // }
+    ASSERT_EQ( matchables.size(), 2 );
+  }
 }
 

@@ -451,10 +451,12 @@ namespace Loam{
     const int limit_hits_in_a_row = 3;
     const int iterations_limit= m_cloud.size(); 
     int iteration_count= 0; 
-    const int threshold_minimum_points_left = 10; 
 
-    while ( iteration_count < iterations_limit and goodIndexes.size() > threshold_minimum_points_left){
 
+    while ( iteration_count < iterations_limit
+        and goodIndexes.size() > m_params.epsilon_c){
+      ++iteration_count;
+      std::cout<<"iteration n:"<< iteration_count<< "\n";
       if( alreadyClustered_hits_in_a_row > limit_hits_in_a_row){
         goodIndexes = fetchGoodSeedIndexes();
       }
@@ -553,6 +555,7 @@ namespace Loam{
         }
       }
     }
+    return pointsInside;
   }
 
   vector<int> SphericalDepthImage::fetchGoodSeedIndexes(){
@@ -588,7 +591,7 @@ namespace Loam{
     bool hasExpanded= true;
     int current_added_points = 0;
 
-    for( unsigned int c = old_col_min; c < old_col_max; ++c){
+    for( int c = old_col_min; c < old_col_max; ++c){
       for( auto & new_entry: m_index_image[new_row_min][c]){
         const Eigen::Vector3f new_cart_coords = 
           m_cloud[ new_entry.getIndexContainer()].coordinates();
@@ -599,6 +602,9 @@ namespace Loam{
             m_cloud[ old_entry.getIndexContainer()].coordinates();
           const Eigen::Vector3f old_normal = 
             m_cloud[ old_entry.getIndexContainer()].normal();
+          //todo
+          //it actually never enters in this part
+          //why >?????
        
 
           if (new_entry.getIsClustered() or
@@ -633,7 +639,7 @@ namespace Loam{
 
     bool hasExpanded= true;
     int current_added_points= 0;
-    for( unsigned int c = old_col_min; c < old_col_max; ++c){
+    for( int c = old_col_min; c < old_col_max; ++c){
       for( auto & new_entry: m_index_image[new_row_max][c]){
         const Eigen::Vector3f new_cart_coords = 
           m_cloud[ new_entry.getIndexContainer()].coordinates();
@@ -681,7 +687,7 @@ namespace Loam{
 
     bool hasExpanded= true;
     int current_added_points = 0;
-    for( unsigned int r = old_row_min; r < old_row_max; ++r){
+    for( int r = old_row_min; r < old_row_max; ++r){
 
       for( auto & new_entry: m_index_image[r][new_col_min]){
         const Eigen::Vector3f new_cart_coords = 
@@ -729,7 +735,7 @@ namespace Loam{
 
     bool hasExpanded= true;
     int current_added_points= 0;
-    for( unsigned int r = old_row_min; r < old_row_max; ++r){
+    for( int r = old_row_min; r < old_row_max; ++r){
       for( auto & new_entry: m_index_image[r][new_col_max]){
         const Eigen::Vector3f new_cart_coords = 
           m_cloud[ new_entry.getIndexContainer()].coordinates();

@@ -1,7 +1,10 @@
 #pragma once
+
 #include <Eigen/Core>
 #include <srrg_system_utils/system_utils.h>
 #include <srrg_messages/instances.h>
+#include "../MyMath.hpp"
+
 
 using namespace srrg2_core;
 
