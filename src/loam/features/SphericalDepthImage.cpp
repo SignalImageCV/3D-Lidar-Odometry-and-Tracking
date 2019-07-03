@@ -416,6 +416,7 @@ namespace Loam{
           Eigen::JacobiSVD<Eigen::Matrix3f> svd(sigma, Eigen::ComputeFullU | Eigen::ComputeFullV);
 
           Eigen::Matrix3f R = svd.matrixU();
+          //try if taking the column the result is different 
           Eigen::Vector3f smallestEigenVec= R.row(2);
 
           Eigen::Vector3f p_coords =  m_cloud[ entry.getIndexContainer()].coordinates();
@@ -505,19 +506,54 @@ namespace Loam{
       Eigen::Vector3f mu = p_sum/p_num;
       Eigen::Matrix3f S = p_quad/p_num;
       Eigen::Matrix3f sigma = S - mu * mu.transpose();
+      Eigen::JacobiSVD<Eigen::Matrix3f> svd(sigma, Eigen::ComputeFullU | Eigen::ComputeFullV);
 
-      //todoooo
+      Eigen::Matrix3f R = svd.matrixU();
+      Eigen::Vector3f s = svd.singularValues();
+      Eigen::Matrix3f Omega;
+      Omega << s.x() ,0, 0,
+            0, s.y(), 0,
+            0, 0, s.z();
 
- 
-      //  match it with a line
-      //  match it with a plane
-      //  build an according matchable
-      //  add the matchable to the list to be returned
-    
+      PointNormalColor3fVectorCloud currPoints = fetchPointsInBoundaries( row_min, row_max, col_min, col_max);
+
+      Line l  = Line( mu, R, Omega);
+      const float eigenval_constr_line  =  l.computeEigenvalueConstraint();
+      const float err_line = l.computeResidualError( currPoints);
+
+      if ( eigenval_constr_line < m_params.epsilon_l and
+          err_line < m_params.epsilon_dl){
+        matchables.push_back( l);
+      }
+      else{
+        Plane p = Plane( mu, R, Omega);
+        const float eigenval_constr_plane =  p.computeEigenvalueConstraint();
+        const float err_plane = p.computeResidualError( currPoints);
+
+        if ( eigenval_constr_plane < m_params.epsilon_p and
+            err_plane< m_params.epsilon_dp){
+          matchables.push_back( p);
+        }
+      }
     } 
     return matchables;
   }
 
+
+  PointNormalColor3fVectorCloud SphericalDepthImage::fetchPointsInBoundaries( 
+      const int t_rowMin,const int t_rowMax,const int t_colMin,const int t_colMax){
+    PointNormalColor3fVectorCloud pointsInside;
+    pointsInside.reserve( m_cloud.size());
+
+    for (unsigned int row =t_rowMin; row <t_rowMax ; ++row){
+      for (unsigned int col=t_colMin;  col <t_colMax ; ++col){
+        list<DataPoint> listPoints = getListDataPointsAt( row, col);
+        for ( auto & e: listPoints ){
+          pointsInside.push_back( m_cloud[e.getIndexContainer()] );
+        }
+      }
+    }
+  }
 
   vector<int> SphericalDepthImage::fetchGoodSeedIndexes(){
     vector<int> goodIndexes;

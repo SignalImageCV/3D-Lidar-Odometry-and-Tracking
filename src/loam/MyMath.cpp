@@ -133,4 +133,25 @@ namespace Loam{
     return  ( alpha>0 and beta<0 and ( phi>alpha or phi<beta)) or ( phi>alpha and phi<beta and ( alpha<0 or beta>0));
   }
 
+  Eigen::Vector3f MyMath::computeMuGaussian(const  std::vector< Eigen::Vector3f> & t_points){
+    Eigen::Vector3f mu_partial = Eigen::Vector3f::Zero();
+    for( auto & p: t_points){
+      mu_partial += p;
+    }
+    return  mu_partial/ t_points.size();
+  }
+
+  Eigen::Matrix3f MyMath::computeSigmaGaussian(
+        const  std::vector< Eigen::Vector3f> & t_points,
+        const  Eigen::Vector3f & t_mu){
+    Eigen::Matrix3f  sigma_partial = Eigen::Matrix3f::Zero();
+    for ( auto & p: t_points){
+      const Eigen::Vector3f vec = p - t_mu;
+      sigma_partial += vec *  vec.transpose();
+    }
+    return sigma_partial/t_points.size(); 
+  }
+
+
+
 }

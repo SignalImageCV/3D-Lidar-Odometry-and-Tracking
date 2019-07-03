@@ -4,6 +4,7 @@ catkin_add_gtest(test_runner
   TestIntegralImage.cpp
   TestPoint3f.cpp
   TestDataPoint.cpp
+  TestMatchable.cpp
   TestEigenSvd.cpp
   Starter.cpp
   )

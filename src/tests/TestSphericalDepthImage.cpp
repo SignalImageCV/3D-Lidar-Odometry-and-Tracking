@@ -43,7 +43,9 @@ namespace Loam{
           5, //epsilon_c
           0.1, //epsilon_d
           0.02, //epsilon_n
+          1, //epsilon_l
           1, //epsilon_dl
+          1, //epsilon_p
           1 //epsilon_dp
         );
         Sph_Image_1= SphericalDepthImage(cloud_1, params);
@@ -75,7 +77,9 @@ namespace Loam{
           5, //epsilon_c
           0.1, //epsilon_d
           0.02, //epsilon_n
+          1, //epsilon_l
           1, //epsilon_dl
+          1, //epsilon_p
           1 //epsilon_dp
         );
         sph_Image= SphericalDepthImage(cloud,params );
@@ -120,7 +124,9 @@ namespace Loam{
           5, //epsilon_c
           0.1, //epsilon_d
           0.02, //epsilon_n
+          1, //epsilon_l
           1, //epsilon_dl
+          1, //epsilon_p
           1 //epsilon_dp
         );
         sph_Image= SphericalDepthImage(cloud,params);
@@ -330,7 +336,9 @@ namespace Loam{
           5, //epsilon_c
           0.1, //epsilon_d
           0.02, //epsilon_n
+          1, //epsilon_l
           1, //epsilon_dl
+          1, //epsilon_p
           1 //epsilon_dp
         );
       
@@ -396,7 +404,9 @@ namespace Loam{
           5, //epsilon_c
           0.1, //epsilon_d
           0.02, //epsilon_n
+          1, //epsilon_l
           1, //epsilon_dl
+          1, //epsilon_p
           1 //epsilon_dp
         );
       
@@ -475,7 +485,9 @@ namespace Loam{
           5, //epsilon_c
           0.1, //epsilon_d
           0.02, //epsilon_n
+          1, //epsilon_l
           1, //epsilon_dl
+          1, //epsilon_p
           1 //epsilon_dp
         );
 
@@ -531,12 +543,12 @@ namespace Loam{
 
     };
 
-  TEST_F( SDIFixture_clustering, clusterizeFeatures){
-    sph_Image.initializeIndexImage();
-    IntegralImage integ_img =  sph_Image.collectNormals();
-    std::vector<Matchable> matchables = sph_Image.clusterizeCloud( integ_img);
+ // TEST_F( SDIFixture_clustering, clusterizeFeatures){
+  //  sph_Image.initializeIndexImage();
+  //  IntegralImage integ_img =  sph_Image.collectNormals();
+  //  std::vector<Matchable> matchables = sph_Image.clusterizeCloud( integ_img);
 
-    ASSERT_EQ( matchables.size(), 2 );
-  }
+  //  ASSERT_EQ( matchables.size(), 2 );
+ // }
 }
 

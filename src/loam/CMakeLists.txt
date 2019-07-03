@@ -8,6 +8,10 @@ add_library( loam_library
   features/IntegralImage.cpp
   features/IntegralCell.cpp
   features/DataPoint.cpp
+  features/Matchable.cpp
+  features/Point.cpp
+  features/Plane.cpp
+  features/Line.cpp
   )
 
 target_link_libraries(loam_library

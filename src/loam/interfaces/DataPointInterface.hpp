@@ -9,7 +9,7 @@ namespace Loam{
     int m_index_container;
     bool m_isVertical;
     bool m_hasNormal;
-    bool m_isTaken;
+    bool m_isClustered;
     std::vector<int> m_boundaryIndexes;
 
     public:

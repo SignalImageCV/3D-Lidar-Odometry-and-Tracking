@@ -10,7 +10,7 @@ namespace Loam{
     DataPoint dP_empty = DataPoint();
     ASSERT_EQ( dP_empty.getIndexContainer(),-1);
     ASSERT_FALSE( dP_empty.getIsVertical());
-    ASSERT_FALSE( dP_empty.getIsTaken());
+    ASSERT_FALSE( dP_empty.getIsClustered());
   }
 }
 

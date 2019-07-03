@@ -375,8 +375,16 @@ namespace Loam{
       10, //epsilon_times
       0.15, //epsilon_radius
       1, //depth_differential_threshold
-      2  //min_neighboors_for_normal
+      2,  //min_neighboors_for_normal
+      5, //epsilon_c
+      0.1, //epsilon_d
+      0.02, //epsilon_n
+      1, //epsilon_l
+      1, //epsilon_dl
+      1, //epsilon_p
+      1 //epsilon_dp
     );
+
         
     SphericalDepthImage sph_Image;
     DatasetManager dM( filename);
@@ -412,7 +420,14 @@ namespace Loam{
       10, //epsilon_times
       0.15, //epsilon_radius
       0.1, //depth_differential_threshold
-      8  //min_neighboors_for_normal
+      8,  //min_neighboors_for_normal
+      5, //epsilon_c
+      0.1, //epsilon_d
+      0.02, //epsilon_n
+      1, //epsilon_l
+      1, //epsilon_dl
+      1, //epsilon_p
+      1 //epsilon_dp
     );
         
     SphericalDepthImage sph_Image;

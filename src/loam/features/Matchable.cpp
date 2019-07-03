@@ -1,0 +1,31 @@
+#include "Matchable.hpp"
+
+namespace Loam{
+
+  Matchable::Matchable( 
+      const Eigen::Vector3f & p_m,
+      const Eigen::Matrix3f & R_m,
+      const Eigen::Matrix3f & Omega_m):
+    MatchableInterface( p_m, R_m, Omega_m)
+  {}
+
+  float Matchable::computeResidualError(
+      const PointNormalColor3fVectorCloud & t_points){
+    float cumulative_error = 0;
+    const int c = t_points.size();
+    for ( auto & p: t_points){
+      cumulative_error += computeDistance( p);
+    }
+    return cumulative_error/ c;
+  }
+
+  float Matchable::computeDistance(const  PointNormalColor3f & t_point){
+    std::cout<< "Calling a method that should be overriden by its subclasses\n";
+    return 0;
+  }
+
+  float Matchable::computeEigenvalueConstraint(){
+    std::cout<< "Calling a method that should be overriden by its subclasses\n";
+    return 0;
+  }
+}

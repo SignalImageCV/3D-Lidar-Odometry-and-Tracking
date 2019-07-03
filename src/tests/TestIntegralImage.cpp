@@ -32,7 +32,9 @@ namespace Loam{
           5, //epsilon_c
           0.1, //epsilon_d
           0.02, //epsilon_n
+          1, //epsilon_l
           1, //epsilon_dl
+          1, //epsilon_p
           1 //epsilon_dp
         );
      
