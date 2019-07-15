@@ -19,7 +19,7 @@ namespace Loam{
 
   float Line::computeEigenvalueConstraint(){
     Eigen::Vector3f diag = Omega_m.diagonal();
-    const float num = diag.x() + diag.y();
+    const float num = diag.y() + diag.z();
     const float denom = diag.x() + diag.y() + diag.z();
     return num/denom;
   }

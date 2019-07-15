@@ -520,6 +520,7 @@ namespace Loam{
       Eigen::Matrix3f sigma = S - mu * mu.transpose();
       Eigen::JacobiSVD<Eigen::Matrix3f> svd(sigma, Eigen::ComputeFullU | Eigen::ComputeFullV);
 
+      //remember (different from the paper) decreasing order for singularvalues (it follows that R is at reverse)
       Eigen::Matrix3f R = svd.matrixU();
       Eigen::Vector3f s = svd.singularValues();
       Eigen::Matrix3f Omega;

@@ -375,8 +375,8 @@ namespace Loam{
       2000, //num_points_ring
       10, //epsilon_times
       0.15, //epsilon_radius
-      1, //depth_differential_threshold
-      2,  //min_neighboors_for_normal
+      0.1, //depth_differential_threshold
+      8,  //min_neighboors_for_normal
       5, //epsilon_c
       0.1, //epsilon_d
       0.02, //epsilon_n
@@ -446,7 +446,7 @@ namespace Loam{
         PointNormalColor3fVectorCloud resulting_cloud= sph_Image.getPointCloud();
 
         first_canvas->putPoints(resulting_cloud);
-        Visualizer::drawNormals( first_canvas,  resulting_cloud);
+        //Visualizer::drawNormals( first_canvas,  resulting_cloud);
 
         second_canvas->putPoints(current_point_cloud);
 
@@ -459,7 +459,9 @@ namespace Loam{
 
 
   void Visualizer::drawingSampledSmoothness( ViewerCanvasPtr  canvas){
-    Eigen::Vector3f center( 0, 2, 0);
+    //todo solve the error given: in feature extractor the smoothness computation
+    //encounters a denominator close to zero even if the points are far from the origin
+    Eigen::Vector3f center( 7, 7, 7);
     float length_edge = 1;
     int precision = 9;
     std::vector<ScanPoint> cube_points =

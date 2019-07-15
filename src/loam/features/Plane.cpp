@@ -34,7 +34,8 @@ namespace Loam{
 
   float Plane::computeEigenvalueConstraint(){
     Eigen::Vector3f diag = Omega_m.diagonal();
-    const float num = diag.x();
+
+    const float num = diag.z();
     const float denom = diag.x() + diag.y() + diag.z();
     return num/denom;
  }

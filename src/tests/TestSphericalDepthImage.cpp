@@ -550,10 +550,10 @@ namespace Loam{
           3, //epsilon_c
           3, //epsilon_d
           0.1, //epsilon_n
-          1, //epsilon_l
-          1, //epsilon_dl
-          1, //epsilon_p
-          1 //epsilon_dp
+          0.1, //epsilon_l
+          3, //epsilon_dl
+          0.1, //epsilon_p
+          3 //epsilon_dp
         );
 
         PointNormalColor3f min_elev;
@@ -582,13 +582,12 @@ namespace Loam{
  
 
         PointNormalColor3fVectorCloud l1 = Visualizer::createLine(
-            Vector3f( 2.,3.,1.), Vector3f( 0.,0.,1.), 8, 0.5);
+            Vector3f( 2.,3.,1.), Vector3f( 0.,0.,1.), 8, 0.1);
         PointNormalColor3fVectorCloud l2 = Visualizer::createLine(
-            Vector3f( -4.,-2.,-2.), Vector3f( 0.,0.,-1.), 10, 1);
+            Vector3f( -4.,-2.,-2.), Vector3f( 0.,0.,-1.), 10, 0.2);
         PointNormalColor3fVectorCloud p1 = Visualizer::createPlane(
             Vector3f( 5.,5.,0.),Vector3f( 0.,0.,1.),
-            Vector3f( 1.,-1.,0.).normalized(), 4, 8, 0.5, 0.5);  // real  4 6 0.5 0.5 instad of  4 8 2 2
-
+            Vector3f( 1.,-1.,0.).normalized(), 4, 8, 0.5, 0.5);
   
 
         cloud.insert(
