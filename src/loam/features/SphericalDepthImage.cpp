@@ -454,36 +454,46 @@ namespace Loam{
 
 
     while ( iteration_count < iterations_limit
-        and goodIndexes.size() > m_params.epsilon_c){
+        and goodIndexes.size() > 0
+        and countPointsNotClustered() >= m_params.epsilon_c){
       ++iteration_count;
       std::cout<<"iteration n:"<< iteration_count<< "\n";
+      std::cout<<"not clustered num:"<< countPointsNotClustered() << "\n";
+
       if( alreadyClustered_hits_in_a_row > limit_hits_in_a_row){
         goodIndexes = fetchGoodSeedIndexes();
       }
 
-      std::random_device rd;
-      std::mt19937 gen( rd());
-      std::uniform_int_distribution<> dis(0, goodIndexes.size() -1);
-      int k  = goodIndexes[ dis( gen )];
+      if( goodIndexes.size() >0){
 
-      vector<int> indexImage_coords =  mapCartesianCoordsInIndexImage( m_cloud[k].coordinates());
-      int counter_list_pos = 0;
-      for( auto & elem: m_index_image[indexImage_coords[0]][indexImage_coords[1]]){
-        if( elem.getIndexContainer() == k and 
-            not elem.getIsClustered()){
-          alreadyClustered_hits_in_a_row = 0;
-          const int seed_row = indexImage_coords[0];
-          const int seed_col = indexImage_coords[1] ;
-          const int seed_list_pos = counter_list_pos ;
-          bool validClusterFlag = discoverClusterBoundaryIndexes(seed_row, seed_col, seed_list_pos); 
-          if( validClusterFlag ){
-            vector<int> seed = { seed_row, seed_col, seed_list_pos};
-            goodSeeds.push_back( seed);
+        std::random_device rd;
+        std::mt19937 gen( rd());
+        std::uniform_int_distribution<> dis(0, goodIndexes.size() -1);
+        int k  = goodIndexes[ dis( gen )];
+
+        vector<int> indexImage_coords =  mapCartesianCoordsInIndexImage( m_cloud[k].coordinates());
+        int counter_list_pos = 0;
+        for( auto & elem: m_index_image[indexImage_coords[0]][indexImage_coords[1]]){
+          if( elem.getIndexContainer() == k and 
+              not elem.getIsClustered()){
+            alreadyClustered_hits_in_a_row = 0;
+            const int seed_row = indexImage_coords[0];
+            const int seed_col = indexImage_coords[1] ;
+            const int seed_list_pos = counter_list_pos ;
+            bool validClusterFlag = discoverClusterBoundaryIndexes(seed_row, seed_col, seed_list_pos); 
+            if( validClusterFlag ){
+              vector<int> seed = { seed_row, seed_col, seed_list_pos};
+              goodSeeds.push_back( seed);
+            }
           }
+          else if (elem.getIsClustered()){
+            ++alreadyClustered_hits_in_a_row;
+          }
+          ++counter_list_pos;
         }
-        ++counter_list_pos;
       }
     }
+    cout << "good seeds size "<< goodSeeds.size()<<"\n";
 
     for( auto & seed: goodSeeds){
       const int seed_row = seed[0];
@@ -522,18 +532,22 @@ namespace Loam{
       Line l  = Line( mu, R, Omega);
       const float eigenval_constr_line  =  l.computeEigenvalueConstraint();
       const float err_line = l.computeResidualError( currPoints);
+      cout << "eigenval_constr_line " << eigenval_constr_line << "\n err_line "<< err_line <<"\n";
 
       if ( eigenval_constr_line < m_params.epsilon_l and
           err_line < m_params.epsilon_dl){
+        cout<< "Is a line !\n";
         matchables.push_back( l);
       }
       else{
         Plane p = Plane( mu, R, Omega);
         const float eigenval_constr_plane =  p.computeEigenvalueConstraint();
         const float err_plane = p.computeResidualError( currPoints);
+        cout << "eigenval_constr_plane " << eigenval_constr_plane<< "\n err_plane"<< err_plane<<"\n";
 
         if ( eigenval_constr_plane < m_params.epsilon_p and
             err_plane< m_params.epsilon_dp){
+          cout<< "Is a plane !\n";
           matchables.push_back( p);
         }
       }
@@ -547,8 +561,8 @@ namespace Loam{
     PointNormalColor3fVectorCloud pointsInside;
     pointsInside.reserve( m_cloud.size());
 
-    for (unsigned int row =t_rowMin; row <t_rowMax ; ++row){
-      for (unsigned int col=t_colMin;  col <t_colMax ; ++col){
+    for (int row =t_rowMin; row <= t_rowMax ; ++row){
+      for (int col=t_colMin;  col <= t_colMax ; ++col){
         list<DataPoint> listPoints = getListDataPointsAt( row, col);
         for ( auto & e: listPoints ){
           pointsInside.push_back( m_cloud[e.getIndexContainer()] );
@@ -562,8 +576,8 @@ namespace Loam{
     vector<int> goodIndexes;
     goodIndexes.reserve( m_cloud.size());
 
-    for (unsigned int row =0; row <m_index_image.size() ; ++row){
-      for (unsigned int col=0; col <m_index_image[0].size(); ++col){
+    for (unsigned int row =0; row < m_index_image.size() ; ++row){
+      for (unsigned int col=0; col < m_index_image[0].size(); ++col){
         for ( auto& entry : m_index_image[row][col]){
           if( not entry.getIsClustered()){
             goodIndexes.push_back( entry.getIndexContainer());
@@ -574,6 +588,32 @@ namespace Loam{
     return goodIndexes;
   }
 
+  int SphericalDepthImage::countPointsNotClustered(){
+    int not_clustered_points = 0;
+    for (unsigned int row =0; row <m_index_image.size() ; ++row){
+      for (unsigned int col=0; col <m_index_image[0].size(); ++col){
+        for ( auto& entry : m_index_image[row][col]){
+          if( not entry.getIsClustered()){
+            ++not_clustered_points;
+          }
+        }
+      }
+    }
+    return not_clustered_points;
+  }
+
+
+  int SphericalDepthImage::countPointsIndexImage(){
+    int points= 0;
+    for (unsigned int row =0; row <m_index_image.size() ; ++row){
+      for (unsigned int col=0; col <m_index_image[0].size(); ++col){
+        for ( auto & elem: m_index_image[row][col]){
+          ++points;
+        }
+      }
+    }
+    return points;
+  }
 
   bool SphericalDepthImage::expandClusterBoundariesUp( DataPoint & t_seed_point,int & t_included_points_count){
 
@@ -589,7 +629,6 @@ namespace Loam{
     }
 
     bool hasExpanded= true;
-    int current_added_points = 0;
 
     for( int c = old_col_min; c < old_col_max; ++c){
       for( auto & new_entry: m_index_image[new_row_min][c]){
@@ -602,25 +641,25 @@ namespace Loam{
             m_cloud[ old_entry.getIndexContainer()].coordinates();
           const Eigen::Vector3f old_normal = 
             m_cloud[ old_entry.getIndexContainer()].normal();
-          //todo
-          //it actually never enters in this part
-          //why >?????
-       
 
-          if (new_entry.getIsClustered() or
-              (new_cart_coords - old_cart_coords).norm() > m_params.epsilon_d or
-              new_normal.transpose() * old_normal < m_params.epsilon_n){
+          const float diff_cart =  (new_cart_coords - old_cart_coords).norm();
+          const float diff_normal = 1 - (new_normal.transpose() * old_normal);
+
+          if (new_entry.getIsClustered() or diff_cart > m_params.epsilon_d or diff_normal > m_params.epsilon_n){
             hasExpanded= false;
           }
         }
-        ++current_added_points;
       }
     }
        
     if (hasExpanded){
       vector<int> new_boundaries = { new_row_min, old_row_max, old_col_min, old_col_max };
       t_seed_point.setBoundaries( new_boundaries);
-      t_included_points_count += current_added_points;
+      for( int c = old_col_min; c < old_col_max; ++c){
+        for( auto & new_entry: m_index_image[new_row_min][c]){
+          ++t_included_points_count;
+        }
+      }
     }
     return hasExpanded;
   }
@@ -638,7 +677,6 @@ namespace Loam{
       
 
     bool hasExpanded= true;
-    int current_added_points= 0;
     for( int c = old_col_min; c < old_col_max; ++c){
       for( auto & new_entry: m_index_image[new_row_max][c]){
         const Eigen::Vector3f new_cart_coords = 
@@ -651,19 +689,23 @@ namespace Loam{
           const Eigen::Vector3f old_normal = 
             m_cloud[ old_entry.getIndexContainer()].normal();
        
-          if (new_entry.getIsClustered() or
-              (new_cart_coords - old_cart_coords).norm() > m_params.epsilon_d or
-              new_normal.transpose() * old_normal < m_params.epsilon_n){
+          const float diff_cart =  (new_cart_coords - old_cart_coords).norm();
+          const float diff_normal = 1 - (new_normal.transpose() * old_normal);
+
+          if (new_entry.getIsClustered() or diff_cart > m_params.epsilon_d or diff_normal > m_params.epsilon_n){
             hasExpanded= false;
           }
         }
-        ++current_added_points;
       }
     }
     if (hasExpanded){
       vector<int> new_boundaries = { old_row_min, new_row_max, old_col_min, old_col_max };
       t_seed_point.setBoundaries( new_boundaries);
-      t_included_points_count+= current_added_points;
+      for( int c = old_col_min; c < old_col_max; ++c){
+        for( auto & new_entry: m_index_image[new_row_max][c]){
+          ++t_included_points_count;
+        }
+      }
     }
     return hasExpanded;
   }
@@ -686,9 +728,7 @@ namespace Loam{
 
 
     bool hasExpanded= true;
-    int current_added_points = 0;
     for( int r = old_row_min; r < old_row_max; ++r){
-
       for( auto & new_entry: m_index_image[r][new_col_min]){
         const Eigen::Vector3f new_cart_coords = 
           m_cloud[ new_entry.getIndexContainer()].coordinates();
@@ -700,19 +740,23 @@ namespace Loam{
           const Eigen::Vector3f old_normal = 
             m_cloud[ old_entry.getIndexContainer()].normal();
        
-          if (new_entry.getIsClustered() or
-              (new_cart_coords - old_cart_coords).norm() > m_params.epsilon_d or
-              new_normal.transpose() * old_normal < m_params.epsilon_n){
+          const float diff_cart =  (new_cart_coords - old_cart_coords).norm();
+          const float diff_normal = 1 - (new_normal.transpose() * old_normal);
+
+          if (new_entry.getIsClustered() or diff_cart > m_params.epsilon_d or diff_normal > m_params.epsilon_n){
             hasExpanded= false;
           }
         }
-        ++current_added_points;
       }
     }
     if (hasExpanded){
       vector<int> new_boundaries = { old_row_min, old_row_max, new_col_min, old_col_max };
       t_seed_point.setBoundaries( new_boundaries);
-      t_included_points_count+= current_added_points;
+      for( int r = old_row_min; r < old_row_max; ++r){
+        for( auto & new_entry: m_index_image[r][new_col_min]){
+          ++t_included_points_count;
+        }
+      }
     }
     return hasExpanded;
   }
@@ -734,7 +778,6 @@ namespace Loam{
     }
 
     bool hasExpanded= true;
-    int current_added_points= 0;
     for( int r = old_row_min; r < old_row_max; ++r){
       for( auto & new_entry: m_index_image[r][new_col_max]){
         const Eigen::Vector3f new_cart_coords = 
@@ -746,20 +789,25 @@ namespace Loam{
             m_cloud[ old_entry.getIndexContainer()].coordinates();
           const Eigen::Vector3f old_normal = 
             m_cloud[ old_entry.getIndexContainer()].normal();
-       
-          if (new_entry.getIsClustered() or
-              (new_cart_coords - old_cart_coords).norm() > m_params.epsilon_d or
-              new_normal.transpose() * old_normal < m_params.epsilon_n){
+
+          const float diff_cart =  (new_cart_coords - old_cart_coords).norm();
+          const float diff_normal = 1 - (new_normal.transpose() * old_normal);
+          
+          if (new_entry.getIsClustered() or diff_cart > m_params.epsilon_d or diff_normal > m_params.epsilon_n){
             hasExpanded= false;
           }
         }
-        ++current_added_points;
       }
     }
     if (hasExpanded){
       vector<int> new_boundaries = { old_row_min, old_row_max, old_col_min, new_col_max };
       t_seed_point.setBoundaries( new_boundaries);
-      t_included_points_count += current_added_points;
+
+      for( int r = old_row_min; r < old_row_max; ++r){
+        for( auto & new_entry: m_index_image[r][new_col_max]){
+          ++t_included_points_count;
+        }
+      }
     }
     return hasExpanded;
   }
@@ -768,8 +816,16 @@ namespace Loam{
     
     vector<int> curr_boundaries = { t_seed_row, t_seed_row, t_seed_col, t_seed_col};
 
+    cout<< "old_boundaries";
+    cout<< curr_boundaries[0]<< " ";
+    cout<< curr_boundaries[1]<< " ";
+    cout<< curr_boundaries[2]<< " ";
+    cout<< curr_boundaries[3]<< " ";
+    cout << "\n";
+
     auto curr_seed= std::next( m_index_image[t_seed_row][t_seed_col].begin(), t_seed_list_position);
     curr_seed->setBoundaries( curr_boundaries);
+
 
     int num_included_points = 0;
     bool topFree = true;
@@ -778,10 +834,15 @@ namespace Loam{
     bool rightFree = true;
     int direction_counter = 0;
     int iteration_counter= 0;
+    int times_no_points_added_in_a_row = 0;
+    int threshold_not_added_in_a_row = 8;
+    int old_num_included_points = num_included_points;
     const int iteration_limit = m_index_image.size()+ m_index_image[0].size() ;
     while (
       (topFree or downFree or leftFree or rightFree) and
-      iteration_counter < iteration_limit ){
+      iteration_counter < iteration_limit and
+      times_no_points_added_in_a_row < threshold_not_added_in_a_row
+      ){
         switch( direction_counter % 4){
           case(0):
             topFree = expandClusterBoundariesUp( *curr_seed, num_included_points);
@@ -798,8 +859,25 @@ namespace Loam{
           }
         ++direction_counter;
         ++iteration_counter;
+        if ( num_included_points == old_num_included_points){
+          ++times_no_points_added_in_a_row;
+        }else{
+          times_no_points_added_in_a_row = 0;
+        }
+        old_num_included_points = num_included_points;
     }
     markClusteredPoints( *curr_seed);
+
+    vector<int> new_boundaries  = curr_seed->getBoundaries();
+    cout<< "new_boundaries ";
+    cout<< new_boundaries[0]<< " ";
+    cout<< new_boundaries[1]<< " ";
+    cout<< new_boundaries[2]<< " ";
+    cout<< new_boundaries[3]<< " ";
+    cout << "\n";
+
+    cout<< "num_included_points " << num_included_points << "\n";
+    
     return num_included_points >=  m_params.epsilon_c;
   }
 
@@ -812,12 +890,13 @@ namespace Loam{
     const int row_max = boundaries[1];
     const int col_min = boundaries[2];
     const int col_max = boundaries[3];
+    int xx = 0;
 
-
-    for( unsigned int r = row_min; r < row_max; ++r){
-      for( unsigned int c = col_min; c < col_max; ++c){
+    for( int r = row_min; r <= row_max; ++r){
+      for( int c = col_min; c <= col_max; ++c){
         for( auto & elem: m_index_image[r][c]){
           elem.setIsClustered( true);
+          ++xx;
         }
       }
     }
@@ -830,13 +909,13 @@ namespace Loam{
         (m_max_elevation - m_min_elevation) / m_params.num_vertical_rings);
     const float elevation_normalized = t_elevation - m_min_elevation;
     int u= static_cast<int>( floor( elevation_normalized/ interval_elevation ));
-    if ( u == -1){ u= 0; } 
+    if ( u == -1){ ++u; } 
     if ( u == m_params.num_vertical_rings ){ --u;};
 
     const double interval_azimuth = static_cast<double>( 2*M_PI / m_params.num_points_ring);
     const double azimuth_normalized = t_azimuth + M_PI;
     int v= static_cast<int>( floor(azimuth_normalized / interval_azimuth));
-    if ( v == -1){ v= 0; } 
+    if ( v == -1){ ++v; } 
     if ( v == m_params.num_points_ring){ --v;};
 
     vector<int> result;

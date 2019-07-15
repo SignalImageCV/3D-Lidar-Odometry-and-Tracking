@@ -229,8 +229,9 @@ namespace Loam{
     PointNormalColor3fVectorCloud l2 = Visualizer::createLine(
         Vector3f( -7.,7.,-7.), Vector3f( 0.,1.,1.), 30, 0.01);
     PointNormalColor3fVectorCloud p1 = Visualizer::createPlane(
-        Vector3f( 2.,-7.,0.), Vector3f( 1.,0.,0.), Vector3f( 0.,0.,1.),
-        10, 20, 0.1, 0.1);
+        Vector3f( 5.,5.,0.), Vector3f( 0.,0.,1.), Vector3f( 1.,-1.,0.).normalized(),
+        2, 3, 0.1, 0.1);
+
     while(ViewerCoreSharedQGL::isRunning()){
       canvas->pushPointSize();
       canvas->setPointSize(2.0);

@@ -133,6 +133,7 @@ namespace Loam{
       }
     };
 
+
  
   TEST_F( SDIFixture_elevation, extimateMinMaxElev){
 
@@ -196,6 +197,8 @@ namespace Loam{
     ASSERT_EQ( index_image_result.size(), 4 );
     ASSERT_TRUE( index_image_result[0].size() >0 );
     ASSERT_EQ( index_image_result[0].size() , 24 );
+    //ASSERT_EQ( sph_Image.countPointsIndexImage(), 8);
+    //ASSERT_EQ( sph_Image.countPointsNotClustered(), 8);
 
 
     //p1
@@ -467,6 +470,68 @@ namespace Loam{
     sph_Image_vertical.removePointsWithoutNormal();
     ASSERT_EQ( sph_Image_vertical.getPointCloud().size(), 3);
   }
+  class SDIFixture_DiscoverBoudariesClusters: public testing::Test {
+    protected:
+      SphericalDepthImage sph_Image;
+      PointNormalColor3fVectorCloud cloud;
+
+      void SetUp() override{
+
+        const sphericalImage_params params(
+          40, //num_vertical_rings
+          40, //num_points_ring
+          0, //epsilon_times
+          0, //epsilon_radius
+          1, //depth_differential_threshold
+          7,  //min_neighboors_for_normal
+          5, //epsilon_c
+          3, //epsilon_d
+          0.1, //epsilon_n
+          1, //epsilon_l
+          1, //epsilon_dl
+          1, //epsilon_p
+          1 //epsilon_dp
+        );
+
+        PointNormalColor3f min_elev;
+        min_elev.coordinates() = Vector3f( 5,5,10);
+        cloud.push_back( min_elev);
+        PointNormalColor3f max_elev;
+        max_elev.coordinates() = Vector3f( 5,5,-10);
+        cloud.push_back( max_elev);
+
+        PointNormalColor3fVectorCloud p1 = Visualizer::createPlane(
+            Vector3f( 5.,5.,0.),Vector3f( 0.,0.,1.),
+            Vector3f( 1.,-1.,0.).normalized(), 4, 6, 0.5, 0.5); 
+
+        cloud.insert(
+          cloud.end(),
+          std::make_move_iterator( p1.begin()),
+          std::make_move_iterator( p1.end())
+        );
+        sph_Image = SphericalDepthImage(cloud,params);
+      }
+    };
+
+
+  TEST_F( SDIFixture_DiscoverBoudariesClusters, discoverClusterBoundaryIndexes){
+    sph_Image.initializeIndexImage();
+
+    ASSERT_EQ( sph_Image.countPointsNotClustered(), cloud.size() );
+    IntegralImage integ_img =  sph_Image.collectNormals();
+    int k = 4;
+    vector<int> indexes=  sph_Image.mapCartesianCoordsInIndexImage(cloud[k].coordinates());
+    bool completedWithSuccess  = sph_Image.discoverClusterBoundaryIndexes(indexes[0], indexes[1],0);
+    ASSERT_TRUE( completedWithSuccess);
+    ASSERT_EQ( sph_Image.countPointsNotClustered(), 0 );
+
+    //TOdo there is adifference between the num of points actually clustered after the discovery
+    //of boundaries and the number that is returned by the method that will be used with the treshold
+    // i suspect that it depends by the fact that the initial points for every direction ( namely four)
+    // are not considered in the second number, in fact it is short of four to the correct number
+
+  }
+
 
   class SDIFixture_clustering: public testing::Test {
     protected:
@@ -476,31 +541,37 @@ namespace Loam{
       void SetUp() override{
 
         const sphericalImage_params params(
-          105, //num_vertical_rings
-          360, //num_points_ring
+          40, //num_vertical_rings
+          40, //num_points_ring
           0, //epsilon_times
           0, //epsilon_radius
           1, //depth_differential_threshold
-          4,  //min_neighboors_for_normal
-          5, //epsilon_c
-          0.1, //epsilon_d
-          0.02, //epsilon_n
+          7,  //min_neighboors_for_normal
+          3, //epsilon_c
+          3, //epsilon_d
+          0.1, //epsilon_n
           1, //epsilon_l
           1, //epsilon_dl
           1, //epsilon_p
           1 //epsilon_dp
         );
 
+        PointNormalColor3f min_elev;
+        min_elev.coordinates() = Vector3f( 5,5,10);
+        cloud.push_back( min_elev);
+        PointNormalColor3f max_elev;
+        max_elev.coordinates() = Vector3f( 5,5,-10);
+        cloud.push_back( max_elev);
 
         PointNormalColor3fVectorCloud noise;
         noise.resize(7);
-        Vector3f coords_p_1 = Vector3f(4., 4., 4. );
-        Vector3f coords_p_2 = Vector3f(3., 3., 8. );
-        Vector3f coords_p_3 = Vector3f(1., 1., 5. );
-        Vector3f coords_p_4 = Vector3f(7., 1., 2. );
-        Vector3f coords_p_5 = Vector3f(7., 7., 3. );
-        Vector3f coords_p_6 = Vector3f(1., 7., 4. );
-        Vector3f coords_p_7 = Vector3f(3., 5., 0. );
+        Vector3f coords_p_1 = Vector3f(-4., 4., 4. );
+        Vector3f coords_p_2 = Vector3f(3., -3., 8. );
+        Vector3f coords_p_3 = Vector3f(-1., 1., 5. );
+        Vector3f coords_p_4 = Vector3f(7., -1., 2. );
+        Vector3f coords_p_5 = Vector3f(-7., -7., 3. );
+        Vector3f coords_p_6 = Vector3f(-1., -7., 4. );
+        Vector3f coords_p_7 = Vector3f(3., -5., 0. );
         noise[0].coordinates() = coords_p_1;
         noise[1].coordinates() = coords_p_2;
         noise[2].coordinates() = coords_p_3;
@@ -511,44 +582,45 @@ namespace Loam{
  
 
         PointNormalColor3fVectorCloud l1 = Visualizer::createLine(
-            Vector3f( 2.,3.,1.), Vector3f( 0.,0.,1.), 2, 0.5);
+            Vector3f( 2.,3.,1.), Vector3f( 0.,0.,1.), 8, 0.5);
         PointNormalColor3fVectorCloud l2 = Visualizer::createLine(
-            Vector3f( -4.,-2.,-2.), Vector3f( 0.,0.,-1.), 6, 1);
+            Vector3f( -4.,-2.,-2.), Vector3f( 0.,0.,-1.), 10, 1);
         PointNormalColor3fVectorCloud p1 = Visualizer::createPlane(
-            Vector3f( 2.,-7.,0.), Vector3f( 1.,0.,0.),
-            Vector3f( 0.,0.,1.), 2, 3, 0.5, 0.5);
+            Vector3f( 5.,5.,0.),Vector3f( 0.,0.,1.),
+            Vector3f( 1.,-1.,0.).normalized(), 4, 8, 0.5, 0.5);  // real  4 6 0.5 0.5 instad of  4 8 2 2
+
   
 
-        //cloud.insert(
-         // cloud.end(),
-         // std::make_move_iterator( l1.begin()),
-         // std::make_move_iterator( l1.end())
-         // );
+        cloud.insert(
+          cloud.end(),
+          std::make_move_iterator( l1.begin()),
+          std::make_move_iterator( l1.end())
+        );
 
-        //cloud.insert(
-         // cloud.end(),
-         // std::make_move_iterator( l2.begin()),
-         // std::make_move_iterator( l2.end())
-         // );
+        cloud.insert(
+          cloud.end(),
+          std::make_move_iterator( l2.begin()),
+          std::make_move_iterator( l2.end())
+        );
 
         cloud.insert(
           cloud.end(),
           std::make_move_iterator( p1.begin()),
           std::make_move_iterator( p1.end())
-          );
+        );
 
         sph_Image = SphericalDepthImage(cloud,params);
 
       }
-
     };
 
   TEST_F( SDIFixture_clustering, clusterizeFeatures){
-    sph_Image.initializeIndexImage();
+   sph_Image.initializeIndexImage();
     IntegralImage integ_img =  sph_Image.collectNormals();
     std::vector<Matchable> matchables = sph_Image.clusterizeCloud( integ_img);
 
-    ASSERT_EQ( matchables.size(), 2 );
+    ASSERT_EQ( matchables.size(), 3 );
   }
+ 
 }
 

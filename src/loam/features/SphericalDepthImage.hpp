@@ -132,6 +132,9 @@ namespace Loam{
 
       vector<int> fetchGoodSeedIndexes();
 
+      int countPointsIndexImage();
+      int countPointsNotClustered();
+
       PointNormalColor3fVectorCloud fetchPointsInBoundaries(
           const int t_rowMin,const int t_rowMax,const int t_colMin,const int t_colMax);
  
