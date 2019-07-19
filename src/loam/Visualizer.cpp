@@ -369,6 +369,7 @@ namespace Loam{
     }
   }
 
+
   void Visualizer::visualizeCleanedClouds( ViewerCanvasPtr first_canvas, ViewerCanvasPtr second_canvas, const  string & filename){
     const sphericalImage_params params(
       60, //num_vertical_rings

@@ -15,6 +15,23 @@ namespace Loam{
     Vector2f min_max_elevation = extimateMinMaxElevation( t_cloud);
     m_min_elevation = min_max_elevation.x();
     m_max_elevation = min_max_elevation.y();
+
+    m_drawing_index_img.create( t_params.num_vertical_rings, t_params.num_points_ring);
+    m_drawing_index_img= cv::Vec3b(253, 246, 227);
+    //cv::namedWindow("IndexImage");
+    //cv::moveWindow("IndexImage", 20, 40);
+
+    m_drawing_normals.create( t_params.num_vertical_rings, t_params.num_points_ring);
+    m_drawing_normals= cv::Vec3b(227, 246, 253);
+    //cv::namedWindow("NormalsImage");
+    //cv::moveWindow("NormalsImage", 120, 40);
+
+    //m_drawing_clusters.create( t_params.num_vertical_rings, t_params.num_points_ring);
+    //m_drawing_clusters= cv::Vec3b(227, 246, 253);
+    //cv::namedWindow("ClustersImg");
+    //cv::moveWindow("ClustersImg", 220, 40);
+
+
   }
 
   void SphericalDepthImage::executeOperations(){
@@ -432,14 +449,10 @@ namespace Loam{
     return integ_img;
   }
 
-  vector<Matchable>  SphericalDepthImage::clusterizeCloud( IntegralImage & t_integ_img){
-
-    //choose better values
-    vector<Matchable> matchables;
-    matchables.reserve( m_cloud.size());
+  vector< vector< int>> SphericalDepthImage::findGoodClusterSeeds(){
 
     vector< vector< int>> goodSeeds;
-    goodSeeds.reserve( m_cloud.size());
+    goodSeeds.reserve( m_cloud.size()/m_params.epsilon_c);
 
     vector<int> goodIndexes;
     goodIndexes.resize( m_cloud.size());
@@ -493,7 +506,17 @@ namespace Loam{
         }
       }
     }
-    cout << "good seeds size "<< goodSeeds.size()<<"\n";
+    return goodSeeds;
+  }
+
+
+  vector<Matchable>  SphericalDepthImage::clusterizeCloud( IntegralImage & t_integ_img){
+
+
+    vector< vector< int>> goodSeeds =  findGoodClusterSeeds();
+
+    vector<Matchable> matchables;
+    matchables.reserve( m_cloud.size()/m_params.epsilon_c);
 
     for( auto & seed: goodSeeds){
       const int seed_row = seed[0];
@@ -977,6 +1000,103 @@ namespace Loam{
     float y = proj * sin( t_spher_coords.x());
     return Vector3f( x,y,z) ;
   };
+
+
+  void SphericalDepthImage::drawImages( const int imageSelector){
+    drawIndexImg();
+    if( imageSelector > 0){
+      drawNormalsImg();
+    }
+    //if( imageSelector > 1){
+    //  drawClustersImg();
+    //}
+    showImages( imageSelector);
+  }
+
+  RGBImage SphericalDepthImage::drawIndexImg(){
+
+    std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >  colors;
+    const int num_colors = 100;
+    colors.resize(num_colors+1);
+    for(size_t i=0; i < colors.size(); ++i) {
+      colors[i]= Vector3f(
+          227.f* float(i)/num_colors,
+          246.f* (1 - float(i)/num_colors),
+          253.f* float(i)/num_colors);
+    }
+    colors[num_colors] = Vector3f( 255.f,207.f,130.f);
+
+    const float max_depth = 30;
+
+    for (unsigned int row =0; row <m_index_image.size() ; ++row){
+      for (unsigned int col=0; col <m_index_image[0].size(); ++col){
+        int counter = 0;
+        float cumulative_depth =0;
+        for ( auto & elem: m_index_image[row][col]){
+          Vector3f spherical  =directMappingFunc( m_cloud[ elem.getIndexContainer()].coordinates() );
+          cumulative_depth+= spherical.z();
+          ++counter;
+        }
+        int color_index = 0; 
+        float avg_depth;
+        if ( counter >0){
+          avg_depth =  cumulative_depth/counter;
+          if ( avg_depth > max_depth) {
+            color_index = num_colors-1;
+          }
+          else{
+            color_index = avg_depth * (num_colors-1) / max_depth;
+          }
+        }
+        else{
+          color_index= num_colors;
+        }
+        m_drawing_index_img.at<cv::Vec3b>( row,col) =
+        cv::Vec3b(colors[color_index].x() ,colors[color_index].y() ,colors[color_index].z());
+      }
+    }
+    return m_drawing_index_img;
+  }
+
+  RGBImage SphericalDepthImage::drawNormalsImg(){
+    for (unsigned int row =0; row <m_index_image.size() ; ++row){
+      for (unsigned int col=0; col <m_index_image[0].size(); ++col){
+        int counter = 0;
+        Vector3f cumulative_normal = Vector3f( 0.f,0.f,0.f);
+        for ( auto & elem: m_index_image[row][col]){
+          cumulative_normal += directMappingFunc( m_cloud[ elem.getIndexContainer()].normal() );
+          ++counter;
+        }
+        Vector3f avg_normal;
+        if ( counter >0){
+          avg_normal=  cumulative_normal.normalized() ;
+          m_drawing_normals.at<cv::Vec3b>( row,col) =
+            cv::Vec3b( 255.f*avg_normal.x(), 255.f* avg_normal.y(), 255.f* avg_normal.z());
+            //cout << "normal values : "<< avg_normal.x() << " " << avg_normal.y() << " " << avg_normal.z() << " \n";
+        }
+        else{
+          m_drawing_normals.at<cv::Vec3b>( row,col) =
+            cv::Vec3b( 255.f, 255.f, 255.f);
+        
+        }
+      }
+    }
+    return m_drawing_normals;
+  }
+  //void SphericalDepthImage::drawClustersImg(){
+  //}
+
+
+  void SphericalDepthImage::showImages( const int imageSelector){
+    cv::imshow("IndexImg",m_drawing_index_img);
+    if( imageSelector > 0){
+      cv::imshow("NormalsImg",m_drawing_normals);
+    }
+    //if( imageSelector > 1){
+    //  cv::imshow("ClustersImg",m_drawing_clusters);
+    //}
+    cv::waitKey(1);
+  }
 
 
 }

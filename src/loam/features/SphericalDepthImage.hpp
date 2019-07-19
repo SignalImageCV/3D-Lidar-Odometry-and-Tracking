@@ -3,6 +3,7 @@
 #include <srrg_messages/instances.h>
 #include <random>
 
+#include "opencv2/opencv.hpp"
 
 #include "DataPoint.hpp"
 #include "IntegralImage.hpp"
@@ -78,6 +79,8 @@ namespace Loam{
   }sphericalImage_params;
 
 
+  typedef cv::Mat_< cv::Vec3b > RGBImage;
+
   class SphericalDepthImage {
      protected:
        //this matrix is both the index matrix I and the spherical depth matrix D
@@ -86,6 +89,9 @@ namespace Loam{
        sphericalImage_params m_params;
        float m_min_elevation;
        float m_max_elevation;
+       RGBImage m_drawing_index_img;
+       RGBImage m_drawing_normals;
+       RGBImage m_drawing_clusters;
       
 
      public:
@@ -121,6 +127,9 @@ namespace Loam{
       IntegralImage computePointNormals();
 
       vector<Matchable> clusterizeCloud(IntegralImage & t_integ_img);
+
+      vector< vector< int>> findGoodClusterSeeds();
+
       bool expandClusterBoundariesUp( DataPoint & t_seed_point,int & t_included_points_count);
       bool expandClusterBoundariesDown( DataPoint & t_seed_point,int & t_included_points_count);
       bool expandClusterBoundariesLeft( DataPoint & t_seed_point,int & t_included_points_count);
@@ -151,6 +160,13 @@ namespace Loam{
       static  Vector3f directMappingFunc(const Vector3f & t_cart_coords);
 
       static  Vector3f inverseMappingFunc(const Vector3f & t_spher_coords);
+
+
+      void drawImages( const int imageSelector);
+      RGBImage drawIndexImg();
+      RGBImage drawNormalsImg();
+      //void drawClustersImg();
+      void showImages( const int imageSelector);
 
 
 

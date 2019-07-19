@@ -63,6 +63,32 @@ target_link_libraries(test_drawLinesPlanes
   pthread
   )
 
+add_executable(test_draw2DindexImg
+  TestDraw2DindexImg.cpp
+  )
+target_link_libraries(test_draw2DindexImg
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${OpenCV_LIBS}
+  ${catkin_LIBRARIES}
+  )
+
+add_executable(test_draw2Dnormals
+  TestDraw2Dnormals.cpp
+  )
+target_link_libraries(test_draw2Dnormals
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${OpenCV_LIBS}
+  ${catkin_LIBRARIES}
+  )
+
+
+
 
 
 add_executable(test_fullCloud
