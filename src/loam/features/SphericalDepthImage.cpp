@@ -15,23 +15,6 @@ namespace Loam{
     Vector2f min_max_elevation = extimateMinMaxElevation( t_cloud);
     m_min_elevation = min_max_elevation.x();
     m_max_elevation = min_max_elevation.y();
-
-    m_drawing_index_img.create( t_params.num_vertical_rings, t_params.num_points_ring);
-    m_drawing_index_img= cv::Vec3b(253, 246, 227);
-    //cv::namedWindow("IndexImage");
-    //cv::moveWindow("IndexImage", 20, 40);
-
-    m_drawing_normals.create( t_params.num_vertical_rings, t_params.num_points_ring);
-    m_drawing_normals= cv::Vec3b(227, 246, 253);
-    //cv::namedWindow("NormalsImage");
-    //cv::moveWindow("NormalsImage", 120, 40);
-
-    //m_drawing_clusters.create( t_params.num_vertical_rings, t_params.num_points_ring);
-    //m_drawing_clusters= cv::Vec3b(227, 246, 253);
-    //cv::namedWindow("ClustersImg");
-    //cv::moveWindow("ClustersImg", 220, 40);
-
-
   }
 
   void SphericalDepthImage::executeOperations(){
@@ -1002,18 +985,11 @@ namespace Loam{
   };
 
 
-  void SphericalDepthImage::drawImages( const int imageSelector){
-    drawIndexImg();
-    if( imageSelector > 0){
-      drawNormalsImg();
-    }
-    //if( imageSelector > 1){
-    //  drawClustersImg();
-    //}
-    showImages( imageSelector);
-  }
-
   RGBImage SphericalDepthImage::drawIndexImg(){
+    RGBImage result_img;
+    result_img.create( m_params.num_vertical_rings, m_params.num_points_ring);
+    result_img = cv::Vec3b(253, 246, 227);
+    
 
     std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >  colors;
     const int num_colors = 100;
@@ -1051,14 +1027,18 @@ namespace Loam{
         else{
           color_index= num_colors;
         }
-        m_drawing_index_img.at<cv::Vec3b>( row,col) =
+        result_img.at<cv::Vec3b>( row,col) =
         cv::Vec3b(colors[color_index].x() ,colors[color_index].y() ,colors[color_index].z());
       }
     }
-    return m_drawing_index_img;
+    return result_img;
   }
 
   RGBImage SphericalDepthImage::drawNormalsImg(){
+    RGBImage result_img;
+    result_img.create( m_params.num_vertical_rings, m_params.num_points_ring);
+    result_img = cv::Vec3b(253, 246, 227);
+ 
     for (unsigned int row =0; row <m_index_image.size() ; ++row){
       for (unsigned int col=0; col <m_index_image[0].size(); ++col){
         int counter = 0;
@@ -1070,34 +1050,26 @@ namespace Loam{
         Vector3f avg_normal;
         if ( counter >0){
           avg_normal=  cumulative_normal.normalized() ;
-          m_drawing_normals.at<cv::Vec3b>( row,col) =
+          result_img.at<cv::Vec3b>( row,col) =
             cv::Vec3b( 255.f*avg_normal.x(), 255.f* avg_normal.y(), 255.f* avg_normal.z());
             //cout << "normal values : "<< avg_normal.x() << " " << avg_normal.y() << " " << avg_normal.z() << " \n";
         }
         else{
-          m_drawing_normals.at<cv::Vec3b>( row,col) =
+          result_img.at<cv::Vec3b>( row,col) =
             cv::Vec3b( 255.f, 255.f, 255.f);
-        
         }
       }
     }
-    return m_drawing_normals;
-  }
-  //void SphericalDepthImage::drawClustersImg(){
-  //}
-
-
-  void SphericalDepthImage::showImages( const int imageSelector){
-    cv::imshow("IndexImg",m_drawing_index_img);
-    if( imageSelector > 0){
-      cv::imshow("NormalsImg",m_drawing_normals);
-    }
-    //if( imageSelector > 1){
-    //  cv::imshow("ClustersImg",m_drawing_clusters);
-    //}
-    cv::waitKey(1);
+    return result_img;
   }
 
+  RGBImage SphericalDepthImage::drawClustersImg(){
+    RGBImage result_img;
+    result_img.create( m_params.num_vertical_rings, m_params.num_points_ring);
+    result_img = cv::Vec3b(253, 246, 227);
+ 
+    return result_img;
+  }
 
 }
 

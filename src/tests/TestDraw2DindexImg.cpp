@@ -23,16 +23,24 @@ int main( int argc, char** argv){
       1, //epsilon_p
       1 //epsilon_dp
     );
-        
+
   SphericalDepthImage sph_Image;
   DatasetManager dM( filename);
+
+  RGBImage index_img; 
+  cv::namedWindow("IndexImage");
+  cv::moveWindow("IndexImage", 20, 40);
+
 
   PointNormalColor3fVectorCloud current_point_cloud= dM.readMessageFromDataset();
   while( current_point_cloud.size()> 0){
  
     sph_Image= SphericalDepthImage(current_point_cloud,params);
     sph_Image.initializeIndexImage();
-    sph_Image.drawImages(0);
+
+    index_img = sph_Image.drawIndexImg(); 
+    cv::imshow("IndexImage",index_img);
+    cv::waitKey(1);
 
     current_point_cloud = dM.readMessageFromDataset();
   }

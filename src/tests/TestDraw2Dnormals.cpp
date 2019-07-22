@@ -4,6 +4,7 @@ using namespace srrg2_core;
 using namespace srrg2_qgl_viewport;
 using namespace Loam;
 
+
 int main( int argc, char** argv){
 
   string filename = "/home/dinies/temp/trial/tuttty.boss";
@@ -26,16 +27,12 @@ int main( int argc, char** argv){
         
   SphericalDepthImage sph_Image;
   DatasetManager dM( filename);
-  RGBImage m_drawing_index_img;
-  RGBImage m_drawing_normals;
+  RGBImage index_img; 
+  RGBImage normals_img;
 
-  m_drawing_index_img.create( params.num_vertical_rings, params.num_points_ring);
-  m_drawing_index_img= cv::Vec3b(253, 246, 227);
   cv::namedWindow("IndexImage");
   cv::moveWindow("IndexImage", 20, 40);
 
-  m_drawing_normals.create( params.num_vertical_rings, params.num_points_ring);
-  m_drawing_normals= cv::Vec3b(253, 246, 227);
   cv::namedWindow("NormalsImage");
   cv::moveWindow("NormalsImage", 20, 240);
 
@@ -46,17 +43,13 @@ int main( int argc, char** argv){
 
  
     sph_Image= SphericalDepthImage(current_point_cloud,params);
-    //sph_Image.showImages(1);
-
     sph_Image.removeFlatSurfaces();
     sph_Image.collectNormals();
-    cout <<"ARRIVEDDDDD\n";
-    m_drawing_index_img = sph_Image.drawIndexImg(); 
-    m_drawing_normals = sph_Image.drawNormalsImg();
-    cv::imshow("IndexImage",m_drawing_index_img);
-    cv::imshow("NormalsImage",m_drawing_normals);
+    index_img = sph_Image.drawIndexImg(); 
+    normals_img = sph_Image.drawNormalsImg();
+    cv::imshow("IndexImage",index_img);
+    cv::imshow("NormalsImage",normals_img);
     cv::waitKey(1);
-    //sph_Image.drawImages(1);
 
     current_point_cloud = dM.readMessageFromDataset();
   }

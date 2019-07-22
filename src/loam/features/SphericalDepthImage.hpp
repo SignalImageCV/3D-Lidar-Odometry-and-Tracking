@@ -162,11 +162,9 @@ namespace Loam{
       static  Vector3f inverseMappingFunc(const Vector3f & t_spher_coords);
 
 
-      void drawImages( const int imageSelector);
       RGBImage drawIndexImg();
       RGBImage drawNormalsImg();
-      //void drawClustersImg();
-      void showImages( const int imageSelector);
+      RGBImage drawClustersImg();
 
 
 
