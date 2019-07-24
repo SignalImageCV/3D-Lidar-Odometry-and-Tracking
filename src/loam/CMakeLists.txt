@@ -4,6 +4,7 @@ add_library( loam_library
   DatasetManager.cpp
   Visualizer.cpp
   features/SphericalDepthImage.cpp
+  features/Clusterer.cpp
   features/FeatureExtractor.cpp
   features/IntegralImage.cpp
   features/IntegralCell.cpp

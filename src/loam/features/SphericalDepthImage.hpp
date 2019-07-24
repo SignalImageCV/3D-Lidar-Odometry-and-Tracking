@@ -126,6 +126,17 @@ namespace Loam{
 
       IntegralImage computePointNormals();
 
+      vector<vector< DataPoint>> flattenIndexImage();
+
+  
+
+
+
+
+
+
+      ///////////////////////////////////
+
       vector<Matchable> clusterizeCloud(IntegralImage & t_integ_img);
 
       vector< vector< int>> findGoodClusterSeeds();
@@ -136,6 +147,8 @@ namespace Loam{
       bool expandClusterBoundariesRight( DataPoint & t_seed_point,int & t_included_points_count);
       bool discoverClusterBoundaryIndexes(
           const int t_seed_row, const int t_seed_col, const int t_seed_list_position);
+
+      //////////////////////////////
 
       void markClusteredPoints(DataPoint & t_seed_point);
 

@@ -492,6 +492,45 @@ namespace Loam{
     return goodSeeds;
   }
 
+  vector<vector< DataPoint>> SphericalDepthImage::flattenIndexImage(){
+    vector<vector< DataPoint>> flattenedImage;
+    flattenedImage.resize( m_params.num_vertical_rings);
+    for ( auto & v : flattenedImage){
+      v.resize( m_params.num_points_ring);
+    }
+   
+    for (unsigned int row =0; row < m_index_image.size() ; ++row){
+      for (unsigned int col=0; col < m_index_image[0].size(); ++col){
+        DataPoint nearestPoint = DataPoint();
+        if ( m_index_image[row][col].size() > 0 ){
+          for ( auto& elem: m_index_image[row][col]){
+            if ( nearestPoint.getIndexContainer() !=  -1){
+              const Eigen::Vector3f nearest_cartesian_coords =
+                m_cloud[nearestPoint.getIndexContainer()].coordinates();
+              const Eigen::Vector3f nearest_spherical_coords =
+                SphericalDepthImage::directMappingFunc( nearest_cartesian_coords);
+              const Eigen::Vector3f current_cartesian_coords =
+                m_cloud[elem.getIndexContainer()].coordinates();
+              const Eigen::Vector3f current_spherical_coords =
+                SphericalDepthImage::directMappingFunc( current_cartesian_coords);
+              if ( nearest_spherical_coords.z() > current_spherical_coords.z() ){
+                nearestPoint = elem;
+              }
+            }
+            else{
+              nearestPoint = elem;
+            }
+          }
+        }
+        flattenedImage[row][col] = nearestPoint;
+      }
+    }
+    return flattenedImage;
+  }
+ 
+
+  /////////////////////
+
 
   vector<Matchable>  SphericalDepthImage::clusterizeCloud( IntegralImage & t_integ_img){
 
