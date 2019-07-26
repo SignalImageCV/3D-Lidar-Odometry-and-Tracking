@@ -126,7 +126,6 @@ namespace Loam{
 
       IntegralImage computePointNormals();
 
-      vector<vector< DataPoint>> flattenIndexImage();
 
   
 
