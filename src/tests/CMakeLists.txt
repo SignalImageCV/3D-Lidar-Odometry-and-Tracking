@@ -87,6 +87,18 @@ target_link_libraries(test_draw2Dnormals
   ${catkin_LIBRARIES}
   )
 
+add_executable(test_drawPathImage
+  TestDrawPathImage.cpp
+  )
+target_link_libraries(test_drawPathImage
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${OpenCV_LIBS}
+  ${catkin_LIBRARIES}
+  )
+
 
 
 

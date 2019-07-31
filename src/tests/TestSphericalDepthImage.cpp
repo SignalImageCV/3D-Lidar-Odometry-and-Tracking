@@ -616,7 +616,7 @@ namespace Loam{
   TEST_F( SDIFixture_clustering, clusterizeFeatures){
    sph_Image.initializeIndexImage();
     IntegralImage integ_img =  sph_Image.collectNormals();
-    std::vector<Matchable> matchables = sph_Image.clusterizeCloud( integ_img);
+    std::vector<Matchable> matchables = sph_Image.clusterizeCloudDeprecated( integ_img);
 
     ASSERT_EQ( matchables.size(), 3 );
   }

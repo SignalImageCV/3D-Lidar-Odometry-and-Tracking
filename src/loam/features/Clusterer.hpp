@@ -3,6 +3,8 @@
 #include <limits>
 #include <stack>
 #include <srrg_messages/instances.h>
+
+#include "../include/structs.hpp"
 #include "DataPoint.hpp"
 #include "SphericalDepthImage.hpp"
 
@@ -22,22 +24,22 @@ namespace Loam{
     }
   }cluster;
 
-  typedef struct matCoords_tag{
+  typedef struct matrixCoords_tag{
     int row;
     int col;
-    matCoords_tag():row(-1),col(-1)
+    matrixCoords_tag():row(-1),col(-1)
     {}
-    matCoords_tag(
+    matrixCoords_tag(
         const int t_row,
         const int t_col):
       row(t_row),col(t_col)
     {}
-  }matCoords;
+  }matrixCoords;
 
   typedef struct pathCell_tag{
     bool hasBeenChoosen;
     float depth;
-    matCoords matCoords;
+    matrixCoords matCoords;
     pathCell_tag():
       hasBeenChoosen(false),
       depth( numeric_limits<float>::max())
@@ -73,13 +75,13 @@ namespace Loam{
 
 
 
-      matCoords findSeed();
+      matrixCoords findSeed();
 
       vector<pathCell> findNeighboors(pathCell & t_pathCell);
-      cluster computeCluster(const matCoords & t_seed_coords);
+      cluster computeCluster(const matrixCoords & t_seed_coords);
       vector<cluster> findClusters();
 
-
+      RGBImage drawPathImg();
 
   };
 }

@@ -22,6 +22,11 @@ namespace Loam{
     collectNormals();
   }
 
+  void SphericalDepthImage::projectCloud(){
+    initializeIndexImage();
+  };
+  void SphericalDepthImage::unprojectCloud(){};
+
   void SphericalDepthImage::removeFlatSurfaces(){
     initializeIndexImage();
     markVerticalPoints();
@@ -45,6 +50,7 @@ namespace Loam{
       }
     }
   }
+
 
   void SphericalDepthImage::resetIndexImage(){
     for ( auto & columns : m_index_image){
@@ -196,9 +202,6 @@ namespace Loam{
         }
       }
     }
-    if ( current_added_neighboors == 0){
-      hasExpanded = false;
-    }
     if (hasExpanded){
       vector<int> new_boundaries = { new_row_min, old_row_max, old_col_min, old_col_max };
       t_starting_point.setBoundaries( new_boundaries);
@@ -247,10 +250,6 @@ namespace Loam{
         }
       }
     }
-    if ( current_added_neighboors == 0){
-      hasExpanded = false;
-    }
-    
     if (hasExpanded){
       vector<int> new_boundaries = { old_row_min, new_row_max, old_col_min, old_col_max };
       t_starting_point.setBoundaries( new_boundaries);
@@ -286,6 +285,7 @@ namespace Loam{
     int current_added_neighboors = 0;
     for( unsigned int r = old_row_min; r < old_row_max; ++r){
       for( auto & entry: m_index_image[r][new_col_min]){
+
         const Eigen::Vector3f other_cartesian_coords =
           m_cloud[ entry.getIndexContainer()].coordinates();
         const Eigen::Vector3f other_spherical_coords =
@@ -300,10 +300,6 @@ namespace Loam{
         }
       }
     }
-    if ( current_added_neighboors == 0){
-      hasExpanded = false;
-    }
-    
     if (hasExpanded){
       vector<int> new_boundaries = { old_row_min, old_row_max, new_col_min, old_col_max };
       t_starting_point.setBoundaries( new_boundaries);
@@ -353,9 +349,6 @@ namespace Loam{
         }
       }
     }
-    if ( current_added_neighboors == 0){
-      hasExpanded = false;
-    }
     if (hasExpanded){
       vector<int> new_boundaries = { old_row_min, old_row_max, old_col_min, new_col_max };
       t_starting_point.setBoundaries( new_boundaries);
@@ -371,11 +364,12 @@ namespace Loam{
         for ( auto& entry : m_index_image[row][col]){
           vector<int> curr_boundaries = { row, row, col, col};
           entry.setBoundaries( curr_boundaries);
-          int neighboors_count = 0;
-          bool oneTimeUp = false;
-          bool oneTimeDown = false;
-          bool oneTimeLeft = false;
-          bool oneTimeRight = false;
+          int up_neighboors_count= 0;
+          int down_neighboors_count= 0;
+          int left_neighboors_count= 0;
+          int right_neighboors_count= 0;
+          int total_neighboors_count = up_neighboors_count + down_neighboors_count+
+            left_neighboors_count + right_neighboors_count;
           bool topFree = true;
           bool downFree = true;
           bool leftFree = true;
@@ -384,43 +378,45 @@ namespace Loam{
           int iteration_counter= 0;
           const int iteration_limit = m_index_image.size()+ m_index_image[0].size() ;
           while (
-              neighboors_count <  m_params.min_neighboors_for_normal and
+              total_neighboors_count <  m_params.min_neighboors_for_normal and
               (topFree or downFree or leftFree or rightFree) and
               iteration_counter < iteration_limit
               ){
             switch( direction_counter % 4){
               case(0):
-               topFree =  expandNormalBoundariesUp( entry, neighboors_count);
-               if (topFree and  not oneTimeUp){
-                 oneTimeUp = true;
-               }
+               topFree =  expandNormalBoundariesUp( entry, up_neighboors_count);
                break;
               case(1):
-               downFree =  expandNormalBoundariesDown( entry, neighboors_count);
-               if (downFree and  not oneTimeDown){
-                 oneTimeDown = true;
-               }
+               downFree =  expandNormalBoundariesDown( entry, down_neighboors_count);
                break;
               case(2):
-               leftFree =  expandNormalBoundariesLeft( entry, neighboors_count);
-               if (leftFree and  not oneTimeLeft){
-                 oneTimeLeft= true;
-               }
+               leftFree =  expandNormalBoundariesLeft( entry, left_neighboors_count);
                break;
               case(3):
-               rightFree =  expandNormalBoundariesRight( entry, neighboors_count);
-               if (rightFree and  not oneTimeRight){
-                 oneTimeRight= true;
-               }
+               rightFree =  expandNormalBoundariesRight( entry, right_neighboors_count);
                break;
             }
             ++direction_counter;
             ++iteration_counter;
+            total_neighboors_count = up_neighboors_count + down_neighboors_count+
+              left_neighboors_count + right_neighboors_count;
+          
           }
           const bool hasExpandedInEveryDirection =
-            oneTimeUp and oneTimeDown and oneTimeLeft and oneTimeRight;
-          const bool hasNormal = (neighboors_count >=  m_params.min_neighboors_for_normal)
-            and hasExpandedInEveryDirection;
+            up_neighboors_count>0 and down_neighboors_count>0 and
+            left_neighboors_count>0 and right_neighboors_count>0;
+          //cerr<< "hasExpandedInEveryDirection : " << hasExpandedInEveryDirection<< "\n";
+          //cerr<< "total_neighboors_count : " << total_neighboors_count<< "\n";
+          //cerr<< "up_neighboors_count : " << up_neighboors_count<< "\n";
+          //cerr<< "down_neighboors_count : " << down_neighboors_count<< "\n";
+          //cerr<< "left_neighboors_count : " << left_neighboors_count<< "\n";
+          //cerr<< "right_neighboors_count : " << right_neighboors_count<< "\n";
+
+
+          // TODO analyze why the normal expansion is never in every direction,
+          // there is at least one direction where it does not find neighboors
+          const bool hasNormal = (total_neighboors_count >=  m_params.min_neighboors_for_normal);
+           // and hasExpandedInEveryDirection;
           entry.setHasNormal( hasNormal );
         }
       }
@@ -465,6 +461,21 @@ namespace Loam{
     }
     return integ_img;
   }
+
+
+
+
+
+  vector<Matchable>  SphericalDepthImage::clusterizeCloud(){
+      vector<Matchable> v;
+      Clusterer c(m_cloud, m_index_image, m_params);
+      return v;
+ }
+
+
+
+
+
 
 
   ///////////////////// DEPRECATED Beginning ||||
@@ -530,7 +541,7 @@ namespace Loam{
 
 
 
-  vector<Matchable>  SphericalDepthImage::clusterizeCloud( IntegralImage & t_integ_img){
+  vector<Matchable>  SphericalDepthImage::clusterizeCloudDeprecated( IntegralImage & t_integ_img){
 
 
     vector< vector< int>> goodSeeds =  findGoodClusterSeeds();

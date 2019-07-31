@@ -31,7 +31,7 @@ namespace Loam{
 
     bool allCellsChosen = false;
     while( not  allCellsChosen ){
-      matCoords coords =  findSeed();
+      matrixCoords coords =  findSeed();
       if( coords.row == -1 or coords.col == -1){
         allCellsChosen = true;
       }
@@ -43,9 +43,9 @@ namespace Loam{
     return clusters;
   }
 
-  matCoords Clusterer::findSeed(){
+  matrixCoords Clusterer::findSeed(){
 
-    matCoords mC;
+    matrixCoords mC;
     bool found = false;
     for (unsigned int row =0; row < m_pathMatrix.size() ; ++row){
       for (unsigned int col=0; col < m_pathMatrix[0].size(); ++col){
@@ -66,16 +66,16 @@ namespace Loam{
   }
 
   vector<pathCell> Clusterer::findNeighboors(pathCell & t_pathCell){
-    matCoords upLeft( t_pathCell.matCoords.row -1, t_pathCell.matCoords.col -1);
-    matCoords up( t_pathCell.matCoords.row -1, t_pathCell.matCoords.col);
-    matCoords upRight( t_pathCell.matCoords.row -1, t_pathCell.matCoords.col +1);
-    matCoords left( t_pathCell.matCoords.row , t_pathCell.matCoords.col -1);
-    matCoords right( t_pathCell.matCoords.row , t_pathCell.matCoords.col +1);
-    matCoords downLeft( t_pathCell.matCoords.row +1, t_pathCell.matCoords.col -1);
-    matCoords down( t_pathCell.matCoords.row +1, t_pathCell.matCoords.col );
-    matCoords downRight( t_pathCell.matCoords.row +1, t_pathCell.matCoords.col +1);
+    matrixCoords upLeft( t_pathCell.matCoords.row -1, t_pathCell.matCoords.col -1);
+    matrixCoords up( t_pathCell.matCoords.row -1, t_pathCell.matCoords.col);
+    matrixCoords upRight( t_pathCell.matCoords.row -1, t_pathCell.matCoords.col +1);
+    matrixCoords left( t_pathCell.matCoords.row , t_pathCell.matCoords.col -1);
+    matrixCoords right( t_pathCell.matCoords.row , t_pathCell.matCoords.col +1);
+    matrixCoords downLeft( t_pathCell.matCoords.row +1, t_pathCell.matCoords.col -1);
+    matrixCoords down( t_pathCell.matCoords.row +1, t_pathCell.matCoords.col );
+    matrixCoords downRight( t_pathCell.matCoords.row +1, t_pathCell.matCoords.col +1);
 
-    vector<matCoords> coords = {
+    vector<matrixCoords> coords = {
       upLeft, up, upRight, left, right, downLeft, down, downRight
     };
 
@@ -92,7 +92,7 @@ namespace Loam{
     return cells;
   }
 
-  cluster Clusterer::computeCluster(const matCoords & t_seed_coords){
+  cluster Clusterer::computeCluster(const matrixCoords & t_seed_coords){
     stack<pathCell> cellStack;
     cellStack.push( m_pathMatrix[t_seed_coords.row][t_seed_coords.col]);
     cluster c;
@@ -175,10 +175,49 @@ namespace Loam{
             SphericalDepthImage::directMappingFunc( cart_coords);
           m_pathMatrix[row][col].depth = sph_coords.z();
         }
-        m_pathMatrix[row][col].matCoords = matCoords( row,col);
+        m_pathMatrix[row][col].matCoords = matrixCoords( row,col);
       }
     }
   }
+
+
+  RGBImage Clusterer::drawPathImg(){
+    RGBImage result_img;
+    result_img.create( m_params.num_vertical_rings, m_params.num_points_ring);
+    result_img = cv::Vec3b(253, 246, 227);
+    
+
+    std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >  colors;
+    const int num_colors = 100;
+    colors.resize(num_colors);
+    for(size_t i=0; i < colors.size(); ++i) {
+      colors[i]= Vector3f(
+          227.f* float(i)/num_colors,
+          246.f* (1 - float(i)/num_colors),
+          253.f* float(i)/num_colors);
+    }
+
+    const float max_depth =100;
+
+    for (unsigned int row =0; row <m_pathMatrix.size() ; ++row){
+      for (unsigned int col=0; col <m_pathMatrix[0].size(); ++col){
+        float depth= m_pathMatrix[row][col].depth;
+
+        int color_index = 0; 
+        if ( depth > max_depth) {
+          color_index = num_colors-1;
+        }
+        else{
+          color_index = depth * (num_colors-1) / max_depth;
+        }
+        
+        result_img.at<cv::Vec3b>( row,col) =
+        cv::Vec3b(colors[color_index].x() ,colors[color_index].y() ,colors[color_index].z());
+      }
+    }
+    return result_img;
+  }
+
 }
 
 
