@@ -4,7 +4,7 @@ namespace Loam{
 
   IntegralImage::IntegralImage(
          const  PointNormalColor3fVectorCloud & t_cloud,
-         vector<vector<list<DataPoint>>> t_index_image):
+         vector<vector<DataPoint>> t_index_image):
     IntegralImageInterface(),
     m_cloud( t_cloud),
     m_index_image( t_index_image)
@@ -18,20 +18,18 @@ namespace Loam{
   };
 
   IntegralCell IntegralImage::fetchPointSum(const int r,const int c){
-    list<DataPoint> list = m_index_image[r][c];
-    IntegralCell accumulator = IntegralCell();
-    if ( list.size()>0){ 
-      for( auto & elem: list){
-        PointNormalColor3f curr_point = m_cloud[elem.getIndexContainer()];
-        Eigen::Vector3f p_j = curr_point.coordinates();
-        IntegralCell current_cell_elem = IntegralCell(
-            p_j,
-            p_j* p_j.transpose(),
-            1);
-        accumulator = accumulator + current_cell_elem;
-      }
+    DataPoint point = m_index_image[r][c];
+    IntegralCell cell_elem; 
+    if ( point.getIndexContainer() != -1){
+      PointNormalColor3f point_inCloud= m_cloud[point.getIndexContainer()];
+      Eigen::Vector3f p_j = point_inCloud.coordinates();
+      cell_elem = IntegralCell(
+      p_j, p_j* p_j.transpose(), 1 );
     }
-    return accumulator;
+    else{
+      cell_elem = IntegralCell();
+    }
+    return cell_elem;
   }
 
   IntegralCell IntegralImage::getCellInsideBoundaries(

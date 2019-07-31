@@ -24,7 +24,8 @@ namespace Loam{
   class SphericalDepthImage {
      protected:
        //this matrix is both the index matrix I and the spherical depth matrix D
-       vector<vector< list< DataPoint >>> m_index_image;
+       //vector<vector< list< DataPoint >>> m_index_image;
+       vector<vector< DataPoint >> m_index_image;
        PointNormalColor3fVectorCloud m_cloud;
        sphericalImage_params m_params;
        float m_min_elevation;
@@ -79,7 +80,7 @@ namespace Loam{
         
 
 
-      ///////////////////////////////////
+      /////////////////////////////////// DEPRECATED begin
 
       vector<Matchable> clusterizeCloudDeprecated(IntegralImage & t_integ_img);
 
@@ -92,10 +93,10 @@ namespace Loam{
       bool discoverClusterBoundaryIndexes(
           const int t_seed_row, const int t_seed_col, const int t_seed_list_position);
 
-      //////////////////////////////
 
       void markClusteredPoints(DataPoint & t_seed_point);
 
+      ////////////////////////////// end
       vector<int> fetchGoodSeedIndexes();
 
       int countPointsIndexImage();
@@ -125,15 +126,15 @@ namespace Loam{
 
 
 
-      inline const vector<vector<list<DataPoint>>> & getIndexImage(){ return m_index_image;};
+      inline const vector<vector<DataPoint>> & getIndexImage(){ return m_index_image;};
 
-      inline void setIndexImage( const vector<vector<list<DataPoint>>> & t_indexImage){ m_index_image = t_indexImage;};
+      inline void setIndexImage( const vector<vector<DataPoint>> & t_indexImage){ m_index_image = t_indexImage;};
 
       inline const PointNormalColor3fVectorCloud & getPointCloud(){ return m_cloud;};
 
       inline void setPointCloud( const PointNormalColor3fVectorCloud & t_cloud){ m_cloud = t_cloud;};
 
-      inline list<DataPoint> getListDataPointsAt( const int t_row, const int t_col){ return m_index_image[t_row][t_col];};
+      inline DataPoint getDataPointAt( const int t_row, const int t_col){ return m_index_image[t_row][t_col];};
    };
 }
 

@@ -4,23 +4,14 @@ namespace Loam{
 
   Clusterer::Clusterer( 
          const  PointNormalColor3fVectorCloud & t_cloud,
-         vector<vector<list<DataPoint>>> t_index_image,
+         vector<vector<DataPoint>> t_index_image,
          const sphericalImage_params t_params):
     m_cloud(t_cloud),
+    m_index_image( t_index_image),
     m_params(t_params){
 
-    m_image.resize(m_params.num_vertical_rings);
-    for ( auto & vec: m_image){
-      vec.resize( m_params.num_points_ring);
-    }
-
-    m_pathMatrix.resize(m_params.num_vertical_rings);
-    for ( auto & vec: m_pathMatrix){
-      vec.resize( m_params.num_points_ring);
-    }
-
-    flattenIndexImage_populatePathMatrix(
-      t_cloud, t_index_image);
+    m_pathMatrix = populatePathMatrix(
+      t_cloud, t_index_image,t_params);
 
   }
          
@@ -107,13 +98,13 @@ namespace Loam{
       vector<pathCell> neighboors=  findNeighboors( currCell);
       ++numPointsCluster;
       cellStack.pop();
-      DataPoint currDataPoint = m_image[currCell.matCoords.row][currCell.matCoords.col];
+      DataPoint currDataPoint = m_index_image[currCell.matCoords.row][currCell.matCoords.col];
       const Eigen::Vector3f currCart_coords= m_cloud[ currDataPoint.getIndexContainer()].coordinates();
       const Eigen::Vector3f currNormal= m_cloud[ currDataPoint.getIndexContainer()].normal();
 
       for ( auto & otherCell: neighboors){
         if( abs( currCell.depth - otherCell.depth) < m_params.depth_differential_threshold){
-          DataPoint otherDataPoint = m_image[otherCell.matCoords.row][otherCell.matCoords.col];
+          DataPoint otherDataPoint = m_index_image[otherCell.matCoords.row][otherCell.matCoords.col];
           const Eigen::Vector3f otherCart_coords=
             m_cloud[ otherDataPoint.getIndexContainer()].coordinates();
           const Eigen::Vector3f otherNormal= m_cloud[ otherDataPoint.getIndexContainer()].normal();
@@ -139,38 +130,24 @@ namespace Loam{
 
 
 
-  void  Clusterer::flattenIndexImage_populatePathMatrix(
+  vector<vector<pathCell>>  Clusterer::populatePathMatrix(
       const  PointNormalColor3fVectorCloud & t_cloud,
-      vector<vector<list<DataPoint>>> t_index_image){
+      vector<vector<DataPoint>> t_index_image,
+      const sphericalImage_params t_params){
 
-   
+ 
+    vector<vector<pathCell>> pathMatrix;
+    pathMatrix.resize(t_params.num_vertical_rings);
+    for ( auto & vec: pathMatrix){
+      vec.resize( t_params.num_points_ring);
+    }
+
     for (unsigned int row =0; row < t_index_image.size() ; ++row){
       for (unsigned int col=0; col < t_index_image[0].size(); ++col){
-        DataPoint nearestPoint = DataPoint();
-        if ( t_index_image[row][col].size() > 0 ){
-          for ( auto& elem: t_index_image[row][col]){
-            if ( nearestPoint.getIndexContainer() !=  -1){
-              const Eigen::Vector3f nearest_cartesian_coords =
-                m_cloud[nearestPoint.getIndexContainer()].coordinates();
-              const Eigen::Vector3f nearest_spherical_coords =
-                SphericalDepthImage::directMappingFunc( nearest_cartesian_coords);
-              const Eigen::Vector3f current_cartesian_coords =
-                m_cloud[elem.getIndexContainer()].coordinates();
-              const Eigen::Vector3f current_spherical_coords =
-                SphericalDepthImage::directMappingFunc( current_cartesian_coords);
-              if ( nearest_spherical_coords.z() > current_spherical_coords.z() ){
-                nearestPoint = elem;
-              }
-            }
-            else{
-              nearestPoint = elem;
-            }
-          }
-        }
-        m_image[row][col] = nearestPoint;
-        if( nearestPoint.getIndexContainer() == -1){
+        DataPoint curr_point = t_index_image[row][col];
+        if ( curr_point.getIndexContainer() != -1){
           const Eigen::Vector3f cart_coords =
-            m_cloud[nearestPoint.getIndexContainer()].coordinates();
+            m_cloud[curr_point.getIndexContainer()].coordinates();
           const Eigen::Vector3f sph_coords =
             SphericalDepthImage::directMappingFunc( cart_coords);
           m_pathMatrix[row][col].depth = sph_coords.z();

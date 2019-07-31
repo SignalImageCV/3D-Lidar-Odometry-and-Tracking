@@ -8,13 +8,13 @@ namespace Loam{
   class IntegralImage: IntegralImageInterface{
     protected:
       PointNormalColor3fVectorCloud m_cloud;
-      vector<vector<list<DataPoint>>> m_index_image;
+      vector<vector<DataPoint>> m_index_image;
       vector<vector<IntegralCell>> m_integ_matrix;
 
     public:
       IntegralImage(
          const  PointNormalColor3fVectorCloud & t_cloud,
-         vector<vector<list<DataPoint>>> t_index_image); 
+         vector<vector<DataPoint>> t_index_image); 
 
       void buildIntegMatrix();
 

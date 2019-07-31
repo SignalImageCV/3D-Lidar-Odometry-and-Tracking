@@ -48,16 +48,15 @@ void clusterizeFeatures( ViewerCanvasPtr canvas){
           253.f* float(i)/num_colors);
     }
 
-    vector<vector<list<DataPoint>>> curr_index_image =  sph_Image.getIndexImage();
+    vector<vector<DataPoint>> curr_index_image =  sph_Image.getIndexImage();
 
     int color_index= 0;
     for ( auto & seed: goodSeeds){
       const int seed_row = seed[0];
       const int seed_col = seed[1] ;
-      const int seed_list_pos = seed[2];
-      auto curr_seed = std::next( curr_index_image[seed_row][seed_col].begin(), seed_list_pos);
+      auto curr_point= curr_index_image[seed_row][seed_col];
 
-      vector<int> boundaries = curr_seed->getBoundaries();
+      vector<int> boundaries = curr_point.getBoundaries();
 
       const int row_min = boundaries[0];
       const int row_max = boundaries[1];

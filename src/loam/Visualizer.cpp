@@ -399,13 +399,16 @@ namespace Loam{
 
  
         sph_Image= SphericalDepthImage(current_point_cloud,params);
+        sph_Image.initializeIndexImage();
+
+        PointNormalColor3fVectorCloud unprojected_cloud= sph_Image.getPointCloud();
         sph_Image.removeFlatSurfaces();
 
         PointNormalColor3fVectorCloud cleanedCloud= sph_Image.getPointCloud();
 
         first_canvas->putPoints(cleanedCloud);
 
-        second_canvas->putPoints(current_point_cloud);
+        second_canvas->putPoints(unprojected_cloud);
 
         first_canvas->flush();
         second_canvas->flush();
@@ -418,7 +421,7 @@ namespace Loam{
 
     const sphericalImage_params params(
       60, //num_vertical_rings
-      2000, //num_points_ring
+      80, //num_points_ring
       10, //epsilon_times
       0.15, //epsilon_radius
       0.1, //depth_differential_threshold
@@ -442,14 +445,17 @@ namespace Loam{
 
  
         sph_Image= SphericalDepthImage(current_point_cloud,params);
-        sph_Image.executeOperations();
 
+        sph_Image.initializeIndexImage();
+        PointNormalColor3fVectorCloud unprojected_cloud= sph_Image.getPointCloud();
+        sph_Image.removeFlatSurfaces();
+        sph_Image.collectNormals();
         PointNormalColor3fVectorCloud resulting_cloud= sph_Image.getPointCloud();
 
         first_canvas->putPoints(resulting_cloud);
         //Visualizer::drawNormals( first_canvas,  resulting_cloud);
 
-        second_canvas->putPoints(current_point_cloud);
+        second_canvas->putPoints(unprojected_cloud);
 
         first_canvas->flush();
         second_canvas->flush();

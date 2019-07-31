@@ -57,21 +57,22 @@ namespace Loam{
   class Clusterer{
     private:
       PointNormalColor3fVectorCloud  m_cloud;
-      vector<vector< DataPoint>>  m_image;
+      vector<vector< DataPoint>>  m_index_image;
       vector<vector< pathCell>>  m_pathMatrix;
       sphericalImage_params m_params;
 
     public:
       Clusterer( 
          const  PointNormalColor3fVectorCloud & t_cloud,
-         vector<vector<list<DataPoint>>> t_index_image,
+         vector<vector<DataPoint>> t_index_image,
          const sphericalImage_params t_params);
          
 
 
-       void flattenIndexImage_populatePathMatrix(
+       vector<vector<pathCell>> populatePathMatrix(
          const  PointNormalColor3fVectorCloud & t_cloud,
-         vector<vector<list<DataPoint>>> t_index_image);
+         vector<vector<DataPoint>> t_index_image,
+         const sphericalImage_params t_params);
 
 
 
