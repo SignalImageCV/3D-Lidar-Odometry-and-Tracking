@@ -30,10 +30,7 @@ namespace Loam{
        sphericalImage_params m_params;
        float m_min_elevation;
        float m_max_elevation;
-       RGBImage m_drawing_index_img;
-       RGBImage m_drawing_normals;
-       RGBImage m_drawing_clusters;
-      
+     
 
      public:
       SphericalDepthImage()= default;

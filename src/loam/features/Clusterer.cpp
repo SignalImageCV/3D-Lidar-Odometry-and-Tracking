@@ -13,10 +13,74 @@ namespace Loam{
     m_pathMatrix = populatePathMatrix(
       t_cloud, t_index_image,t_params);
 
+
+    vector<vector< Eigen::Vector3f>>  m_blurredNormalsMatrix;
+    m_blurredNormalsMatrix.resize(t_params.num_vertical_rings);
+    for ( auto & vec: m_blurredNormalsMatrix ){
+      vec.resize( t_params.num_points_ring);
+    }
   }
          
+  vector<vector<pathCell>>  Clusterer::populatePathMatrix(
+      const  PointNormalColor3fVectorCloud & t_cloud,
+      vector<vector<DataPoint>> t_index_image,
+      const sphericalImage_params t_params){
+
+ 
+    vector<vector<pathCell>> pathMatrix;
+    pathMatrix.resize(t_params.num_vertical_rings);
+    for ( auto & vec: pathMatrix){
+      vec.resize( t_params.num_points_ring);
+    }
+
+    for (unsigned int row =0; row < t_index_image.size() ; ++row){
+      for (unsigned int col=0; col < t_index_image[0].size(); ++col){
+        DataPoint curr_point = t_index_image[row][col];
+        if ( curr_point.getIndexContainer() != -1){
+          const Eigen::Vector3f cart_coords =
+            t_cloud[curr_point.getIndexContainer()].coordinates();
+          const Eigen::Vector3f sph_coords =
+            SphericalDepthImage::directMappingFunc( cart_coords);
+          pathMatrix[row][col].depth = sph_coords.z();
+          pathMatrix[row][col].normal = t_cloud[curr_point.getIndexContainer()].normal();
+        }
+        pathMatrix[row][col].matCoords = matrixCoords( row,col);
+      }
+    }
+    return  pathMatrix;
+  }
+
+  void Clusterer::blurNormals(){
+    const int  blur_extension = 2;
+    for (unsigned int row =0; row < m_pathMatrix.size() ; ++row){
+      for (unsigned int col=0; col < m_pathMatrix[0].size(); ++col){
+        int num_near_normals= 0;
+        Eigen::Vector3f cumulative_normal = Eigen::Vector3f::Zero();
+        for (int near_row= row - blur_extension; near_row <= row + blur_extension; ++near_row){
+          for (int near_col= col - blur_extension; near_col <= col + blur_extension; ++near_col){
+            if ( near_row >= 0 and near_row < m_params.num_vertical_rings and
+              near_col >= 0 and near_col < m_params.num_points_ring){
+              if ( m_pathMatrix[near_row][near_col].normal.norm() > 1e-3 ){
+                cumulative_normal += m_pathMatrix[near_row][near_col].normal;
+                ++num_near_normals;
+              }
+            }
+          }
+        }
+        if (num_near_normals >0){
+          m_blurredNormalsMatrix[row][col] = (cumulative_normal/ num_near_normals).normalized();
+        }
+        else{
+          m_blurredNormalsMatrix[row][col] = Eigen::Vector3f::Zero();
+        }
+      }
+    }
+  }
 
   vector<cluster> Clusterer::findClusters(){
+
+    blurNormals();
+
     vector<cluster> clusters;
     //find a good number to preserve space
 
@@ -91,31 +155,48 @@ namespace Loam{
     Eigen::Vector3f cumulative_mu;
     Eigen::Matrix3f cumulative_S;
     vector<int> indexes;
-    //find a good number to preserve space
-    
+//    //find a good number to preserve space
+//    while( not cellStack.empty()){
+//      pathCell currCell = cellStack.top();
+//      vector<pathCell> neighboors=  findNeighboors( currCell);
+//      ++numPointsCluster;
+//      cellStack.pop();
+//      DataPoint currDataPoint = m_index_image[currCell.matCoords.row][currCell.matCoords.col];
+//      const Eigen::Vector3f currCart_coords= m_cloud[ currDataPoint.getIndexContainer()].coordinates();
+//      const Eigen::Vector3f currNormal= m_cloud[ currDataPoint.getIndexContainer()].normal();
+//
+//      for ( auto & otherCell: neighboors){
+//        if( abs( currCell.depth - otherCell.depth) < m_params.depth_differential_threshold){
+//          DataPoint otherDataPoint = m_index_image[otherCell.matCoords.row][otherCell.matCoords.col];
+//          const Eigen::Vector3f otherCart_coords=
+//            m_cloud[ otherDataPoint.getIndexContainer()].coordinates();
+//          const Eigen::Vector3f otherNormal= m_cloud[ otherDataPoint.getIndexContainer()].normal();
+//          const float diff_cartesian = ( currCart_coords - otherCart_coords).norm();
+//          const float diff_normal= 1- ( currNormal.transpose() * otherNormal);
+//          if ( diff_cartesian < m_params.epsilon_d and diff_normal < m_params.epsilon_n){
+//            cellStack.push( otherCell);
+//          }
+//        }
+//      }
+//
+//      cumulative_mu += currCart_coords;
+//      cumulative_S += currCart_coords * currCart_coords.transpose();
+//      indexes.push_back(currDataPoint.getIndexContainer());
+//    }
+
     while( not cellStack.empty()){
       pathCell currCell = cellStack.top();
       vector<pathCell> neighboors=  findNeighboors( currCell);
       ++numPointsCluster;
       cellStack.pop();
-      DataPoint currDataPoint = m_index_image[currCell.matCoords.row][currCell.matCoords.col];
-      const Eigen::Vector3f currCart_coords= m_cloud[ currDataPoint.getIndexContainer()].coordinates();
-      const Eigen::Vector3f currNormal= m_cloud[ currDataPoint.getIndexContainer()].normal();
-
       for ( auto & otherCell: neighboors){
-        if( abs( currCell.depth - otherCell.depth) < m_params.depth_differential_threshold){
-          DataPoint otherDataPoint = m_index_image[otherCell.matCoords.row][otherCell.matCoords.col];
-          const Eigen::Vector3f otherCart_coords=
-            m_cloud[ otherDataPoint.getIndexContainer()].coordinates();
-          const Eigen::Vector3f otherNormal= m_cloud[ otherDataPoint.getIndexContainer()].normal();
-          const float diff_cartesian = ( currCart_coords - otherCart_coords).norm();
-          const float diff_normal= 1- ( currNormal.transpose() * otherNormal);
-          if ( diff_cartesian < m_params.epsilon_d and diff_normal < m_params.epsilon_n){
+        const float diff_normal= 1- ( currCell.normal.transpose() * otherCell.normal);
+        if ( diff_normal < m_params.epsilon_n){
             cellStack.push( otherCell);
-          }
         }
       }
-
+      DataPoint currDataPoint = m_index_image[currCell.matCoords.row][currCell.matCoords.col];
+      const Eigen::Vector3f currCart_coords= m_cloud[ currDataPoint.getIndexContainer()].coordinates();
       cumulative_mu += currCart_coords;
       cumulative_S += currCart_coords * currCart_coords.transpose();
       indexes.push_back(currDataPoint.getIndexContainer());
@@ -129,40 +210,10 @@ namespace Loam{
 
 
 
-
-  vector<vector<pathCell>>  Clusterer::populatePathMatrix(
-      const  PointNormalColor3fVectorCloud & t_cloud,
-      vector<vector<DataPoint>> t_index_image,
-      const sphericalImage_params t_params){
-
- 
-    vector<vector<pathCell>> pathMatrix;
-    pathMatrix.resize(t_params.num_vertical_rings);
-    for ( auto & vec: pathMatrix){
-      vec.resize( t_params.num_points_ring);
-    }
-
-    for (unsigned int row =0; row < t_index_image.size() ; ++row){
-      for (unsigned int col=0; col < t_index_image[0].size(); ++col){
-        DataPoint curr_point = t_index_image[row][col];
-        if ( curr_point.getIndexContainer() != -1){
-          const Eigen::Vector3f cart_coords =
-            m_cloud[curr_point.getIndexContainer()].coordinates();
-          const Eigen::Vector3f sph_coords =
-            SphericalDepthImage::directMappingFunc( cart_coords);
-          m_pathMatrix[row][col].depth = sph_coords.z();
-        }
-        m_pathMatrix[row][col].matCoords = matrixCoords( row,col);
-      }
-    }
-  }
-
-
   RGBImage Clusterer::drawPathImg(){
     RGBImage result_img;
     result_img.create( m_params.num_vertical_rings, m_params.num_points_ring);
     result_img = cv::Vec3b(253, 246, 227);
-    
 
     std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >  colors;
     const int num_colors = 100;
@@ -175,7 +226,6 @@ namespace Loam{
     }
 
     const float max_depth =100;
-
     for (unsigned int row =0; row <m_pathMatrix.size() ; ++row){
       for (unsigned int col=0; col <m_pathMatrix[0].size(); ++col){
         float depth= m_pathMatrix[row][col].depth;
@@ -187,7 +237,6 @@ namespace Loam{
         else{
           color_index = depth * (num_colors-1) / max_depth;
         }
-        
         result_img.at<cv::Vec3b>( row,col) =
         cv::Vec3b(colors[color_index].x() ,colors[color_index].y() ,colors[color_index].z());
       }

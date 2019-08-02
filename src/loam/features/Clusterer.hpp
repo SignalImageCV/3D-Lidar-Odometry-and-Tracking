@@ -39,14 +39,18 @@ namespace Loam{
   typedef struct pathCell_tag{
     bool hasBeenChoosen;
     float depth;
+    Eigen::Vector3f normal;
     matrixCoords matCoords;
     pathCell_tag():
       hasBeenChoosen(false),
-      depth( numeric_limits<float>::max())
+      depth( numeric_limits<float>::max()),
+      normal( Eigen::Vector3f::Zero())
     {}
-    pathCell_tag(const int row, const int col,  const float t_depth ):
+    pathCell_tag(const int row, const int col,
+        const float t_depth, const Eigen::Vector3f t_normal ):
       hasBeenChoosen(false),
       depth( t_depth),
+      normal( t_normal),
       matCoords(row, col)
     {}
   }pathCell;
@@ -58,8 +62,12 @@ namespace Loam{
     private:
       PointNormalColor3fVectorCloud  m_cloud;
       vector<vector< DataPoint>>  m_index_image;
-      vector<vector< pathCell>>  m_pathMatrix;
       sphericalImage_params m_params;
+
+      vector<vector< Eigen::Vector3f>>  m_blurredNormalsMatrix;
+
+      vector<vector< pathCell>>  m_pathMatrix;
+
 
     public:
       Clusterer( 
@@ -69,11 +77,12 @@ namespace Loam{
          
 
 
-       vector<vector<pathCell>> populatePathMatrix(
+      static vector<vector<pathCell>> populatePathMatrix(
          const  PointNormalColor3fVectorCloud & t_cloud,
          vector<vector<DataPoint>> t_index_image,
          const sphericalImage_params t_params);
 
+      void blurNormals();
 
 
       matrixCoords findSeed();
