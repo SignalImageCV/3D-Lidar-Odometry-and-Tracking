@@ -13,13 +13,7 @@ namespace Loam{
     m_pathMatrix = populatePathMatrix(
       t_cloud, t_index_image,t_params);
 
-
-    vector<vector< Eigen::Vector3f>>  m_blurredNormalsMatrix;
-    m_blurredNormalsMatrix.resize(t_params.num_vertical_rings);
-    for ( auto & vec: m_blurredNormalsMatrix ){
-      vec.resize( t_params.num_points_ring);
-    }
-  }
+ }
          
   vector<vector<pathCell>>  Clusterer::populatePathMatrix(
       const  PointNormalColor3fVectorCloud & t_cloud,
@@ -40,7 +34,7 @@ namespace Loam{
           const Eigen::Vector3f cart_coords =
             t_cloud[curr_point.getIndexContainer()].coordinates();
           const Eigen::Vector3f sph_coords =
-            SphericalDepthImage::directMappingFunc( cart_coords);
+            MyMath::directMappingFunc( cart_coords);
           pathMatrix[row][col].depth = sph_coords.z();
           pathMatrix[row][col].normal = t_cloud[curr_point.getIndexContainer()].normal();
         }
@@ -51,6 +45,13 @@ namespace Loam{
   }
 
   void Clusterer::blurNormals(){
+
+    vector<vector< Eigen::Vector3f>>  m_blurredNormalsMatrix;
+    m_blurredNormalsMatrix.resize(m_params.num_vertical_rings);
+    for ( auto & vec: m_blurredNormalsMatrix ){
+      vec.resize( m_params.num_points_ring);
+    }
+ 
     const int  blur_extension = 2;
     for (unsigned int row =0; row < m_pathMatrix.size() ; ++row){
       for (unsigned int col=0; col < m_pathMatrix[0].size(); ++col){
@@ -69,12 +70,14 @@ namespace Loam{
         }
         if (num_near_normals >0){
           m_blurredNormalsMatrix[row][col] = (cumulative_normal/ num_near_normals).normalized();
+          cout<< "blurred :"<< m_blurredNormalsMatrix[row][col]  << "\n";
         }
         else{
           m_blurredNormalsMatrix[row][col] = Eigen::Vector3f::Zero();
         }
       }
     }
+
   }
 
   vector<cluster> Clusterer::findClusters(){
@@ -92,7 +95,9 @@ namespace Loam{
       }
       else{
         cluster c = computeCluster( coords);
-        clusters.push_back( c);
+        if ( c.indexes.size() >= m_params.epsilon_c){
+          clusters.push_back( c);
+        }
       }
     }
     return clusters;
@@ -154,7 +159,7 @@ namespace Loam{
     int numPointsCluster =0;
     Eigen::Vector3f cumulative_mu;
     Eigen::Matrix3f cumulative_S;
-    vector<int> indexes;
+    vector<matrixCoords> matrixIndexes;
 //    //find a good number to preserve space
 //    while( not cellStack.empty()){
 //      pathCell currCell = cellStack.top();
@@ -199,15 +204,23 @@ namespace Loam{
       const Eigen::Vector3f currCart_coords= m_cloud[ currDataPoint.getIndexContainer()].coordinates();
       cumulative_mu += currCart_coords;
       cumulative_S += currCart_coords * currCart_coords.transpose();
-      indexes.push_back(currDataPoint.getIndexContainer());
+      c.indexes.push_back(currDataPoint.getIndexContainer());
+      matrixIndexes.push_back( currCell.matCoords);
     }
-    Eigen::Matrix3f S = cumulative_S/numPointsCluster;
-    c.mu = cumulative_mu/ numPointsCluster;
-    c.sigma = S - c.mu*c.mu.transpose();
 
+    if ( c.indexes.size() >= m_params.epsilon_c){
+      for ( auto & matIndex: matrixIndexes){
+        m_pathMatrix[matIndex.row][matIndex.col].hasBeenChoosen = true;
+      }
+      Eigen::Matrix3f S = cumulative_S/numPointsCluster;
+      c.mu = cumulative_mu/ numPointsCluster;
+      c.sigma = S - c.mu*c.mu.transpose();
+    }
+    else{
+      m_pathMatrix[t_seed_coords.row][t_seed_coords.col].hasBeenChoosen = true;
+    }
     return c;
   }
-
 
 
   RGBImage Clusterer::drawPathImg(){
@@ -232,13 +245,29 @@ namespace Loam{
 
         int color_index = 0; 
         if ( depth > max_depth) {
-          color_index = num_colors-1;
+          color_index = num_colors-2;
         }
         else{
           color_index = depth * (num_colors-1) / max_depth;
         }
         result_img.at<cv::Vec3b>( row,col) =
         cv::Vec3b(colors[color_index].x() ,colors[color_index].y() ,colors[color_index].z());
+      }
+    }
+    return result_img;
+  }
+
+
+  RGBImage Clusterer::drawBlurredNormalsImg(){
+    RGBImage result_img;
+    result_img.create( m_params.num_vertical_rings, m_params.num_points_ring);
+    result_img = cv::Vec3b(253, 246, 227);
+
+    for (unsigned int row =0; row <m_blurredNormalsMatrix.size() ; ++row){
+      for (unsigned int col=0; col <m_blurredNormalsMatrix[0].size(); ++col){
+        Eigen::Vector3f  normal=  m_blurredNormalsMatrix[row][col];
+        result_img.at<cv::Vec3b>( row,col) =
+          cv::Vec3b( 255.f*normal.x(), 255.f* normal.y(), 255.f* normal.z());
       }
     }
     return result_img;

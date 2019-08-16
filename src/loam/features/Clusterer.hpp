@@ -6,7 +6,6 @@
 
 #include "../include/structs.hpp"
 #include "DataPoint.hpp"
-#include "SphericalDepthImage.hpp"
 
 using namespace std;
 using namespace srrg2_core;
@@ -70,6 +69,9 @@ namespace Loam{
 
 
     public:
+
+      Clusterer()= default;
+
       Clusterer( 
          const  PointNormalColor3fVectorCloud & t_cloud,
          vector<vector<DataPoint>> t_index_image,
@@ -92,6 +94,8 @@ namespace Loam{
       vector<cluster> findClusters();
 
       RGBImage drawPathImg();
+
+      RGBImage drawBlurredNormalsImg();
 
   };
 }

@@ -7,6 +7,7 @@
 
 
 #include "../include/structs.hpp"
+#include "../MyMath.hpp"
 #include "DataPoint.hpp"
 #include "IntegralImage.hpp"
 #include "Line.hpp"
@@ -30,6 +31,7 @@ namespace Loam{
        sphericalImage_params m_params;
        float m_min_elevation;
        float m_max_elevation;
+       Clusterer m_clusterer;
      
 
      public:
@@ -71,6 +73,7 @@ namespace Loam{
 
   
 
+      PointNormalColor3fVectorCloud fetchPoints(const vector<int> & indexes);
 
 
       vector<Matchable> clusterizeCloud();
@@ -112,14 +115,11 @@ namespace Loam{
  
       static Vector2f extimateMinMaxElevation( const PointNormalColor3fVectorCloud & cloud);
 
-      static  Vector3f directMappingFunc(const Vector3f & t_cart_coords);
-
-      static  Vector3f inverseMappingFunc(const Vector3f & t_spher_coords);
-
 
       RGBImage drawIndexImg();
       RGBImage drawNormalsImg();
       RGBImage drawClustersImg();
+      vector<RGBImage> drawImgsClusterer();
 
 
 

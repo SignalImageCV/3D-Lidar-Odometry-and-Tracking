@@ -1,3 +1,4 @@
+#pragma once
 #include <srrg_system_utils/system_utils.h>
 #include <srrg_messages/instances.h>
 #include <gtest/gtest.h>

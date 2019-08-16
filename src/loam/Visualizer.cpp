@@ -165,6 +165,15 @@ namespace Loam{
   }
 
 
+  void Visualizer::visualizeCloud( ViewerCanvasPtr canvas,const PointNormalColor3fVectorCloud & t_cloud, const float t_points_size){
+    while( ViewerCoreSharedQGL::isRunning()){
+        canvas->pushPointSize();
+        canvas->setPointSize(t_points_size);
+        canvas->putPoints( t_cloud);
+        canvas->flush();
+    }
+  }
+
   void Visualizer::drawNormals(ViewerCanvasPtr canvas, const PointNormalColor3fVectorCloud & t_points){
 
     std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >  colors;
@@ -312,9 +321,9 @@ namespace Loam{
     sphere_cloud.resize( point_cloud.size());
     for(unsigned int i = 0; i<point_cloud.size(); ++i){
       PointNormalColor3f p = point_cloud[i];
-      Vector3f spherical_coords = SphericalDepthImage::directMappingFunc( p.coordinates());
+      Vector3f spherical_coords = MyMath::directMappingFunc( p.coordinates());
       spherical_coords.z() = normalized_radius;
-      sphere_cloud[i].coordinates() = SphericalDepthImage::inverseMappingFunc( spherical_coords);
+      sphere_cloud[i].coordinates() = MyMath::inverseMappingFunc( spherical_coords);
       sphere_cloud[i].color() = p.color();
       sphere_cloud[i].normal() = p.normal();
     }

@@ -8,7 +8,7 @@ namespace Loam{
   class IntegralImageFixture : public testing::Test {
     protected:
       PointNormalColor3fVectorCloud cloud;
-      vector<vector<list<DataPoint>>> index_image; 
+      vector<vector<DataPoint>> index_image; 
 
       void SetUp() override {
         cloud.resize(4);

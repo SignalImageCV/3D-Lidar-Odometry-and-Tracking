@@ -26,9 +26,9 @@ namespace Loam{
           m_index_image[coords[0]][coords[1]] = dp;
         }
         else{
-          Vector3f new_spherical_coords = SphericalDepthImage::directMappingFunc(m_cloud[i].coordinates());
+          Vector3f new_spherical_coords = MyMath::directMappingFunc(m_cloud[i].coordinates());
           Vector3f old_cartesian_coords = m_cloud[ m_index_image[coords[0]][coords[1]].getIndexContainer()].coordinates();
-          Vector3f old_spherical_coords = SphericalDepthImage::directMappingFunc( old_cartesian_coords );
+          Vector3f old_spherical_coords = MyMath::directMappingFunc( old_cartesian_coords );
           if ( new_spherical_coords.z() < old_spherical_coords.z()){
             m_index_image[coords[0]][coords[1]] = dp;
           }
@@ -164,7 +164,7 @@ namespace Loam{
     const Eigen::Vector3f starting_cartesian_coords =
       m_cloud[t_starting_point.getIndexContainer()].coordinates();
     const Eigen::Vector3f starting_spherical_coords =
-      SphericalDepthImage::directMappingFunc( starting_cartesian_coords);
+      MyMath::directMappingFunc( starting_cartesian_coords);
     bool hasExpanded= true;
 
     int current_added_neighboors = 0;
@@ -174,7 +174,7 @@ namespace Loam{
         const Eigen::Vector3f other_cartesian_coords =
           m_cloud[ other_point.getIndexContainer()].coordinates();
         const Eigen::Vector3f other_spherical_coords =
-          SphericalDepthImage::directMappingFunc( other_cartesian_coords);
+          MyMath::directMappingFunc( other_cartesian_coords);
 
         if ( abs( starting_spherical_coords.z() - other_spherical_coords.z()) >
             m_params.depth_differential_threshold){
@@ -213,7 +213,7 @@ namespace Loam{
     const Eigen::Vector3f starting_cartesian_coords =
       m_cloud[t_starting_point.getIndexContainer()].coordinates();
     const Eigen::Vector3f starting_spherical_coords =
-      SphericalDepthImage::directMappingFunc( starting_cartesian_coords);
+      MyMath::directMappingFunc( starting_cartesian_coords);
     bool hasExpanded= true;
 
     int current_added_neighboors = 0;
@@ -223,7 +223,7 @@ namespace Loam{
         const Eigen::Vector3f other_cartesian_coords =
           m_cloud[ other_point.getIndexContainer()].coordinates();
         const Eigen::Vector3f other_spherical_coords =
-          SphericalDepthImage::directMappingFunc( other_cartesian_coords);
+          MyMath::directMappingFunc( other_cartesian_coords);
 
         if ( abs( starting_spherical_coords.z() - other_spherical_coords.z()) >
             m_params.depth_differential_threshold){
@@ -263,7 +263,7 @@ namespace Loam{
     const Eigen::Vector3f starting_cartesian_coords =
       m_cloud[t_starting_point.getIndexContainer()].coordinates();
     const Eigen::Vector3f starting_spherical_coords =
-      SphericalDepthImage::directMappingFunc( starting_cartesian_coords);
+      MyMath::directMappingFunc( starting_cartesian_coords);
     bool hasExpanded= true;
 
     int current_added_neighboors = 0;
@@ -273,7 +273,7 @@ namespace Loam{
         const Eigen::Vector3f other_cartesian_coords =
           m_cloud[ other_point.getIndexContainer()].coordinates();
         const Eigen::Vector3f other_spherical_coords =
-          SphericalDepthImage::directMappingFunc( other_cartesian_coords);
+          MyMath::directMappingFunc( other_cartesian_coords);
 
         if ( abs( starting_spherical_coords.z() - other_spherical_coords.z()) >
            m_params.depth_differential_threshold ){
@@ -313,7 +313,7 @@ namespace Loam{
     const Eigen::Vector3f starting_cartesian_coords =
       m_cloud[t_starting_point.getIndexContainer()].coordinates();
     const Eigen::Vector3f starting_spherical_coords =
-      SphericalDepthImage::directMappingFunc( starting_cartesian_coords);
+      MyMath::directMappingFunc( starting_cartesian_coords);
     bool hasExpanded= true;
     int current_added_neighboors = 0;
 
@@ -324,7 +324,7 @@ namespace Loam{
         const Eigen::Vector3f other_cartesian_coords =
           m_cloud[ other_point.getIndexContainer()].coordinates();
         const Eigen::Vector3f other_spherical_coords =
-          SphericalDepthImage::directMappingFunc( other_cartesian_coords);
+          MyMath::directMappingFunc( other_cartesian_coords);
 
         if ( abs( starting_spherical_coords.z() - other_spherical_coords.z()) >
             m_params.depth_differential_threshold ){
@@ -451,10 +451,56 @@ namespace Loam{
     return integ_img;
   }
 
+
+  PointNormalColor3fVectorCloud SphericalDepthImage::fetchPoints(const vector<int> & indexes){
+    PointNormalColor3fVectorCloud points;
+    points.reserve( indexes.size());
+    for ( auto & index: indexes){
+      points.push_back( m_cloud[ index] );
+    }
+    return points;
+  }
+
   vector<Matchable>  SphericalDepthImage::clusterizeCloud(){
-      vector<Matchable> v;
-      Clusterer c(m_cloud, m_index_image, m_params);
-      return v;
+      vector<Matchable> matchables;
+      m_clusterer = Clusterer(m_cloud, m_index_image, m_params);
+      vector<cluster> clusters =  m_clusterer.findClusters();
+
+      for ( auto &c: clusters){
+
+        Eigen::JacobiSVD<Eigen::Matrix3f> svd(c.sigma, Eigen::ComputeFullU | Eigen::ComputeFullV);
+        //remember (different from the paper) decreasing order for singularvalues (it follows that R is at reverse)
+        Eigen::Matrix3f R = svd.matrixU();
+        Eigen::Vector3f s = svd.singularValues();
+        Eigen::Matrix3f Omega;
+        Omega << s.x() ,0, 0,
+            0, s.y(), 0,
+            0, 0, s.z();
+
+        PointNormalColor3fVectorCloud currPoints = fetchPoints( c.indexes);
+
+        Line l  = Line( c.mu, R, Omega);
+        const float eigenval_constr_line  =  l.computeEigenvalueConstraint();
+        const float err_line = l.computeResidualError( currPoints);
+        cout << "eigenval_constr_line " << eigenval_constr_line << "\n err_line "<< err_line <<"\n";
+        if ( eigenval_constr_line < m_params.epsilon_l and
+            err_line < m_params.epsilon_dl){
+          cout<< "Is a line !\n";
+          matchables.push_back( l);
+        }
+        else{
+          Plane p = Plane( c.mu, R, Omega);
+          const float eigenval_constr_plane =  p.computeEigenvalueConstraint();
+          const float err_plane = p.computeResidualError( currPoints);
+          cout << "eigenval_constr_plane " << eigenval_constr_plane<< "\n err_plane"<< err_plane<<"\n";
+          if ( eigenval_constr_plane < m_params.epsilon_p and
+              err_plane< m_params.epsilon_dp){
+            cout<< "Is a plane !\n";
+            matchables.push_back( p);
+          }
+        }
+      }
+      return matchables;
   }
 
 
@@ -965,7 +1011,7 @@ namespace Loam{
 
   vector<int> SphericalDepthImage::mapCartesianCoordsInIndexImage(
       const Eigen::Vector3f & t_coords){
-    Vector3f spherical_coords = SphericalDepthImage::directMappingFunc( t_coords);
+    Vector3f spherical_coords = MyMath::directMappingFunc( t_coords);
     return  mapSphericalCoordsInIndexImage( spherical_coords.x(), spherical_coords.y()); 
   }
  
@@ -974,12 +1020,12 @@ namespace Loam{
     float min_elevation = 0;
     float max_elevation = 0;
     if (cloud.size()>0){
-      Vector3f initialSphericalCoords = SphericalDepthImage::directMappingFunc( cloud[0].coordinates());
+      Vector3f initialSphericalCoords = MyMath::directMappingFunc( cloud[0].coordinates());
       min_elevation = initialSphericalCoords.y();
       max_elevation = initialSphericalCoords.y();
       Vector3f curr_sphericalCoords;
       for ( auto & p: cloud){
-        curr_sphericalCoords = SphericalDepthImage::directMappingFunc( p.coordinates());
+        curr_sphericalCoords = MyMath::directMappingFunc( p.coordinates());
         if( curr_sphericalCoords.y()< min_elevation){
           min_elevation = curr_sphericalCoords.y();
         }
@@ -991,32 +1037,7 @@ namespace Loam{
     return  Vector2f( min_elevation, max_elevation);
   }
 
-  Vector3f SphericalDepthImage::directMappingFunc(const Vector3f & t_cart_coords){
-
-    const float azimuth = atan2( t_cart_coords.y(), t_cart_coords.x());
-
-    const float elevation = atan2(
-        sqrt(pow(t_cart_coords.x(),2)+pow(t_cart_coords.y(),2)),
-          t_cart_coords.z());
-
-    return Vector3f(
-        azimuth,
-        elevation,
-        sqrt( pow(t_cart_coords.x(),2)+
-          pow(t_cart_coords.y(),2)+
-          pow( t_cart_coords.z(),2))
-        );
-  };
-
-  Vector3f SphericalDepthImage::inverseMappingFunc(const Vector3f & t_spher_coords){
-    float z = t_spher_coords.z() * cos( t_spher_coords.y());
-    float proj = t_spher_coords.z() * sin( t_spher_coords.y());
-    float x = proj * cos( t_spher_coords.x());
-    float y = proj * sin( t_spher_coords.x());
-    return Vector3f( x,y,z) ;
-  };
-
-
+  
   RGBImage SphericalDepthImage::drawIndexImg(){
     RGBImage result_img;
     result_img.create( m_params.num_vertical_rings, m_params.num_points_ring);
@@ -1041,7 +1062,7 @@ namespace Loam{
         DataPoint curr_point =   m_index_image[row][col];
         int color_index = 0; 
         if( curr_point.getIndexContainer() != -1 ){
-          Vector3f spherical = directMappingFunc( m_cloud[ curr_point.getIndexContainer()].coordinates() );
+          Vector3f spherical = MyMath::directMappingFunc( m_cloud[ curr_point.getIndexContainer()].coordinates() );
           const float depth= spherical.z();
           if ( depth> max_depth) {
             color_index = num_colors-1;
@@ -1069,7 +1090,7 @@ namespace Loam{
       for (unsigned int col=0; col <m_index_image[0].size(); ++col){
         DataPoint curr_point =   m_index_image[row][col];
         if( curr_point.getIndexContainer() != -1 ){
-          const  Vector3f normal = directMappingFunc( m_cloud[ curr_point.getIndexContainer()].normal() );
+          const  Vector3f normal = MyMath::directMappingFunc( m_cloud[ curr_point.getIndexContainer()].normal() );
           result_img.at<cv::Vec3b>( row,col) =
             cv::Vec3b( 255.f*normal.x(), 255.f* normal.y(), 255.f* normal.z());
             //cout << "normal values : "<< avg_normal.x() << " " << avg_normal.y() << " " << avg_normal.z() << " \n";
@@ -1081,6 +1102,14 @@ namespace Loam{
       }
     }
     return result_img;
+  }
+
+  vector<RGBImage> SphericalDepthImage::drawImgsClusterer(){
+    vector<RGBImage> images;
+    images.reserve(2);
+    images.push_back( m_clusterer.drawPathImg());
+    images.push_back( m_clusterer.drawBlurredNormalsImg());
+    return images;
   }
 
   // todo   

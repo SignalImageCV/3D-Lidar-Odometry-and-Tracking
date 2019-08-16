@@ -40,6 +40,8 @@ namespace Loam{
 
       static void visualizeAxes( ViewerCanvasPtr canvas);
 
+      static void visualizeCloud( ViewerCanvasPtr canvas,const PointNormalColor3fVectorCloud & t_cloud, const float t_points_size);
+
       static void visualizeLinesPlanes( ViewerCanvasPtr canvas);
 
       static void visualizeCondition( ViewerCanvasPtr canvas);

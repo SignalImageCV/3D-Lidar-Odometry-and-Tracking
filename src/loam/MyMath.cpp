@@ -1,6 +1,37 @@
 #include "MyMath.hpp"
 namespace Loam{
 
+  Eigen::Vector3f MyMath::directMappingFunc(const Eigen::Vector3f & t_cart_coords){
+
+    const float azimuth = atan2( t_cart_coords.y(), t_cart_coords.x());
+
+    const float elevation = atan2(
+        sqrt(pow(t_cart_coords.x(),2)+pow(t_cart_coords.y(),2)),
+          t_cart_coords.z());
+
+    return Eigen::Vector3f(
+        azimuth,
+        elevation,
+        sqrt( pow(t_cart_coords.x(),2)+
+          pow(t_cart_coords.y(),2)+
+          pow( t_cart_coords.z(),2))
+        );
+  };
+
+  Eigen::Vector3f MyMath::inverseMappingFunc(const Eigen::Vector3f & t_spher_coords){
+    float z = t_spher_coords.z() * cos( t_spher_coords.y());
+    float proj = t_spher_coords.z() * sin( t_spher_coords.y());
+    float x = proj * cos( t_spher_coords.x());
+    float y = proj * sin( t_spher_coords.x());
+    return Eigen::Vector3f( x,y,z) ;
+  };
+
+
+
+
+
+
+
   //Deprecated because I am adopting eigen structures for the state
   // Eigen::Isometry2d MyMath::v2t(const std::vector<double> &t_vec){
 

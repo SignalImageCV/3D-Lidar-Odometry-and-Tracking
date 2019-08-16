@@ -10,6 +10,13 @@ namespace Loam{
 
   public:
 
+    //spherical coords and  cartesian coords conversion utilities
+    static  Eigen::Vector3f directMappingFunc(const Eigen::Vector3f & t_cart_coords);
+
+    static  Eigen::Vector3f inverseMappingFunc(const Eigen::Vector3f & t_spher_coords);
+
+
+
     // static Eigen::Isometry2d v2t(const std::vector<double> &t_vec);
     // static std::vector<double> t2v(const Eigen::Isometry2d& t_transf);
 
@@ -26,7 +33,7 @@ namespace Loam{
     static double boxPlusAngleRad(const double t_ref,const double t_actual);
     static double computeAvg(const double t_prevAvg,const int t_numEntries,const double t_newValue);
 
-    //@dparams: alpha and beta are the boundaries of the valid arc on a circle,
+    //@params: alpha and beta are the boundaries of the valid arc on a circle,
     //theta is the center of the arc, phi is the angle to be validated
     static bool checkIsInsideArcBoundaries( const float alpha, const float beta, const float theta, const float phi);
 

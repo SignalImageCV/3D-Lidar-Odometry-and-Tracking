@@ -6,6 +6,7 @@ catkin_add_gtest(test_runner
   TestDataPoint.cpp
   TestMatchable.cpp
   TestEigenSvd.cpp
+  TestMyMath.cpp
   Starter.cpp
   )
 
@@ -79,6 +80,18 @@ add_executable(test_draw2Dnormals
   TestDraw2Dnormals.cpp
   )
 target_link_libraries(test_draw2Dnormals
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${OpenCV_LIBS}
+  ${catkin_LIBRARIES}
+  )
+
+add_executable(test_draw2DclustererImgs
+  TestDraw2DclustererImgs.cpp
+  )
+target_link_libraries(test_draw2DclustererImgs
   loam_library
   srrg2_system_utils_library
   srrg2_qgl_viewport_library
@@ -202,6 +215,23 @@ target_link_libraries(test_drawNormals
   ${catkin_LIBRARIES}
   pthread
   )
+
+
+add_executable(test_drawClusters
+  TestDrawClusters.cpp
+  )
+target_link_libraries(test_drawClusters
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  ${QGLViewer_LIBRARIES}
+  ${OpenCV_LIBS}
+  ${catkin_LIBRARIES}
+  pthread
+  )
+
 
 add_executable(test_drawPointWithNormal
   TestDrawPointWithNormal.cpp
