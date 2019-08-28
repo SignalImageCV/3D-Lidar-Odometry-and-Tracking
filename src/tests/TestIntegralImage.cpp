@@ -153,9 +153,9 @@ namespace Loam{
       0, 0, 0;
     Eigen::Matrix3f m_01;
     m_01 <<
-      18, 15, 18,
-      15, 13, 15,
-      18, 15, 18;
+      4, 4, -4,
+      4, 4, -4,
+      -4, -4, 4;
     Eigen::Matrix3f m_10;
     m_10 <<
       4, 4, 4,
@@ -163,28 +163,29 @@ namespace Loam{
       4, 4, 4;
     Eigen::Matrix3f m_11;
     m_11 <<
-      26, 23, 18,
-      23, 21, 15,
-      18, 15, 26;
+      17,17, 9,
+      17,17, 9,
+      9, 9, 17;
 
     IntegralCell cell_00 = IntegralCell(
         Eigen::Vector3f( 0.,0.,0.),
         m_00,
         0);
     IntegralCell cell_01 = IntegralCell(
-        Eigen::Vector3f( 6.,5.,6.),
+        Eigen::Vector3f( 2.,2.,-2.),
         m_01,
-        2);
+        1);
     IntegralCell cell_10 = IntegralCell(
         Eigen::Vector3f( -2.,-2.,-2.),
         m_10,
         1);
     IntegralCell cell_11 = IntegralCell(
-        Eigen::Vector3f( 6.,5.,2.),
+        Eigen::Vector3f( 3.,3.,-1.),
         m_11,
-        4);
+        3);
 
     ASSERT_TRUE( integ_matrix[0][0] == cell_00);
+
     ASSERT_TRUE( integ_matrix[0][1] == cell_01);
     ASSERT_TRUE( integ_matrix[1][0] == cell_10);
     ASSERT_TRUE( integ_matrix[1][1] == cell_11);
@@ -202,36 +203,38 @@ namespace Loam{
       0, 0, 0;
     Eigen::Matrix3f m_00_01;
     m_00_01 <<
-      18, 15, 18,
-      15, 13, 15,
-      18, 15, 18;
+      4, 4, -4,
+      4, 4, -4,
+     -4, -4, 4;
+
     Eigen::Matrix3f m_00_10;
     m_00_10 <<
       4, 4, 4,
       4, 4, 4,
       4, 4, 4;
+
     Eigen::Matrix3f m_11;
     m_11 <<
-      4, 4, -4,
-      4, 4, -4,
-     -4, -4, 4;
+      9, 9, 9,
+      9, 9, 9,
+      9, 9, 9;
 
     Eigen::Matrix3f m_10_11 ;
     m_10_11 <<
-      8, 8, 0,
-      8, 8, 0,
-      0, 0, 8;
+      13, 13, 13,
+      13, 13, 13,
+      13, 13, 13;
     Eigen::Matrix3f m_01_11;
     m_01_11 <<
-      22, 19, 14,
-      19, 17, 11,
-      14, 11, 22;
+      13, 13, 5,
+      13, 13, 5,
+      5, 5, 13;
 
     Eigen::Matrix3f m_00_01_10_11 ;
     m_00_01_10_11 <<
-      26, 23, 18,
-      23, 21, 15,
-      18, 15, 26;
+      17, 17, 9,
+      17, 17, 9,
+      9, 9, 17;
 
 
 
@@ -240,30 +243,30 @@ namespace Loam{
         m_00,
         0);
     IntegralCell cell_bounded_00_01 = IntegralCell(
-        Eigen::Vector3f( 6.,5.,6.),
+        Eigen::Vector3f(2.,2.,-2.),
         m_00_01,
-        2);
+        1);
     IntegralCell cell_bounded_00_10 = IntegralCell(
         Eigen::Vector3f( -2.,-2.,-2.),
         m_00_10,
         1);
     IntegralCell cell_bounded_11 = IntegralCell(
-        Eigen::Vector3f( 2.,2.,-2.),
+        Eigen::Vector3f( 3.,3.,3.),
         m_11,
         1);
 
     IntegralCell cell_bounded_10_11 = IntegralCell(
-        Eigen::Vector3f( 0.,0.,-4.),
+        Eigen::Vector3f( 1.,1.,1.),
         m_10_11,
         2);
     IntegralCell cell_bounded_01_11 = IntegralCell(
-        Eigen::Vector3f( 8.,7.,4.),
+        Eigen::Vector3f( 5.,5.,1.),
         m_01_11,
-        3);
+        2);
     IntegralCell cell_bounded_00_01_10_11 = IntegralCell(
-        Eigen::Vector3f( 6.,5.,2.),
+        Eigen::Vector3f( 3.,3.,-1.),
         m_00_01_10_11,
-        4);
+        3);
 
 
 
@@ -275,6 +278,7 @@ namespace Loam{
     ASSERT_TRUE( integ_img.getCellInsideBoundaries(1,1,1,1)  == cell_bounded_11);
     ASSERT_TRUE( integ_img.getCellInsideBoundaries(1,1,0,1)  == cell_bounded_10_11);
     ASSERT_TRUE( integ_img.getCellInsideBoundaries(0,1,1,1)  == cell_bounded_01_11);
+
     ASSERT_TRUE( integ_img.getCellInsideBoundaries(0,1,0,1)  == cell_bounded_00_01_10_11);
   }
 }

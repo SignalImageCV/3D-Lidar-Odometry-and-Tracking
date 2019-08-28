@@ -53,15 +53,22 @@ namespace Loam{
     }
  
     const int  blur_extension = 2;
-    for (unsigned int row =0; row < m_pathMatrix.size() ; ++row){
-      for (unsigned int col=0; col < m_pathMatrix[0].size(); ++col){
+    for (int row =0; row < m_pathMatrix.size() ; ++row){
+      for (int col=0; col < m_pathMatrix[0].size(); ++col){
         int num_near_normals= 0;
         Eigen::Vector3f cumulative_normal = Eigen::Vector3f::Zero();
+        cout<< " current  row  col:"<< row << " " << col<< "\n";
+       
         for (int near_row= row - blur_extension; near_row <= row + blur_extension; ++near_row){
           for (int near_col= col - blur_extension; near_col <= col + blur_extension; ++near_col){
             if ( near_row >= 0 and near_row < m_params.num_vertical_rings and
               near_col >= 0 and near_col < m_params.num_points_ring){
+              cout<< " first if passed \n";
               if ( m_pathMatrix[near_row][near_col].normal.norm() > 1e-3 ){
+                cout<< " second if passed \n";
+                cout<< " current near row  and col:"<< near_row << " " << near_col<< "\n";
+                cout<< " current normal:\n"<< m_pathMatrix[near_row][near_col].normal<< "\n";
+
                 cumulative_normal += m_pathMatrix[near_row][near_col].normal;
                 ++num_near_normals;
               }
@@ -70,14 +77,17 @@ namespace Loam{
         }
         if (num_near_normals >0){
           m_blurredNormalsMatrix[row][col] = (cumulative_normal/ num_near_normals).normalized();
-          cout<< "blurred :"<< m_blurredNormalsMatrix[row][col]  << "\n";
+          cout<< "END passed\n";
+          cout<< "cumulative_normal:\n"<< cumulative_normal  << "\n";
+          cout<< "num_near_normals:"<< num_near_normals<< "\n";
+          cout<< "resulting :\n"<< m_blurredNormalsMatrix[row][col]  << "\n";
         }
         else{
+          cout<< "END discarded\n";
           m_blurredNormalsMatrix[row][col] = Eigen::Vector3f::Zero();
         }
       }
     }
-
   }
 
   vector<cluster> Clusterer::findClusters(){

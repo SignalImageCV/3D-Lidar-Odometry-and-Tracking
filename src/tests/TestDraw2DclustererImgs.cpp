@@ -8,8 +8,8 @@ using namespace Loam;
 int main( int argc, char** argv){
 
   const sphericalImage_params params(
-    60, //num_vertical_rings
-    200, //num_points_ring
+    6, //num_vertical_rings
+    8, //num_points_ring
     6, //epsilon_times
     0.15, //epsilon_radius
     0.1, //depth_differential_threshold
@@ -52,26 +52,10 @@ int main( int argc, char** argv){
   noise[6].coordinates() = coords_p_7;
 
 
-  PointNormalColor3fVectorCloud l1 = Visualizer::createLine(
-    Vector3f( 2.,3.,1.), Vector3f( 0.,0.,1.), 8, 0.1);
-  PointNormalColor3fVectorCloud l2 = Visualizer::createLine(
-    Vector3f( -4.,-2.,-2.), Vector3f( 0.,0.,-1.), 10, 0.2);
   PointNormalColor3fVectorCloud p1 = Visualizer::createPlane(
     Vector3f( 5.,5.,0.),Vector3f( 0.,0.,1.),
     Vector3f( 1.,-1.,0.).normalized(), 4, 8, 0.5, 0.5);
   
-
-  cloud.insert(
-  cloud.end(),
-    std::make_move_iterator( l1.begin()),
-    std::make_move_iterator( l1.end())
-  );
-
-  cloud.insert(
-    cloud.end(),
-    std::make_move_iterator( l2.begin()),
-    std::make_move_iterator( l2.end())
-  );
 
   cloud.insert(
     cloud.end(),
@@ -81,7 +65,7 @@ int main( int argc, char** argv){
 
   sph_Image = SphericalDepthImage(cloud,params);
   sph_Image.initializeIndexImage();
-  std::vector<Matchable> matchables = sph_Image.clusterizeCloud();
+  //std::vector<Matchable> matchables = sph_Image.clusterizeCloud();
     
   RGBImage index_img; 
   RGBImage normals_img;
@@ -99,18 +83,29 @@ int main( int argc, char** argv){
   cv::moveWindow("BlurredNormalsImage", 20, 840);
   index_img = sph_Image.drawIndexImg(); 
   normals_img = sph_Image.drawNormalsImg();
-  vector<RGBImage> clusterer_imgs = sph_Image.drawImgsClusterer();
-  path_img = clusterer_imgs[0];
-  blurred_normals_img = clusterer_imgs[1];
+
+  Clusterer clusterer = Clusterer(cloud, sph_Image.getIndexImage() , params);
+  path_img = clusterer.drawPathImg();
+  clusterer.blurNormals();
+  blurred_normals_img = clusterer.drawBlurredNormalsImg();
+
+  RGBImage index_img_resized; 
+  RGBImage normals_img_resized;
+  RGBImage path_img_resized; 
+  RGBImage blurred_normals_img_resized;
+
+  cv::resize( index_img, index_img_resized, cv::Size( 0,0) , 10, 10);
+  cv::resize( normals_img, normals_img_resized, cv::Size( 0,0) , 10, 10);
+  cv::resize( path_img, path_img_resized, cv::Size( 0,0) , 10, 10);
+  cv::resize( blurred_normals_img, blurred_normals_img_resized, cv::Size( 0,0) , 10, 10);
 
   int counter = 0;
-
   while( counter < 10000){
     ++counter;
-    cv::imshow("IndexImage",index_img);
-    cv::imshow("NormalsImage",normals_img);
-    cv::imshow("PathImage",path_img);
-    cv::imshow("BlurredNormalsImage",blurred_normals_img);
+    cv::imshow("IndexImage",index_img_resized);
+    cv::imshow("NormalsImage",normals_img_resized);
+    cv::imshow("PathImage",path_img_resized);
+    cv::imshow("BlurredNormalsImage",blurred_normals_img_resized);
     cv::waitKey(1);
   }
 

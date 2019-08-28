@@ -440,10 +440,10 @@ namespace Loam{
 
           Eigen::Vector3f p_coords =  m_cloud[ index_inContainer].coordinates();
           if ( (p_coords + smallestEigenVec).norm() >  p_coords.norm() ){
-            m_cloud[ index_inContainer].normal() =  - smallestEigenVec;
+            m_cloud[ index_inContainer].normal() =  - smallestEigenVec.normalized();
           }
           else{
-            m_cloud[ index_inContainer].normal() = smallestEigenVec;
+            m_cloud[ index_inContainer].normal() = smallestEigenVec.normalized();
           }
         }
       }
