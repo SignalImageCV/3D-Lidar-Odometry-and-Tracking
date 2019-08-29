@@ -1037,6 +1037,19 @@ namespace Loam{
     return  Vector2f( min_elevation, max_elevation);
   }
 
+  int SphericalDepthImage::countPointsValid(){
+    int points= 0;
+    for (unsigned int row =0; row <m_index_image.size() ; ++row){
+      for (unsigned int col=0; col <m_index_image[0].size(); ++col){
+        DataPoint curr_point =   m_index_image[row][col];
+        if( curr_point.getIndexContainer() != -1 ){
+          ++points;
+        }
+      }
+    }
+    return points;
+  }
+
   
   RGBImage SphericalDepthImage::drawIndexImg(){
     RGBImage result_img;
@@ -1053,7 +1066,7 @@ namespace Loam{
           246.f* (1 - float(i)/num_colors),
           253.f* float(i)/num_colors);
     }
-    colors[num_colors] = Vector3f( 255.f,207.f,130.f);
+    colors[num_colors] = Vector3f( 255.f, 255.f, 255.f);
 
     const float max_depth = 100;
 
@@ -1090,7 +1103,7 @@ namespace Loam{
       for (unsigned int col=0; col <m_index_image[0].size(); ++col){
         DataPoint curr_point =   m_index_image[row][col];
         if( curr_point.getIndexContainer() != -1 ){
-          const  Vector3f normal = MyMath::directMappingFunc( m_cloud[ curr_point.getIndexContainer()].normal() );
+          const  Vector3f normal =  m_cloud[ curr_point.getIndexContainer()].normal() ;
           result_img.at<cv::Vec3b>( row,col) =
             cv::Vec3b( 255.f*normal.x(), 255.f* normal.y(), 255.f* normal.z());
             //cout << "normal values : "<< avg_normal.x() << " " << avg_normal.y() << " " << avg_normal.z() << " \n";

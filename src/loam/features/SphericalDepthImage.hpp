@@ -81,26 +81,28 @@ namespace Loam{
 
 
       /////////////////////////////////// DEPRECATED begin
+//
+//      vector<Matchable> clusterizeCloudDeprecated(IntegralImage & t_integ_img);
+//
+//      vector< vector< int>> findGoodClusterSeeds();
+//
+//      bool expandClusterBoundariesUp( DataPoint & t_seed_point,int & t_included_points_count);
+//      bool expandClusterBoundariesDown( DataPoint & t_seed_point,int & t_included_points_count);
+//      bool expandClusterBoundariesLeft( DataPoint & t_seed_point,int & t_included_points_count);
+//      bool expandClusterBoundariesRight( DataPoint & t_seed_point,int & t_included_points_count);
+//      bool discoverClusterBoundaryIndexes(
+//          const int t_seed_row, const int t_seed_col, const int t_seed_list_position);
+//
+//
+//      void markClusteredPoints(DataPoint & t_seed_point);
+//      int countPointsIndexImage();
+//      int countPointsNotClustered();
 
-      vector<Matchable> clusterizeCloudDeprecated(IntegralImage & t_integ_img);
-
-      vector< vector< int>> findGoodClusterSeeds();
-
-      bool expandClusterBoundariesUp( DataPoint & t_seed_point,int & t_included_points_count);
-      bool expandClusterBoundariesDown( DataPoint & t_seed_point,int & t_included_points_count);
-      bool expandClusterBoundariesLeft( DataPoint & t_seed_point,int & t_included_points_count);
-      bool expandClusterBoundariesRight( DataPoint & t_seed_point,int & t_included_points_count);
-      bool discoverClusterBoundaryIndexes(
-          const int t_seed_row, const int t_seed_col, const int t_seed_list_position);
-
-
-      void markClusteredPoints(DataPoint & t_seed_point);
+//      vector<int> fetchGoodSeedIndexes();
 
       ////////////////////////////// end
-      vector<int> fetchGoodSeedIndexes();
 
-      int countPointsIndexImage();
-      int countPointsNotClustered();
+      int countPointsValid();
 
       PointNormalColor3fVectorCloud fetchPointsInBoundaries(
           const int t_rowMin,const int t_rowMax,const int t_colMin,const int t_colMax);

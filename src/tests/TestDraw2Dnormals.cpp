@@ -9,9 +9,10 @@ int main( int argc, char** argv){
 
   string filename = "/home/dinies/temp/trial/tuttty.boss";
 
+
   const sphericalImage_params params(
       60, //num_vertical_rings
-      2000, //num_points_ring
+      200, //num_points_ring
       10, //epsilon_times
       0.15, //epsilon_radius
       0.1, //depth_differential_threshold
@@ -34,23 +35,31 @@ int main( int argc, char** argv){
   cv::moveWindow("IndexImage", 20, 40);
 
   cv::namedWindow("NormalsImage");
-  cv::moveWindow("NormalsImage", 20, 240);
+  cv::moveWindow("NormalsImage", 20, 740);
 
-
+  RGBImage index_img_resized; 
+  RGBImage normals_img_resized;
+  const float horizontal_scale= 10;
+  const float vertical_scale= 10;
+  
 
   PointNormalColor3fVectorCloud current_point_cloud= dM.readMessageFromDataset();
   while( current_point_cloud.size()> 0){
 
  
     sph_Image= SphericalDepthImage(current_point_cloud,params);
+    sph_Image.initializeIndexImage();
     sph_Image.removeFlatSurfaces();
     sph_Image.collectNormals();
     index_img = sph_Image.drawIndexImg(); 
     normals_img = sph_Image.drawNormalsImg();
-    cv::imshow("IndexImage",index_img);
-    cv::imshow("NormalsImage",normals_img);
-    cv::waitKey(1);
+    cv::resize( index_img, index_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
+    cv::resize( normals_img, normals_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
 
+    cv::imshow("IndexImage",index_img_resized);
+    cv::imshow("NormalsImage",normals_img_resized);
+    cv::waitKey(1);
+   
     current_point_cloud = dM.readMessageFromDataset();
   }
 

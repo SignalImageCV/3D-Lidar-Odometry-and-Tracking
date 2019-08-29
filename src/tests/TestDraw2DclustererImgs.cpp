@@ -8,12 +8,12 @@ using namespace Loam;
 int main( int argc, char** argv){
 
   const sphericalImage_params params(
-    6, //num_vertical_rings
-    8, //num_points_ring
-    6, //epsilon_times
+    20, //num_vertical_rings
+    40, //num_points_ring
+    3, //epsilon_times
     0.15, //epsilon_radius
     0.1, //depth_differential_threshold
-    6,  //min_neighboors_for_normal
+    3,  //min_neighboors_for_normal
     8, //epsilon_c
     0.1, //epsilon_d
     0.02, //epsilon_n
@@ -54,7 +54,7 @@ int main( int argc, char** argv){
 
   PointNormalColor3fVectorCloud p1 = Visualizer::createPlane(
     Vector3f( 5.,5.,0.),Vector3f( 0.,0.,1.),
-    Vector3f( 1.,-1.,0.).normalized(), 4, 8, 0.5, 0.5);
+    Vector3f( 1.,-1.,0.).normalized(), 8, 8, 0.5, 0.5);
   
 
   cloud.insert(
@@ -65,6 +65,7 @@ int main( int argc, char** argv){
 
   sph_Image = SphericalDepthImage(cloud,params);
   sph_Image.initializeIndexImage();
+  sph_Image.executeOperations();
   //std::vector<Matchable> matchables = sph_Image.clusterizeCloud();
     
   RGBImage index_img; 
@@ -94,13 +95,15 @@ int main( int argc, char** argv){
   RGBImage path_img_resized; 
   RGBImage blurred_normals_img_resized;
 
-  cv::resize( index_img, index_img_resized, cv::Size( 0,0) , 10, 10);
-  cv::resize( normals_img, normals_img_resized, cv::Size( 0,0) , 10, 10);
-  cv::resize( path_img, path_img_resized, cv::Size( 0,0) , 10, 10);
-  cv::resize( blurred_normals_img, blurred_normals_img_resized, cv::Size( 0,0) , 10, 10);
+  const float horizontal_scale= 10;
+  const float vertical_scale= 10;
+  cv::resize( index_img, index_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
+  cv::resize( normals_img, normals_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
+  cv::resize( path_img, path_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
+  cv::resize( blurred_normals_img, blurred_normals_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
 
   int counter = 0;
-  while( counter < 10000){
+  while( counter < 1000){
     ++counter;
     cv::imshow("IndexImage",index_img_resized);
     cv::imshow("NormalsImage",normals_img_resized);

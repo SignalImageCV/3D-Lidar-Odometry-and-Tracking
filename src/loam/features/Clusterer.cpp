@@ -68,6 +68,7 @@ namespace Loam{
                 cout<< " second if passed \n";
                 cout<< " current near row  and col:"<< near_row << " " << near_col<< "\n";
                 cout<< " current normal:\n"<< m_pathMatrix[near_row][near_col].normal<< "\n";
+                //cout<< " current  Norm:\n"<< m_pathMatrix[near_row][near_col].normal.norm()<< "\n";
 
                 cumulative_normal += m_pathMatrix[near_row][near_col].normal;
                 ++num_near_normals;
@@ -243,9 +244,9 @@ namespace Loam{
     colors.resize(num_colors);
     for(size_t i=0; i < colors.size(); ++i) {
       colors[i]= Vector3f(
-          227.f* float(i)/num_colors,
-          246.f* (1 - float(i)/num_colors),
-          253.f* float(i)/num_colors);
+          253.f*  float(i)/num_colors,
+          246.f*  float(i)/num_colors,
+          227.f*  float(i)/num_colors);
     }
 
     const float max_depth =100;
