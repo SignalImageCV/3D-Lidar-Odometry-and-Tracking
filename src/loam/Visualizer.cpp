@@ -251,6 +251,7 @@ namespace Loam{
     }
   }
 
+
   void Visualizer::visualizeCondition( ViewerCanvasPtr canvas){
 
     PointNormalColor3fVectorCloud circle_point_cloud  = Visualizer::createCircle();
@@ -430,7 +431,7 @@ namespace Loam{
 
     const sphericalImage_params params(
       60, //num_vertical_rings
-      80, //num_points_ring
+      2000, //num_points_ring
       10, //epsilon_times
       0.15, //epsilon_radius
       0.1, //depth_differential_threshold
