@@ -68,45 +68,23 @@ namespace Loam{
       bool expandNormalBoundariesRight(DataPoint & t_starting_point,int & t_neighboors_count);
       void discoverNormalsBoundaryIndexes();
 
+      //todo decide wheter to remove the deprecated method and all the integral image logic or to return to the deprecated version
       IntegralImage computePointNormals();
+      IntegralImage computePointNormalsDeprecated();
 
 
   
 
       PointNormalColor3fVectorCloud fetchPoints(const vector<int> & indexes);
 
-
-      vector<Matchable> clusterizeCloud();
-        
-
-
-      /////////////////////////////////// DEPRECATED begin
-//
-//      vector<Matchable> clusterizeCloudDeprecated(IntegralImage & t_integ_img);
-//
-//      vector< vector< int>> findGoodClusterSeeds();
-//
-//      bool expandClusterBoundariesUp( DataPoint & t_seed_point,int & t_included_points_count);
-//      bool expandClusterBoundariesDown( DataPoint & t_seed_point,int & t_included_points_count);
-//      bool expandClusterBoundariesLeft( DataPoint & t_seed_point,int & t_included_points_count);
-//      bool expandClusterBoundariesRight( DataPoint & t_seed_point,int & t_included_points_count);
-//      bool discoverClusterBoundaryIndexes(
-//          const int t_seed_row, const int t_seed_col, const int t_seed_list_position);
-//
-//
-//      void markClusteredPoints(DataPoint & t_seed_point);
-//      int countPointsIndexImage();
-//      int countPointsNotClustered();
-
-//      vector<int> fetchGoodSeedIndexes();
-
-      ////////////////////////////// end
-
-      int countPointsValid();
-
-      PointNormalColor3fVectorCloud fetchPointsInBoundaries(
+      vector< Vector3f>  fetchPointsInBoundaries(
           const int t_rowMin,const int t_rowMax,const int t_colMin,const int t_colMax);
  
+      vector<Matchable> clusterizeCloud();
+        
+      int countPointsValid();
+
+
 
 
       vector<int> mapSphericalCoordsInIndexImage(
