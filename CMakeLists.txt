@@ -4,6 +4,7 @@ project(loam)
 find_package(catkin REQUIRED COMPONENTS
   srrg_cmake_modules
   srrg2_core
+  srrg2_core_ros
   srrg2_slam_interfaces
   srrg2_qgl_viewport
  )
@@ -28,6 +29,7 @@ catkin_package(
   CATKIN_DEPENDS
     srrg_cmake_modules
     srrg2_core
+    srrg2_core_ros
     srrg2_slam_interfaces
     srrg2_qgl_viewport
   DEPENDS

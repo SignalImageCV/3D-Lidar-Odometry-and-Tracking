@@ -94,6 +94,22 @@ target_link_libraries(test_drawNormalOfLine
   )
 
 
+add_executable(test_WithDifferentDataset
+  TestWithDifferentDataset.cpp
+  )
+target_link_libraries(test_WithDifferentDataset
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  ${QGLViewer_LIBRARIES}
+  ${catkin_LIBRARIES}
+  pthread
+  )
+
+
+
 
 add_executable(test_draw2DindexImg
   TestDraw2DindexImg.cpp

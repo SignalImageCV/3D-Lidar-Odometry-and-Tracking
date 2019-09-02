@@ -12,7 +12,7 @@ int main( int argc, char** argv){
 
   const sphericalImage_params params(
       60, //num_vertical_rings
-      200, //num_points_ring
+      1000, //num_points_ring
       10, //epsilon_times
       0.15, //epsilon_radius
       0.1, //depth_differential_threshold
@@ -49,7 +49,7 @@ int main( int argc, char** argv){
  
     sph_Image= SphericalDepthImage(current_point_cloud,params);
     sph_Image.initializeIndexImage();
-    sph_Image.removeFlatSurfaces();
+    //sph_Image.removeFlatSurfaces();
     sph_Image.collectNormals();
     index_img = sph_Image.drawIndexImg(); 
     normals_img = sph_Image.drawNormalsImg();

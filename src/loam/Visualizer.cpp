@@ -367,13 +367,40 @@ namespace Loam{
   }
 
   void Visualizer::visualizeFullClouds( ViewerCanvasPtr canvas, const  string & filename){
-
+    const sphericalImage_params params(
+      64, //num_vertical_rings
+      768, //num_points_ring
+      10, //epsilon_times
+      0.15, //epsilon_radius
+      0.1, //depth_differential_threshold
+      8,  //min_neighboors_for_normal
+      5, //epsilon_c
+      0.1, //epsilon_d
+      0.02, //epsilon_n
+      1, //epsilon_l
+      1, //epsilon_dl
+      1, //epsilon_p
+      1 //epsilon_dp
+    );
     DatasetManager dM( filename);
 
+    SphericalDepthImage sph_Image;
     while( ViewerCoreSharedQGL::isRunning()){
       PointNormalColor3fVectorCloud current_point_cloud= dM.readMessageFromDataset();
+ 
       if( current_point_cloud.size()> 0){
-        canvas->putPoints(current_point_cloud);
+
+
+
+
+ 
+        sph_Image= SphericalDepthImage(current_point_cloud,params);
+        sph_Image.initializeIndexImage();
+
+        PointNormalColor3fVectorCloud cloud =  sph_Image.getPointCloud();
+
+
+        canvas->putPoints(cloud);
         canvas->flush();
       }
     }
@@ -431,7 +458,7 @@ namespace Loam{
 
     const sphericalImage_params params(
       60, //num_vertical_rings
-      2000, //num_points_ring
+      100, //num_points_ring
       10, //epsilon_times
       0.15, //epsilon_radius
       0.1, //depth_differential_threshold

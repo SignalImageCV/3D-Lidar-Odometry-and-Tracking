@@ -265,7 +265,7 @@ namespace Loam{
         const Eigen::Vector3f other_spherical_coords =
           MyMath::directMappingFunc( other_cartesian_coords);
 
-        if ( abs( starting_spherical_coords.z() - other_spherical_coords.z()) >
+        if ( fabs( starting_spherical_coords.z() - other_spherical_coords.z()) >
            m_params.depth_differential_threshold ){
           hasExpanded= false;
         }
@@ -420,7 +420,7 @@ namespace Loam{
 
           Eigen::Matrix3f R = svd.matrixU();
           //try if taking the column the result is different 
-          Eigen::Vector3f smallestEigenVec= R.row(2);
+          Eigen::Vector3f smallestEigenVec= R.col(2);
 
           Eigen::Vector3f p_coords =  m_cloud[ index_inContainer].coordinates();
           if ( (p_coords + smallestEigenVec).norm() >  p_coords.norm() ){
@@ -626,12 +626,12 @@ namespace Loam{
     for(size_t i=0; i < colors.size(); ++i) {
       colors[i]= Vector3f(
           227.f* float(i)/num_colors,
-          246.f* (1 - float(i)/num_colors),
+          246.f* float(i)/num_colors,
           253.f* float(i)/num_colors);
     }
     colors[num_colors] = Vector3f( 255.f, 255.f, 255.f);
 
-    const float max_depth = 100;
+    const float max_depth = 50;
 
     for (unsigned int row =0; row <m_index_image.size() ; ++row){
       for (unsigned int col=0; col <m_index_image[0].size(); ++col){

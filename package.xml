@@ -12,6 +12,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>srrg_cmake_modules</depend>
   <depend>srrg2_core</depend>
+  <depend>srrg2_core_ros</depend>
   <depend>srrg2_slam_interfaces</depend>
   <depend>srrg2_qgl_viewport</depend>
 

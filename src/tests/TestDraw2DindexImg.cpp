@@ -9,8 +9,8 @@ int main( int argc, char** argv){
   string filename = "/home/dinies/temp/trial/tuttty.boss";
 
   const sphericalImage_params params(
-      60, //num_vertical_rings
-      200, //num_points_ring
+      64, //num_vertical_rings
+      768, //num_points_ring
       10, //epsilon_times
       0.15, //epsilon_radius
       0.1, //depth_differential_threshold
@@ -40,13 +40,14 @@ int main( int argc, char** argv){
  
     sph_Image= SphericalDepthImage(current_point_cloud,params);
     sph_Image.initializeIndexImage();
-    sph_Image.removeFlatSurfaces();
+    //sph_Image.removeFlatSurfaces();
 
     index_img = sph_Image.drawIndexImg(); 
 
     cv::resize( index_img, index_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
 
-    cv::imshow("IndexImage",index_img_resized);
+    //cv::imshow("IndexImage",index_img_resized);
+    cv::imshow("IndexImage",index_img);
   
     cv::waitKey(1);
 
