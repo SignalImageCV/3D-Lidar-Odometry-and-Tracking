@@ -115,7 +115,8 @@ using namespace Loam;
     
     const float point_size = 2.5;
 
-    ViewerCoreSharedQGL viewer(argc, argv);
+    QApplication qapp(argc, argv);
+    ViewerCoreSharedQGL viewer(argc, argv, &qapp);
     ViewerCanvasPtr canvas = viewer.getCanvas("drawingCloud");
     std::thread processing_thread(Visualizer::visualizeCloud, canvas, cloud, point_size  );
     viewer.startViewerServer();

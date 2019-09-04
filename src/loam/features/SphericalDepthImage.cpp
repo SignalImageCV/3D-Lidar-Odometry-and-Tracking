@@ -465,7 +465,7 @@ namespace Loam{
 
           Eigen::Matrix3f R = svd.matrixU();
           //try if taking the column the result is different 
-          Eigen::Vector3f smallestEigenVec= R.row(2);
+          Eigen::Vector3f smallestEigenVec= R.col(2);
 
           Eigen::Vector3f p_coords =  m_cloud[ index_inContainer].coordinates();
           if ( (p_coords + smallestEigenVec).norm() >  p_coords.norm() ){

@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   srrg_cmake_modules
   srrg2_core
   srrg2_core_ros
+  srrg2_solver
   srrg2_slam_interfaces
   srrg2_qgl_viewport
  )
@@ -30,6 +31,7 @@ catkin_package(
     srrg_cmake_modules
     srrg2_core
     srrg2_core_ros
+    srrg2_solver
     srrg2_slam_interfaces
     srrg2_qgl_viewport
   DEPENDS

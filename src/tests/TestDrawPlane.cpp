@@ -65,7 +65,8 @@ int main( int argc, char** argv){
 
   const float points_size = 2.0;
 
-  ViewerCoreSharedQGL viewer(argc, argv);
+  QApplication qapp(argc, argv);
+  ViewerCoreSharedQGL viewer(argc, argv, &qapp);
   ViewerCanvasPtr canvas1 = viewer.getCanvas("drawingPlaneBeforeCleaning");
   std::thread processing_thread1( Visualizer::visualizeCloud, canvas1, cloud_before_cleaning, points_size);
 

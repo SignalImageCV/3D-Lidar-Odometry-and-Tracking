@@ -8,7 +8,8 @@ using namespace Loam;
 int main( int argc, char** argv){
 
   string filename = "/home/dinies/temp/trial/tuttty.boss";
-  ViewerCoreSharedQGL viewer(argc, argv);
+  QApplication qapp(argc, argv);
+  ViewerCoreSharedQGL viewer(argc, argv, &qapp);
   ViewerCanvasPtr canvas = viewer.getCanvas("PointsWithNormals");
 
   std::thread processing_thread(

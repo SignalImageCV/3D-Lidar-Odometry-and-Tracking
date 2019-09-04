@@ -7,7 +7,8 @@ using namespace Loam;
 
 int main( int argc, char** argv){
 
-  ViewerCoreSharedQGL viewer(argc, argv);
+  QApplication qapp(argc, argv);
+  ViewerCoreSharedQGL viewer(argc, argv, &qapp);
   ViewerCanvasPtr canvas = viewer.getCanvas("drawingCloud");
   std::thread processing_thread(Visualizer::visualizeCondition, canvas);
   viewer.startViewerServer();

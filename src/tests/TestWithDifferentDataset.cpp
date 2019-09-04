@@ -21,7 +21,23 @@ void visualizeClouder( ViewerCanvasPtr canvas, string filename){
   m_source.param_topics.value().push_back("/kitti/velo/pointcloud");
   m_source.open(filename);
   
-  
+  const sphericalImage_params params(
+    64, //num_vertical_rings
+    768, //num_points_ring
+    7, //epsilon_times
+    0.15, //epsilon_radius
+    1, //depth_differential_threshold
+    4,  //min_neighboors_for_normal
+    8, //epsilon_c
+    0.1, //epsilon_d
+    0.02, //epsilon_n
+    1, //epsilon_l
+    1, //epsilon_dl
+    1, //epsilon_p
+    1 //epsilon_dp
+  );
+ 
+  SphericalDepthImage sph_Image;
 
 
   BaseSensorMessagePtr msg;
@@ -36,12 +52,17 @@ void visualizeClouder( ViewerCanvasPtr canvas, string filename){
   PointNormalColor3fVectorCloud cloud_new;
   cloud_new.resize( current_point_cloud.size());
   current_point_cloud.copyFieldTo<0,0,PointNormalColor3fVectorCloud>(cloud_new);
-  for (auto& p : cloud_new) {
-    p.color() = ColorPalette::color3fOrange();
-  }
+
+  sph_Image = SphericalDepthImage(cloud_new,params);
+  sph_Image.initializeIndexImage();
+  //sph_Image.removeFlatSurfaces();
+  sph_Image.executeOperations();
+
+  const PointNormalColor3fVectorCloud cloud_final = sph_Image.getPointCloud() ;
+  
   canvas->pushPointSize();
   canvas->setPointSize(1.5f);
-  canvas->putPoints( cloud_new);
+  canvas->putPoints( cloud_final);
   canvas->popAttribute();
   canvas->flush();
   }
@@ -57,7 +78,8 @@ int main( int argc, char** argv){
  
 
 
-  ViewerCoreSharedQGL viewer(argc, argv);
+  QApplication qapp(argc, argv);
+  ViewerCoreSharedQGL viewer(argc, argv, &qapp);
   ViewerCanvasPtr canvas1 = viewer.getCanvas("cloud");
 
   std::thread processing_thread(
