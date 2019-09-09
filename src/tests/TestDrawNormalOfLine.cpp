@@ -8,12 +8,12 @@ int main( int argc, char** argv){
 
 
   const sphericalImage_params params(
-    60, //num_vertical_rings
-    2000, //num_points_ring
+    64, //num_vertical_rings
+    768, //num_points_ring
     7, //epsilon_times
     0.15, //epsilon_radius
-    1, //depth_differential_threshold
-    4,  //min_neighboors_for_normal
+    2.1, //depth_differential_threshold
+    7,  //min_neighboors_for_normal
     8, //epsilon_c
     0.1, //epsilon_d
     0.02, //epsilon_n
@@ -38,20 +38,26 @@ int main( int argc, char** argv){
   // Vector3f( 5.,5.,-5.),Vector3f( 0.,0.,1.),
   //  10, 0.25);
 
-  PointNormalColor3fVectorCloud l1 = Visualizer::createPlane(
-    Vector3f( 5.,5.,0.),Vector3f( 0.,0.,1.),
-    Vector3f( 1.,0.,0.), 8, 4, 0.5, 0.25);
+  PointNormalColor3fVectorCloud p1 = Visualizer::createPlane(
+    Vector3f( 35.,35.,0.),Vector3f( 0.,0.,1.),
+    Vector3f( -1.,1.,0.).normalized(), 18, 14, 0.25, 0.25);
 
+  PointNormalColor3fVectorCloud p2 = Visualizer::createPlane(
+    Vector3f( 0.,35.,0.),Vector3f( 0.,0.,1.),
+    Vector3f( 1.,0.,0.), 18, 14, 0.25, 0.25);
+
+  cloud.insert(
+    cloud.end(),
+    std::make_move_iterator( p1.begin()),
+    std::make_move_iterator( p1.end())
+  );
 
 
   cloud.insert(
     cloud.end(),
-    std::make_move_iterator( l1.begin()),
-    std::make_move_iterator( l1.end())
+    std::make_move_iterator( p2.begin()),
+    std::make_move_iterator( p2.end())
   );
-
-
-  cout << "number of points of the entity: " << l1.size() <<"\n";
 
   sph_Image = SphericalDepthImage(cloud,params);
   sph_Image.initializeIndexImage();

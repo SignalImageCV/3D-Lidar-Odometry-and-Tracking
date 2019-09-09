@@ -99,8 +99,11 @@ namespace Loam{
       RGBImage drawIndexImg();
       RGBImage drawNormalsImg();
       RGBImage drawClustersImg();
+
+
       vector<RGBImage> drawImgsClusterer();
 
+      RGBImage drawPointNormalBoundaries( const PointNormalColor3f & t_point );
 
 
       inline const vector<vector<DataPoint>> & getIndexImage(){ return m_index_image;};

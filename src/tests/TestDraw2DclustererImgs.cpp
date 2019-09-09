@@ -8,15 +8,15 @@ using namespace Loam;
 int main( int argc, char** argv){
 
   const sphericalImage_params params(
-    20, //num_vertical_rings
-    40, //num_points_ring
-    3, //epsilon_times
+    64, //num_vertical_rings
+    768, //num_points_ring
+    7, //epsilon_times
     0.15, //epsilon_radius
-    0.1, //depth_differential_threshold
-    3,  //min_neighboors_for_normal
+    2.1, //depth_differential_threshold
+    7,  //min_neighboors_for_normal
     8, //epsilon_c
-    0.1, //epsilon_d
-    0.02, //epsilon_n
+    0.5, //epsilon_d
+    0.1, //epsilon_n
     1, //epsilon_l
     1, //epsilon_dl
     1, //epsilon_p
@@ -28,39 +28,50 @@ int main( int argc, char** argv){
 
 
   PointNormalColor3f min_elev;
-  min_elev.coordinates() = Vector3f( 5,5,10);
+  min_elev.coordinates() = Vector3f( 2,7,10);
   cloud.push_back( min_elev);
   PointNormalColor3f max_elev;
-  max_elev.coordinates() = Vector3f( 5,5,-10);
+  max_elev.coordinates() = Vector3f( 2,7,-10);
   cloud.push_back( max_elev);
 
-  PointNormalColor3fVectorCloud noise;
-  noise.resize(7);
-  Vector3f coords_p_1 = Vector3f(-4., 4., 4. );
-  Vector3f coords_p_2 = Vector3f(3., -3., 8. );
-  Vector3f coords_p_3 = Vector3f(-1., 1., 5. );
-  Vector3f coords_p_4 = Vector3f(7., -1., 2. );
-  Vector3f coords_p_5 = Vector3f(-7., -7., 3. );
-  Vector3f coords_p_6 = Vector3f(-1., -7., 4. );
-  Vector3f coords_p_7 = Vector3f(3., -5., 0. );
-  noise[0].coordinates() = coords_p_1;
-  noise[1].coordinates() = coords_p_2;
-  noise[2].coordinates() = coords_p_3;
-  noise[3].coordinates() = coords_p_4;
-  noise[4].coordinates() = coords_p_5;
-  noise[5].coordinates() = coords_p_6;
-  noise[6].coordinates() = coords_p_7;
+//  PointNormalColor3fVectorCloud noise;
+//  noise.resize(7);
+//  Vector3f coords_p_1 = Vector3f(-4., 4., 4. );
+//  Vector3f coords_p_2 = Vector3f(3., -3., 8. );
+//  Vector3f coords_p_3 = Vector3f(-1., 1., 5. );
+//  Vector3f coords_p_4 = Vector3f(7., -1., 2. );
+//  Vector3f coords_p_5 = Vector3f(-7., -7., 3. );
+//  Vector3f coords_p_6 = Vector3f(-1., -7., 4. );
+//  Vector3f coords_p_7 = Vector3f(3., -5., 0. );
+//  noise[0].coordinates() = coords_p_1;
+//  noise[1].coordinates() = coords_p_2;
+//  noise[2].coordinates() = coords_p_3;
+//  noise[3].coordinates() = coords_p_4;
+//  noise[4].coordinates() = coords_p_5;
+//  noise[5].coordinates() = coords_p_6;
+//  noise[6].coordinates() = coords_p_7;
 
 
   PointNormalColor3fVectorCloud p1 = Visualizer::createPlane(
-    Vector3f( 5.,5.,0.),Vector3f( 0.,0.,1.),
-    Vector3f( 1.,-1.,0.).normalized(), 8, 8, 0.5, 0.5);
-  
+    Vector3f( 35.,35.,0.),Vector3f( 0.,0.,1.),
+    Vector3f( -1.,1.,0.).normalized(), 18, 14, 0.25, 0.25);
+
+  PointNormalColor3fVectorCloud p2 = Visualizer::createPlane(
+    Vector3f( 0.,35.,0.),Vector3f( 0.,0.,1.),
+    Vector3f( 1.,0.,0.), 18, 14, 0.25, 0.25);
+
+
 
   cloud.insert(
     cloud.end(),
     std::make_move_iterator( p1.begin()),
     std::make_move_iterator( p1.end())
+  );
+
+  cloud.insert(
+    cloud.end(),
+    std::make_move_iterator( p2.begin()),
+    std::make_move_iterator( p2.end())
   );
 
   sph_Image = SphericalDepthImage(cloud,params);
@@ -75,18 +86,21 @@ int main( int argc, char** argv){
 
 
   cv::namedWindow("IndexImage");
-  cv::moveWindow("IndexImage", 20, 240);
+  cv::moveWindow("IndexImage", 20, 20);
   cv::namedWindow("NormalsImage");
-  cv::moveWindow("NormalsImage", 20, 440);
+  cv::moveWindow("NormalsImage", 20, 370);
   cv::namedWindow("PathImage");
-  cv::moveWindow("PathImage", 20, 640);
+  cv::moveWindow("PathImage", 20, 720);
   cv::namedWindow("BlurredNormalsImage");
-  cv::moveWindow("BlurredNormalsImage", 20, 840);
+  cv::moveWindow("BlurredNormalsImage", 20, 1070);
   index_img = sph_Image.drawIndexImg(); 
   normals_img = sph_Image.drawNormalsImg();
 
   Clusterer clusterer = Clusterer(cloud, sph_Image.getIndexImage() , params);
+  cout << " Dims of m_blurredNormals : " << clusterer.getHeightBlurredNormalsMatrix() << " " << clusterer.getWidthBlurredNormalsMatrix()<< "\n";
   path_img = clusterer.drawPathImg();
+  cout << " Dims of m_blurredNormals : " << clusterer.getHeightBlurredNormalsMatrix() << " " << clusterer.getWidthBlurredNormalsMatrix()<< "\n";
+
   clusterer.blurNormals();
   blurred_normals_img = clusterer.drawBlurredNormalsImg();
 
@@ -95,8 +109,8 @@ int main( int argc, char** argv){
   RGBImage path_img_resized; 
   RGBImage blurred_normals_img_resized;
 
-  const float horizontal_scale= 10;
-  const float vertical_scale= 10;
+  const float horizontal_scale= 3;
+  const float vertical_scale= 5;
   cv::resize( index_img, index_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
   cv::resize( normals_img, normals_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
   cv::resize( path_img, path_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);

@@ -73,7 +73,7 @@ namespace Loam{
   IntegralImage SphericalDepthImage::collectNormals(){
     discoverNormalsBoundaryIndexes();
     removePointsWithoutNormal();
-    return computePointNormals();
+    return computePointNormalsDeprecated();
     
  }
  void SphericalDepthImage::markVerticalPoints(){
@@ -382,17 +382,7 @@ namespace Loam{
           const bool hasExpandedInEveryDirection =
             up_neighboors_count>0 and down_neighboors_count>0 and
             left_neighboors_count>0 and right_neighboors_count>0;
-          cout<< "hasExpandedInEveryDirection : " << hasExpandedInEveryDirection<< "\n";
-          cout<< "total_neighboors_count : " << total_neighboors_count<< "\n";
-          cout<< "up_neighboors_count : " << up_neighboors_count<< "\n";
-          cout<< "down_neighboors_count : " << down_neighboors_count<< "\n";
-          cout<< "left_neighboors_count : " << left_neighboors_count<< "\n";
-          cout<< "right_neighboors_count : " << right_neighboors_count<< "\n";
-
-
-          // TODO analyze why the normal expansion is never in every direction,
-          // there is at least one direction where it does not find neighboors
-          const bool hasNormal = (total_neighboors_count >=  m_params.min_neighboors_for_normal);
+         const bool hasNormal = (total_neighboors_count >=  m_params.min_neighboors_for_normal);
            // and hasExpandedInEveryDirection;
           curr_point.setHasNormal( hasNormal );
         }
@@ -688,6 +678,42 @@ namespace Loam{
     return images;
   }
 
+  RGBImage SphericalDepthImage::drawPointNormalBoundaries( const PointNormalColor3f & t_point ){
+    RGBImage result_img;
+    result_img.create( m_params.num_vertical_rings, m_params.num_points_ring);
+    result_img = cv::Vec3b(253, 246, 227);
+ 
+
+    vector<int> coords = mapCartesianCoordsInIndexImage( t_point.coordinates());
+    DataPoint dp = m_index_image[ coords[0]][coords[1]];
+    const int min_row = dp.getBoundaries()[0];
+    const int max_row = dp.getBoundaries()[1];
+    const int min_col = dp.getBoundaries()[2];
+    const int max_col = dp.getBoundaries()[3];
+
+    cv::Vec3b red  = cv::Vec3b(255.f, 0.0f, 0.0f);
+    cv::Vec3b blue  = cv::Vec3b(0.0f,255.f, 0.0f);
+    cv::Vec3b green  = cv::Vec3b(0.0f, 0.0f, 255.f);
+
+    for (int row =0; row <m_index_image.size() ; ++row){
+      for (int col=0; col <m_index_image[0].size(); ++col){
+        DataPoint curr_point =   m_index_image[row][col];
+        if( curr_point.getIndexContainer() != -1 ){
+          if ( row >= min_row and row <= max_row and col>= min_col and col <= max_col){
+            result_img.at<cv::Vec3b>( row,col) = red;
+          }
+          else{
+            result_img.at<cv::Vec3b>( row,col) = blue;
+          }
+        }
+      }
+    }
+
+    result_img.at<cv::Vec3b>( coords[0],coords[1]) = green;
+    return result_img;
+  }
+
+   
   // todo   
   RGBImage SphericalDepthImage::drawClustersImg(){
     RGBImage result_img;

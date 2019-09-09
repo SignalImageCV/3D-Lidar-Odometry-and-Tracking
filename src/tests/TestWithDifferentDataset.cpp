@@ -53,9 +53,13 @@ void visualizeClouder( ViewerCanvasPtr canvas, string filename){
   cloud_new.resize( current_point_cloud.size());
   current_point_cloud.copyFieldTo<0,0,PointNormalColor3fVectorCloud>(cloud_new);
 
+  for ( auto & p : cloud_new){
+    p.color() = ColorPalette::color3fDarkCyan();
+  }
+
   sph_Image = SphericalDepthImage(cloud_new,params);
   sph_Image.initializeIndexImage();
-  //sph_Image.removeFlatSurfaces();
+  sph_Image.removeFlatSurfaces();
   sph_Image.executeOperations();
 
   const PointNormalColor3fVectorCloud cloud_final = sph_Image.getPointCloud() ;
@@ -74,7 +78,7 @@ int main( int argc, char** argv){
   cmd_line.parse();
 
   messages_registerTypes();
-  srrgInit( argc, argv, "ciao");
+  srrgInit( argc, argv, "hi");
  
 
 

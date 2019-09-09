@@ -62,11 +62,8 @@ namespace Loam{
       PointNormalColor3fVectorCloud  m_cloud;
       vector<vector< DataPoint>>  m_index_image;
       sphericalImage_params m_params;
-
       vector<vector< Eigen::Vector3f>>  m_blurredNormalsMatrix;
-
       vector<vector< pathCell>>  m_pathMatrix;
-
 
     public:
 
@@ -76,9 +73,9 @@ namespace Loam{
          const  PointNormalColor3fVectorCloud & t_cloud,
          vector<vector<DataPoint>> t_index_image,
          const sphericalImage_params t_params);
+
+      ~Clusterer() = default;
          
-
-
       static vector<vector<pathCell>> populatePathMatrix(
          const  PointNormalColor3fVectorCloud & t_cloud,
          vector<vector<DataPoint>> t_index_image,
@@ -96,6 +93,10 @@ namespace Loam{
       RGBImage drawPathImg();
 
       RGBImage drawBlurredNormalsImg();
+
+       //todo remove this 2 methods 
+      inline  int getHeightBlurredNormalsMatrix(){ return m_blurredNormalsMatrix.size();};
+      inline  int getWidthBlurredNormalsMatrix(){ if(m_blurredNormalsMatrix.size()> 0){ return m_blurredNormalsMatrix[0].size();} else{ return 0;}};
 
   };
 }

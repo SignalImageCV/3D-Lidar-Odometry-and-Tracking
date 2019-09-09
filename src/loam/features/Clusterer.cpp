@@ -13,6 +13,14 @@ namespace Loam{
     m_pathMatrix = populatePathMatrix(
       t_cloud, t_index_image,t_params);
 
+    m_blurredNormalsMatrix.resize(m_params.num_vertical_rings);
+    for ( auto & external_vec: m_blurredNormalsMatrix ){
+      external_vec.resize( m_params.num_points_ring);
+      for ( auto & elem : external_vec){
+        elem = Vector3f::Zero();
+      }
+    }
+
  }
          
   vector<vector<pathCell>>  Clusterer::populatePathMatrix(
@@ -46,12 +54,6 @@ namespace Loam{
 
   void Clusterer::blurNormals(){
 
-    vector<vector< Eigen::Vector3f>>  m_blurredNormalsMatrix;
-    m_blurredNormalsMatrix.resize(m_params.num_vertical_rings);
-    for ( auto & vec: m_blurredNormalsMatrix ){
-      vec.resize( m_params.num_points_ring);
-    }
- 
     const int  blur_extension = 2;
     for (int row =0; row < m_pathMatrix.size() ; ++row){
       for (int col=0; col < m_pathMatrix[0].size(); ++col){
@@ -237,16 +239,16 @@ namespace Loam{
   RGBImage Clusterer::drawPathImg(){
     RGBImage result_img;
     result_img.create( m_params.num_vertical_rings, m_params.num_points_ring);
-    result_img = cv::Vec3b(253, 246, 227);
+    result_img = cv::Vec3b(255, 255, 255);
 
     std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >  colors;
     const int num_colors = 100;
     colors.resize(num_colors);
     for(size_t i=0; i < colors.size(); ++i) {
       colors[i]= Vector3f(
-          253.f*  float(i)/num_colors,
-          246.f*  float(i)/num_colors,
-          227.f*  float(i)/num_colors);
+          255.f*  float(i)/num_colors,
+          255.f*  float(i)/num_colors,
+          255.f*  float(i)/num_colors);
     }
 
     const float max_depth =100;
@@ -272,13 +274,16 @@ namespace Loam{
   RGBImage Clusterer::drawBlurredNormalsImg(){
     RGBImage result_img;
     result_img.create( m_params.num_vertical_rings, m_params.num_points_ring);
-    result_img = cv::Vec3b(253, 246, 227);
+    result_img = cv::Vec3b(255, 255, 255);
 
     for (unsigned int row =0; row <m_blurredNormalsMatrix.size() ; ++row){
       for (unsigned int col=0; col <m_blurredNormalsMatrix[0].size(); ++col){
         Eigen::Vector3f  normal=  m_blurredNormalsMatrix[row][col];
         result_img.at<cv::Vec3b>( row,col) =
-          cv::Vec3b( 255.f*normal.x(), 255.f* normal.y(), 255.f* normal.z());
+          cv::Vec3b(
+              (255.f - 255.f*normal.x()),
+              (255.f - 255.f* normal.y()),
+              (255.f - 255.f* normal.z()));
       }
     }
     return result_img;
