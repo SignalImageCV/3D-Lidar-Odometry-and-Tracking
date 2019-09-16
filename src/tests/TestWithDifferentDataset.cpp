@@ -1,5 +1,4 @@
 #include "../loam/Visualizer.hpp"
-#include <srrg_messages_ros/message_handlers/message_rosbag_source.h>
 #include <srrg_system_utils/parse_command_line.h>
 
 
@@ -14,13 +13,8 @@ const char* banner[] = {
       0
 };
 
-
 void visualizeClouder( ViewerCanvasPtr canvas, string filename){
-
-  MessageROSBagSource m_source;
-  m_source.param_topics.value().push_back("/kitti/velo/pointcloud");
-  m_source.open(filename);
-  
+  DatasetManager dM( filename);
   const sphericalImage_params params(
     64, //num_vertical_rings
     768, //num_points_ring
@@ -38,37 +32,22 @@ void visualizeClouder( ViewerCanvasPtr canvas, string filename){
   );
  
   SphericalDepthImage sph_Image;
+  while( ViewerCoreSharedQGL::isRunning()){
 
+    PointNormalColor3fVectorCloud cloud = dM.readMessageFromDataset();
 
-  BaseSensorMessagePtr msg;
-  Point3fVectorCloud current_point_cloud;
-  while (msg=m_source.getMessage()){
-    PointCloud2MessagePtr cloud = std::dynamic_pointer_cast<PointCloud2Message>(msg);
-    if(cloud){
-      cloud->getPointCloud(current_point_cloud);
-    }
+    sph_Image = SphericalDepthImage(cloud,params);
+    sph_Image.initializeIndexImage();
+    sph_Image.removeFlatSurfaces();
+    sph_Image.executeOperations();
 
-
-  PointNormalColor3fVectorCloud cloud_new;
-  cloud_new.resize( current_point_cloud.size());
-  current_point_cloud.copyFieldTo<0,0,PointNormalColor3fVectorCloud>(cloud_new);
-
-  for ( auto & p : cloud_new){
-    p.color() = ColorPalette::color3fDarkCyan();
-  }
-
-  sph_Image = SphericalDepthImage(cloud_new,params);
-  sph_Image.initializeIndexImage();
-  sph_Image.removeFlatSurfaces();
-  sph_Image.executeOperations();
-
-  const PointNormalColor3fVectorCloud cloud_final = sph_Image.getPointCloud() ;
+    const PointNormalColor3fVectorCloud cloud_final = sph_Image.getPointCloud();
   
-  canvas->pushPointSize();
-  canvas->setPointSize(1.5f);
-  canvas->putPoints( cloud_final);
-  canvas->popAttribute();
-  canvas->flush();
+    canvas->pushPointSize();
+    canvas->setPointSize(1.5f);
+    canvas->putPoints( cloud_final);
+    canvas->popAttribute();
+    canvas->flush();
   }
 }
 

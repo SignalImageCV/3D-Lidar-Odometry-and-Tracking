@@ -10,8 +10,8 @@ namespace Loam{
 
   float Plane::computeDistance(const  PointNormalColor3f & t_point){
 
-    const  Eigen::Vector3f u = R_m.row(0).normalized();
-    const  Eigen::Vector3f v = R_m.row(1).normalized();
+    const  Eigen::Vector3f u = R_m.col(0).normalized();
+    const  Eigen::Vector3f v = R_m.col(1).normalized();
     const  Eigen::Vector3f plane_normal =  u.cross(v);
     const float distance_lineCenter_point = ( t_point.coordinates() - p_m).norm();
     const Eigen::Vector3f unit_vec_lineCenter_point =  ( t_point.coordinates() - p_m).normalized();
@@ -25,10 +25,22 @@ namespace Loam{
     const  Eigen::Vector3f unit_vec_projection =
       projection_unit_vec_lineCenter_point_on_plane.normalized();
 
-    const float angle_between_unit_vecs =
-      acos( unit_vec_projection.dot(unit_vec_lineCenter_point));
+    float dot_prod_between_unit_vecs= unit_vec_projection.dot(unit_vec_lineCenter_point);
 
-    return distance_lineCenter_point * sin( angle_between_unit_vecs);
+    if ( dot_prod_between_unit_vecs < -1.f){
+      dot_prod_between_unit_vecs = -1.f;
+    }
+    else if( dot_prod_between_unit_vecs > 1.f){
+      dot_prod_between_unit_vecs = 1.f;
+    }
+
+    const float angle_between_unit_vecs = acos(  dot_prod_between_unit_vecs);
+
+    float result =  distance_lineCenter_point * sin( angle_between_unit_vecs);
+    
+    return result;
+
+    //return distance_lineCenter_point * sin( angle_between_unit_vecs);
 
  }
 

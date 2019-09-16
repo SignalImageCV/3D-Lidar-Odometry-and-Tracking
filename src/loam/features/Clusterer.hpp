@@ -36,18 +36,18 @@ namespace Loam{
   }matrixCoords;
 
   typedef struct pathCell_tag{
-    bool hasBeenChoosen;
+    bool hasBeenChosen;
     float depth;
     Eigen::Vector3f normal;
     matrixCoords matCoords;
     pathCell_tag():
-      hasBeenChoosen(false),
+      hasBeenChosen(false),
       depth( numeric_limits<float>::max()),
       normal( Eigen::Vector3f::Zero())
     {}
     pathCell_tag(const int row, const int col,
         const float t_depth, const Eigen::Vector3f t_normal ):
-      hasBeenChoosen(false),
+      hasBeenChosen(false),
       depth( t_depth),
       normal( t_normal),
       matCoords(row, col)
@@ -70,15 +70,15 @@ namespace Loam{
       Clusterer()= default;
 
       Clusterer( 
-         const  PointNormalColor3fVectorCloud & t_cloud,
-         vector<vector<DataPoint>> t_index_image,
+         const PointNormalColor3fVectorCloud & t_cloud,
+         const vector<vector<DataPoint>> & t_index_image,
          const sphericalImage_params t_params);
 
       ~Clusterer() = default;
          
       static vector<vector<pathCell>> populatePathMatrix(
-         const  PointNormalColor3fVectorCloud & t_cloud,
-         vector<vector<DataPoint>> t_index_image,
+         const PointNormalColor3fVectorCloud & t_cloud,
+         const vector<vector<DataPoint>> & t_index_image,
          const sphericalImage_params t_params);
 
       void blurNormals();
@@ -93,11 +93,6 @@ namespace Loam{
       RGBImage drawPathImg();
 
       RGBImage drawBlurredNormalsImg();
-
-       //todo remove this 2 methods 
-      inline  int getHeightBlurredNormalsMatrix(){ return m_blurredNormalsMatrix.size();};
-      inline  int getWidthBlurredNormalsMatrix(){ if(m_blurredNormalsMatrix.size()> 0){ return m_blurredNormalsMatrix[0].size();} else{ return 0;}};
-
   };
 }
  

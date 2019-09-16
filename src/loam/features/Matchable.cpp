@@ -16,6 +16,7 @@ namespace Loam{
     for ( auto & p: t_points){
       cumulative_error += computeDistance( p);
     }
+    //std::cout<< "residual error : cumulative  = " << cumulative_error<< " number of points = "<< c<< "\n" ;
     return cumulative_error/ c;
   }
 

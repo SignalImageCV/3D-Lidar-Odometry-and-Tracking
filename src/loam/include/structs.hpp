@@ -4,9 +4,6 @@ namespace Loam{
 
   typedef cv::Mat_< cv::Vec3b > RGBImage;
 
-
-
-
   typedef struct sphericalImage_params_tag{
      int num_vertical_rings;
      int num_points_ring;

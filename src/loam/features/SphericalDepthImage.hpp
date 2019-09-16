@@ -7,6 +7,8 @@
 
 
 #include "../include/structs.hpp"
+#include "../include/turboColors.hpp"
+
 #include "../MyMath.hpp"
 #include "DataPoint.hpp"
 #include "IntegralImage.hpp"
@@ -19,7 +21,6 @@ using namespace srrg2_core;
 
 
 namespace Loam{
-
 
 
   class SphericalDepthImage {
@@ -98,7 +99,7 @@ namespace Loam{
 
       RGBImage drawIndexImg();
       RGBImage drawNormalsImg();
-      RGBImage drawClustersImg();
+      RGBImage drawClustersImg(vector<cluster> t_clusters );
 
 
       vector<RGBImage> drawImgsClusterer();
@@ -106,11 +107,13 @@ namespace Loam{
       RGBImage drawPointNormalBoundaries( const PointNormalColor3f & t_point );
 
 
-      inline const vector<vector<DataPoint>> & getIndexImage(){ return m_index_image;};
+      inline const vector<vector<DataPoint>> & getIndexImage() const { return m_index_image;};
+      inline vector<vector<DataPoint>> & getIndexImage(){ return m_index_image;};
 
       inline void setIndexImage( const vector<vector<DataPoint>> & t_indexImage){ m_index_image = t_indexImage;};
 
-      inline const PointNormalColor3fVectorCloud & getPointCloud(){ return m_cloud;};
+      inline const PointNormalColor3fVectorCloud & getPointCloud() const { return m_cloud;};
+      inline PointNormalColor3fVectorCloud & getPointCloud() { return m_cloud;};
 
       inline void setPointCloud( const PointNormalColor3fVectorCloud & t_cloud){ m_cloud = t_cloud;};
 

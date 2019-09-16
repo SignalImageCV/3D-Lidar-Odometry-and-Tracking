@@ -147,6 +147,19 @@ target_link_libraries(test_draw2DclustererImgs
   ${catkin_LIBRARIES}
   )
 
+
+add_executable(test_draw2DrealData
+  TestDraw2DrealData.cpp
+  )
+target_link_libraries(test_draw2DrealData
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${OpenCV_LIBS}
+  ${catkin_LIBRARIES}
+  )
+
 add_executable(test_drawPathImage
   TestDrawPathImage.cpp
   )

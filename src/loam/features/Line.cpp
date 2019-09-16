@@ -11,7 +11,7 @@ namespace Loam{
   float Line::computeDistance(const  PointNormalColor3f & t_point){
     const float distance_lineCenter_point = ( t_point.coordinates() - p_m).norm();
     const Eigen::Vector3f unit_vec_lineCenter_point =  ( t_point.coordinates() - p_m).normalized();
-    const Eigen::Vector3f unit_vec_line_direction = R_m.row(0).normalized();
+    const Eigen::Vector3f unit_vec_line_direction = R_m.col(0).normalized();
     const float angle_between_unit_vecs =
       acos( unit_vec_line_direction.dot( unit_vec_lineCenter_point));
     return distance_lineCenter_point * sin( angle_between_unit_vecs);
