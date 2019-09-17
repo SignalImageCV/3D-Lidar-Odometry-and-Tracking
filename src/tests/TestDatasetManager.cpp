@@ -4,7 +4,7 @@
 using namespace testing;
 namespace Loam{
   TEST( datasetProcessing , singleRow){
-    string filename = "/home/dinies/temp/trial/tuttty.boss";
+    string filename = "../../datasets/kitti_2011_09_30_drive_0020_synced.bag";
     DatasetManager dM( filename);
 
     PointNormalColor3fVectorCloud points =  dM.readMessageFromDataset();

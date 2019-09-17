@@ -2,6 +2,7 @@
 #include <srrg_system_utils/parse_command_line.h>
 
 using namespace srrg2_core;
+using namespace srrg2_core_ros;
 using namespace srrg2_qgl_viewport;
 using namespace Loam;
 
@@ -59,8 +60,8 @@ int main( int argc, char** argv){
 
     sph_Image= SphericalDepthImage(current_point_cloud,params);
     sph_Image.initializeIndexImage();
-    sph_Image.collectNormals();
     sph_Image.removeFlatSurfaces();
+    sph_Image.collectNormals();
     index_img = sph_Image.drawIndexImg(); 
     normals_img = sph_Image.drawNormalsImg();
     cv::resize( index_img, index_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);

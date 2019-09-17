@@ -23,6 +23,7 @@ int main( int argc, char** argv){
   QApplication qapp(argc, argv);
   ViewerCoreSharedQGL viewer(argc, argv, &qapp);
   ViewerCanvasPtr canvas = viewer.getCanvas("drawingSphere");
+
   std::thread processing_thread(Visualizer::visualizeSphere, canvas, dataset.value());
   viewer.startViewerServer();
   processing_thread.join();

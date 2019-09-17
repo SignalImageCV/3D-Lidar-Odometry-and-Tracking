@@ -348,7 +348,6 @@ namespace Loam{
       PointNormalColor3fVectorCloud current_point_cloud= dM.readMessageFromDataset();
       if( current_point_cloud.size()> 0){
         for (unsigned int i = 0; i < current_point_cloud.size(); ++i) {
-          cerr<<"point number :"<<i<<"\n";
           c = FeatureExtractor::computeSmoothness( current_point_cloud, i);
           Vector3f curr_color = base_color * c;
           current_point_cloud[i].color() = curr_color;

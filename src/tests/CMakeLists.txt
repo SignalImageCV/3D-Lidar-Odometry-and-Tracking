@@ -292,6 +292,36 @@ target_link_libraries(test_drawClusters
   pthread
   )
 
+add_executable(test_drawMatchablesDummyData
+  TestDrawMatchablesDummyData.cpp
+  )
+target_link_libraries(test_drawMatchablesDummyData
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  ${QGLViewer_LIBRARIES}
+  ${catkin_LIBRARIES}
+  pthread
+  )
+
+
+add_executable(test_drawMatchablesRealData
+  TestDrawMatchablesRealData.cpp
+  )
+target_link_libraries(test_drawMatchablesRealData
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  ${QGLViewer_LIBRARIES}
+  ${catkin_LIBRARIES}
+  pthread
+  )
+
+
 
 add_executable(test_drawPointWithNormal
   TestDrawPointWithNormal.cpp

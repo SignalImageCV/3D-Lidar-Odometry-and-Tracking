@@ -504,6 +504,9 @@ namespace Loam{
       vector<cluster> clusters =  m_clusterer.findClusters();
     //  cout<< "num clusters:   " << clusters.size() <<"\n";
     //  int cluster_counter = 0;
+      int cont_lines = 0; 
+      int cont_planes= 0; 
+
 
       for ( auto &c: clusters){
 
@@ -534,14 +537,14 @@ namespace Loam{
         PointNormalColor3fVectorCloud currPoints = fetchPoints( c.indexes);
 
  //       cout << "p_m value : "<< c.mu.transpose() << " \n";
-
         Line l  = Line( c.mu, R, Omega);
         const float eigenval_constr_line  =  l.computeEigenvalueConstraint();
         const float err_line = l.computeResidualError( currPoints);
    //     cout << "eigenval_constr_line " << eigenval_constr_line << "\n err_line "<< err_line <<"\n";
         if ( eigenval_constr_line < m_params.epsilon_l and
             err_line < m_params.epsilon_dl){
-    //      cout<< "Is a line !\n";
+          //cout<< "Is a line !\n";
+          ++cont_lines;
           matchables.push_back( l);
         }
         else{
@@ -552,11 +555,13 @@ namespace Loam{
     //      cout << "eigenval_constr_plane " << eigenval_constr_plane<< "\n err_plane"<< err_plane<<"\n";
           if ( eigenval_constr_plane < m_params.epsilon_p and
               err_plane< m_params.epsilon_dp){
-    //        cout<< "Is a plane !\n";
+           // cout<< "Is a plane !\n";
+          ++cont_planes;
             matchables.push_back( p);
           }
         }
       }
+      cout<< " Num of lines : "<< cont_lines <<" , num of planes : "<< cont_planes<< "\n";
       return matchables;
   }
 

@@ -1,12 +1,26 @@
 #include "../loam/Visualizer.hpp"
+#include <srrg_system_utils/parse_command_line.h>
 
 using namespace srrg2_core;
+using namespace srrg2_core_ros;
 using namespace srrg2_qgl_viewport;
 using namespace Loam;
 
+
+const char* banner[] = {
+    "dynamic executor",
+      0
+};
+
 int main( int argc, char** argv){
 
-  string filename = "/home/dinies/temp/trial/tuttty.boss";
+  ParseCommandLine cmd_line(argv,banner);
+  ArgumentString  dataset (&cmd_line, "d", "dataset", "path to dataset" , "");
+  cmd_line.parse();
+
+  messages_registerTypes();
+  srrgInit( argc, argv, "hi");
+ 
 
   const sphericalImage_params params(
       64, //num_vertical_rings
@@ -25,7 +39,7 @@ int main( int argc, char** argv){
     );
 
   SphericalDepthImage sph_Image;
-  DatasetManager dM( filename);
+  DatasetManager dM( dataset.value());
 
   RGBImage index_img; 
   cv::namedWindow("IndexImage");

@@ -41,23 +41,25 @@ int main( int argc, char** argv){
     
   DatasetManager dM( dataset.value());
 
-  PointNormalColor3fVectorCloud cloud = dM.readMessageFromDataset();
 
   SphericalDepthImage sph_Image;
 
 
-  sph_Image = SphericalDepthImage(cloud,params);
-  sph_Image.initializeIndexImage();
-  sph_Image.executeOperations();
-
-  std::vector<Matchable> matchables = sph_Image.clusterizeCloud();
-    
+   
   RGBImage index_img; 
   RGBImage normals_img;
   RGBImage path_img; 
   RGBImage blurred_normals_img;
   RGBImage clusters_img;
 
+  RGBImage index_img_resized; 
+  RGBImage normals_img_resized;
+  RGBImage path_img_resized; 
+  RGBImage blurred_normals_img_resized;
+  RGBImage clusters_img_resized;
+  const float horizontal_scale= 1;
+  const float vertical_scale= 1;
+ 
 
   cv::namedWindow("IndexImage");
   cv::moveWindow("IndexImage", 20, 20);
@@ -70,38 +72,36 @@ int main( int argc, char** argv){
   cv::namedWindow("ClustersImage");
   cv::moveWindow("ClustersImage", 20, 1220);
 
+  PointNormalColor3fVectorCloud cloud = dM.readMessageFromDataset();
 
-  index_img = sph_Image.drawIndexImg(); 
-  normals_img = sph_Image.drawNormalsImg();
-  Clusterer clusterer = Clusterer(sph_Image.getPointCloud(), sph_Image.getIndexImage() , params);
-  path_img = clusterer.drawPathImg();
-  vector<cluster> clusters = clusterer.findClusters();
-  blurred_normals_img = clusterer.drawBlurredNormalsImg();
-  clusters_img= sph_Image.drawClustersImg( clusters);
+  while( cloud.size()> 0){
+    sph_Image = SphericalDepthImage(cloud,params);
+    sph_Image.initializeIndexImage();
+    sph_Image.executeOperations();
 
-  RGBImage index_img_resized; 
-  RGBImage normals_img_resized;
-  RGBImage path_img_resized; 
-  RGBImage blurred_normals_img_resized;
-  RGBImage clusters_img_resized;
+    std::vector<Matchable> matchables = sph_Image.clusterizeCloud();
+    index_img = sph_Image.drawIndexImg(); 
+    normals_img = sph_Image.drawNormalsImg();
+    Clusterer clusterer = Clusterer(sph_Image.getPointCloud(), sph_Image.getIndexImage() , params);
+    path_img = clusterer.drawPathImg();
+    vector<cluster> clusters = clusterer.findClusters();
+    blurred_normals_img = clusterer.drawBlurredNormalsImg();
+    clusters_img= sph_Image.drawClustersImg( clusters);
 
-  const float horizontal_scale= 3;
-  const float vertical_scale= 5;
-  cv::resize( index_img, index_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
-  cv::resize( normals_img, normals_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
-  cv::resize( path_img, path_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
-  cv::resize( blurred_normals_img, blurred_normals_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
-  cv::resize( clusters_img, clusters_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
+    cv::resize( index_img, index_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
+    cv::resize( normals_img, normals_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
+    cv::resize( path_img, path_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
+    cv::resize( blurred_normals_img, blurred_normals_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
+    cv::resize( clusters_img, clusters_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
 
-  int counter = 0;
-  while( counter < 100){
-    ++counter;
     cv::imshow("IndexImage",index_img_resized);
     cv::imshow("NormalsImage",normals_img_resized);
     cv::imshow("PathImage",path_img_resized);
     cv::imshow("BlurredNormalsImage",blurred_normals_img_resized);
     cv::imshow("ClustersImage",clusters_img_resized);
-    cv::waitKey(1000);
+    cv::waitKey(10);
+
+    cloud = dM.readMessageFromDataset();
   }
 
   return 0;

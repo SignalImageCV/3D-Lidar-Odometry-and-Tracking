@@ -1,20 +1,33 @@
 #include "../loam/Visualizer.hpp"
+#include <srrg_system_utils/parse_command_line.h>
 
 using namespace srrg2_core;
+using namespace srrg2_core_ros;
 using namespace srrg2_qgl_viewport;
 using namespace Loam;
+
+const char* banner[] = {
+    "dynamic executor",
+      0
+};
 
 
 int main( int argc, char** argv){
 
-  string filename = "/home/dinies/temp/trial/tuttty.boss";
+  ParseCommandLine cmd_line(argv,banner);
+  ArgumentString  dataset (&cmd_line, "d", "dataset", "path to dataset" , "");
+  cmd_line.parse();
+
+  messages_registerTypes();
+  srrgInit( argc, argv, "hi");
+
   QApplication qapp(argc, argv);
   ViewerCoreSharedQGL viewer(argc, argv, &qapp);
   ViewerCanvasPtr canvas1 = viewer.getCanvas("noFlatPlusnormals");
   ViewerCanvasPtr canvas2 = viewer.getCanvas("rawScene");
 
   std::thread processing_thread(
-      Visualizer::visualizeCleanedWithNormals,canvas1,canvas2,filename);
+      Visualizer::visualizeCleanedWithNormals,canvas1,canvas2,dataset.value());
 
   viewer.startViewerServer();
   processing_thread.join();

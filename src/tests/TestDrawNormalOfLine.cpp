@@ -76,15 +76,15 @@ int main( int argc, char** argv){
 
   vector<vector< DataPoint >> index_image =  sph_Image.getIndexImage();
 
-  for (unsigned int row =0; row <index_image.size() ; ++row){
-    for (unsigned int col=0; col <index_image[0].size(); ++col){
-      if(index_image[row][col].getIndexContainer() != -1){
-        vector< int>  boundaries = index_image[row][col].getBoundaries();
-        cout<< "coords : "<< row<< ", " << col<< " \n";
-        cout<< "boundary : "<< boundaries[0] << ", " << boundaries[1] << ", " << boundaries[2] << ", " << boundaries[3] << "\n "; 
-      }
-    }
-  }
+//  for (unsigned int row =0; row <index_image.size() ; ++row){
+//    for (unsigned int col=0; col <index_image[0].size(); ++col){
+//      if(index_image[row][col].getIndexContainer() != -1){
+//        vector< int>  boundaries = index_image[row][col].getBoundaries();
+//        cout<< "coords : "<< row<< ", " << col<< " \n";
+//        cout<< "boundary : "<< boundaries[0] << ", " << boundaries[1] << ", " << boundaries[2] << ", " << boundaries[3] << "\n "; 
+//      }
+//    }
+//  }
 
   sph_Image.removePointsWithoutNormal();
   sph_Image.computePointNormals();
@@ -92,9 +92,9 @@ int main( int argc, char** argv){
   const PointNormalColor3fVectorCloud cloud_after_NormalComputation=  sph_Image.getPointCloud();
   cout << "number of points after normal computation : " << cloud_after_NormalComputation.size() <<"\n";
 
-  for ( auto & p : cloud_after_NormalComputation){
-    cout << "normal : "<< p.normal() << "\n";
-  }
+ // for ( auto & p : cloud_after_NormalComputation){
+//    cout << "normal : "<< p.normal() << "\n";
+//  }
     
 
   const float points_size = 2.0;
