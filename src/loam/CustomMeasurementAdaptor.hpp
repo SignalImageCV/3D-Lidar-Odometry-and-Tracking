@@ -1,33 +1,36 @@
 #pragma once
 
 #include <srrg_config/configurable.h>
+
 #include <srrg_config/property_configurable.h>
+
 #include <srrg_slam_interfaces/measurement_adaptor.h>
+
 #include <srrg_messages/instances.h>
+
 #include <srrg_matchable/visual_matchable.h>
 
 #include <srrg_messages/messages/image_message.h>
+
 #include <srrg_pcl/point_unprojector_types.h>
-#include <srrg_slam_interfaces/measurement_adaptor.h>
 
 #include "./features/SphericalDepthImage.hpp"
+
 #include "./MyToyConfigurable.hpp"
 
+#include "./features/CustomMatchable.hpp"
 namespace Loam{
   using namespace srrg2_core;
 
-  class MyMeasurementAdaptor: public srrg2_slam_interfaces::MeasurementAdaptor_<VisualMatchablefVector> { 
+  //todo  fix two errors, add a datasetmanager object to initialize in setmeasurement function
+  //, the remaining part of the logic is found in compute func
+
+  class CustomMeasurementAdaptor: public srrg2_slam_interfaces::MeasurementAdaptor_<CustomMatchablefVector> { 
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    using ThisType = MyMeasurementAdaptor;
-    using BaseType = srrg2_slam_interfaces::MeasurementAdaptor_<VisualMatchablefVector>;
+    using ThisType = CustomMeasurementAdaptor;
+    using BaseType = srrg2_slam_interfaces::MeasurementAdaptor_<CustomMatchablefVector>;
     using DestType = typename BaseType::DestType;
-
-    PARAM(PropertyConfigurable_<MyToyConfigurable>,
-        toy,
-        "num_vertical_rings",
-        MyToyConfigurablePtr( new MyToyConfigurable),
-        nullptr);
 
     PARAM(PropertyUnsignedInt, num_vertical_rings, "num_vertical_rings", 64, nullptr);
     PARAM(PropertyUnsignedInt, num_points_ring, "num_points_ring", 768, nullptr);
@@ -49,6 +52,6 @@ namespace Loam{
     
   };
 
-  using MyMeasurementAdaptorPtr = std::shared_ptr<MyMeasurementAdaptor>;
+  using CustomMeasurementAdaptorPtr = std::shared_ptr<CustomMeasurementAdaptor>;
 
-} 
+}

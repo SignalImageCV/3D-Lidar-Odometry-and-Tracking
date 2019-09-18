@@ -1,9 +1,9 @@
-#include "MyMeasurementAdaptor.hpp"
+#include "CustomMeasurementAdaptor.hpp"
 
 namespace Loam{
 
-  void MyMeasurementAdaptor::compute() {
-    std::cout << " known number :" << this->param_toy.value()->spitOut() << "\n";
+  void CustomMeasurementAdaptor::compute() {
+    //todooooooooooooooooooooooo
 
 //    const sphericalImage_params params(
 //      param_num_vertical_rings.value(),
@@ -22,9 +22,10 @@ namespace Loam{
 //    );
     SphericalDepthImage sph_Image;
     PointNormalColor3fVectorCloud cloud;
+    cout<<  " DONEEEEE"<<"\n";
   }
 
-   bool MyMeasurementAdaptor::setMeasurement(BaseSensorMessagePtr measurement_){
+   bool CustomMeasurementAdaptor::setMeasurement(BaseSensorMessagePtr measurement_){
      return true;
    };
 }

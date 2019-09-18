@@ -26,7 +26,6 @@ namespace Loam{
   class SphericalDepthImage {
      protected:
        //this matrix is both the index matrix I and the spherical depth matrix D
-       //vector<vector< list< DataPoint >>> m_index_image;
        vector<vector< DataPoint >> m_index_image;
        PointNormalColor3fVectorCloud m_cloud;
        sphericalImage_params m_params;

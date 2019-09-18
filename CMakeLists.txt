@@ -34,6 +34,7 @@ catkin_package(
     srrg2_solver
     srrg2_slam_interfaces
     srrg2_qgl_viewport
+    srrg2_shaslam
   DEPENDS
     OpenCV
     SRRG_QT

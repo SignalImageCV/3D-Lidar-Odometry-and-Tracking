@@ -13,10 +13,15 @@ add_library( loam_library
   features/Point.cpp
   features/Plane.cpp
   features/Line.cpp
+  MyMeasurementAdaptor.cpp
+  MyToyConfigurable.cpp
+  features/CustomMatchable.cpp
+  CustomMeasurementAdaptor.cpp
+  instances.cpp
   )
 
 target_link_libraries(loam_library
-  PUBLIC ${OpenCV_LIBS}
+  ${OpenCV_LIBS}
   ${catkin_LIBRARIES}
   )
 
