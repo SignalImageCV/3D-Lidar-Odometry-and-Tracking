@@ -51,11 +51,11 @@ using namespace Loam;
     noise[6].coordinates() = coords_p_7;
  
 
-    PointNormalColor3fVectorCloud l1 = Visualizer::createLine(
+    PointNormalColor3fVectorCloud l1 = Drawer::createLine(
       Vector3f( 2.,3.,1.), Vector3f( 0.,0.,1.), 8, 0.1);
-    PointNormalColor3fVectorCloud l2 = Visualizer::createLine(
+    PointNormalColor3fVectorCloud l2 = Drawer::createLine(
       Vector3f( -4.,-2.,-2.), Vector3f( 0.,0.,-1.), 10, 0.2);
-    PointNormalColor3fVectorCloud p1 = Visualizer::createPlane(
+    PointNormalColor3fVectorCloud p1 = Drawer::createPlane(
       Vector3f( 5.,5.,0.),Vector3f( 0.,0.,1.),
       Vector3f( 1.,-1.,0.).normalized(), 4, 8, 0.5, 0.5);
   
@@ -83,8 +83,12 @@ using namespace Loam;
 
     sph_Image.initializeIndexImage();
 
-    std::vector<Matchable> matchables = sph_Image.clusterizeCloud();
-    cout << " matchables   "<< matchables.size()<<"\n";
+    MatchablePtrVecPtr matchablePtrVecPtr = std::make_shared< std::vector< MatchablePtr>>();
+    sph_Image.clusterizeCloud( matchablePtrVecPtr);
+   
+ 
+
+    cout << " matchables   "<< matchablePtrVecPtr->size()<<"\n";
 
     //PointNormalColor3fVectorCloud point_cloud = dM.readMessageFromDataset();
     //

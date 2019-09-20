@@ -19,6 +19,8 @@ namespace Loam {
     DatasetManager( string filename);
 
     PointNormalColor3fVectorCloud  readMessageFromDataset();
+
+    BaseSensorMessagePtr readPointerToMessageFromDataset();
   };
 }
 

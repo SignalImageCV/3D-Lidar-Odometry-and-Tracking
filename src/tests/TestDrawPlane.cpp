@@ -43,11 +43,11 @@ int main( int argc, char** argv){
   max_elev.coordinates() = Vector3f( 5,5,-10);
   cloud.push_back( max_elev);
 
-  PointNormalColor3fVectorCloud p1 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p1 = Drawer::createPlane(
     Vector3f( 35.,35.,0.),Vector3f( 0.,0.,1.),
     Vector3f( -1.,1.,0.).normalized(), 18, 14, 0.25, 0.25);
 
-  PointNormalColor3fVectorCloud p2 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p2 = Drawer::createPlane(
     Vector3f( 0.,35.,0.),Vector3f( 0.,0.,1.),
     Vector3f( 1.,0.,0.), 18, 14, 0.25, 0.25);
 

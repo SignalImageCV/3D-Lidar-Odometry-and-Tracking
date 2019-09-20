@@ -6,7 +6,10 @@ namespace Loam{
           const Eigen::Matrix3f & R_m,
           const Eigen::Matrix3f & Omega_m):
         Matchable(p_m, R_m, Omega_m)
-     {}
+     {
+       m_className = "Line";
+     }
+
 
   float Line::computeDistance(const  PointNormalColor3f & t_point){
     const float distance_lineCenter_point = ( t_point.coordinates() - p_m).norm();
@@ -24,5 +27,10 @@ namespace Loam{
     return num/denom;
   }
  
+  PointNormalColor3fVectorCloud Line::drawMatchable( const float length, const float precision ){
+    PointNormalColor3fVectorCloud drawingPoints =
+      Drawer::createLine( p_m, R_m.col(0),length, precision );
+    return drawingPoints;
+  }
 
 }

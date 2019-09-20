@@ -34,37 +34,37 @@ int main( int argc, char** argv){
   max_elev.coordinates() = Vector3f( 2,7,-10);
   cloud.push_back( max_elev);
 
-  PointNormalColor3fVectorCloud p1 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p1 = Drawer::createPlane(
     Vector3f( -35.,-35.,0.),Vector3f( 0.,0.,1.),
     Vector3f( -1.,1.,0.).normalized(), 18, 14, 0.25, 0.25);
 
-  PointNormalColor3fVectorCloud p2 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p2 = Drawer::createPlane(
     Vector3f( 0.,35.,0.),Vector3f( 0.,0.,1.),
     Vector3f( 1.,0.,0.), 18, 14, 0.25, 0.25);
 
-  PointNormalColor3fVectorCloud p3 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p3 = Drawer::createPlane(
     Vector3f( 35.,0.,0.),Vector3f( 0.,0.,1.),
     Vector3f( 0.,1.,0.).normalized(), 18, 14, 0.25, 0.25);
 
-  PointNormalColor3fVectorCloud p4 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p4 = Drawer::createPlane(
     Vector3f( -35.,35.,0.),Vector3f( 0.,0.,1.),
     Vector3f( 1.,1.,0.), 18, 14, 0.25, 0.25);
 
-  PointNormalColor3fVectorCloud p5 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p5 = Drawer::createPlane(
     Vector3f( 35.,-35.,0.),Vector3f( 0.,0.,1.),
     Vector3f( 1.,1.,0.), 18, 14, 0.25, 0.25);
 
 
-  PointNormalColor3fVectorCloud p6 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p6 = Drawer::createPlane(
     Vector3f( 0.,-35.,0.),Vector3f( 0.,0.,1.),
     Vector3f( 1.,0.,0.), 18, 14, 0.25, 0.25);
 
 
-  PointNormalColor3fVectorCloud p7 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p7 = Drawer::createPlane(
     Vector3f( -35.,0.,0.),Vector3f( 0.,0.,1.),
     Vector3f( 0.,1.,0.), 18, 14, 0.25, 0.25);
 
-  PointNormalColor3fVectorCloud p8 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p8 = Drawer::createPlane(
     Vector3f( 35.,35.,0.),Vector3f( 0.,0.,1.),
     Vector3f( -1.,1.,0.), 18, 14, 0.25, 0.25);
 
@@ -119,29 +119,40 @@ int main( int argc, char** argv){
 
    
   
-  const float points_size = 2.0;
+  const float length= 10;
+  const float precision = 0.1;
 
   sph_Image = SphericalDepthImage(cloud,params);
   sph_Image.initializeIndexImage();
   sph_Image.executeOperations();
-  std::vector<Matchable> matchables = sph_Image.clusterizeCloud();
+  
+  MatchablePtrVecPtr matchablePtrVecPtr = std::make_shared< std::vector< MatchablePtr>>();
+  sph_Image.clusterizeCloud( matchablePtrVecPtr);
    
   PointNormalColor3fVectorCloud features_cloud;
   features_cloud.reserve( cloud.size());
 
-  for ( auto & m: matchables ){
-    
-    //todo add a method in matchable class that returns the vector of points;
+  PointNormalColor3fVectorCloud curr_drawing_points;
+
+  for ( auto m : *matchablePtrVecPtr){
+
+    curr_drawing_points = m->drawMatchable(length,  precision );
+
+    features_cloud.insert(
+      features_cloud.end(),
+      std::make_move_iterator( curr_drawing_points.begin()),
+      std::make_move_iterator( curr_drawing_points.end())
+    );
   }
-
-
+ 
+  const float points_size = 2.0;
   QApplication qapp(argc, argv);
   ViewerCoreSharedQGL viewer(argc, argv, &qapp);
-  ViewerCanvasPtr canvas1 = viewer.getCanvas("drawingPlaneBeforeCleaning");
+  ViewerCanvasPtr canvas1 = viewer.getCanvas("points");
   std::thread processing_thread1( Visualizer::visualizeCloud, canvas1, cloud, points_size);
 
-  ViewerCanvasPtr canvas2 = viewer.getCanvas("drawingPlaneAfterFlatSurfRemoval");
-  std::thread processing_thread2( Visualizer::visualizeCloud, canvas2,features_cloud, points_size);
+  ViewerCanvasPtr canvas2 = viewer.getCanvas("matchables");
+  std::thread processing_thread2( Visualizer::visualizeCloud, canvas2, features_cloud, points_size);
 
   
   viewer.startViewerServer();

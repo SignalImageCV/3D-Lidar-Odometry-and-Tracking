@@ -26,14 +26,21 @@ namespace Loam{
                                1;                              // ia type
       using FullVectorType = Vector_<Scalar, Dim>;
 
- //     CustomMatchable_() : MatchableType() { }
 
-      using CustomMatchablef = CustomMatchable_<float>;
-      using CustomMatchabled = CustomMatchable_<double>;
+
+      CustomMatchable_() : MatchableType() { }
+
+      CustomMatchable_(const MatchableBase::Type& type_,
+                     const VectorType& origin_   = VectorType::Zero(),
+                     const MatrixType& rotation_ = MatrixType::Identity()) 
+        : MatchableType(type_, origin_, rotation_) { }
+
 
    };
 
-   //! @brief containers
+   using CustomMatchablef = CustomMatchable_<float>;
+   using CustomMatchabled = CustomMatchable_<double>;
+
    template <typename Scalar_>
    using CustomMatchableVector_ =
       std::vector<CustomMatchable_<Scalar_>,

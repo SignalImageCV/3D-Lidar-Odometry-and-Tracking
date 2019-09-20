@@ -1,6 +1,9 @@
 #include "SphericalDepthImage.hpp"
 
 namespace Loam{
+
+  SphericalDepthImage::SphericalDepthImage(){};
+
   SphericalDepthImage::SphericalDepthImage(
           const PointNormalColor3fVectorCloud  & t_cloud,
           const sphericalImage_params t_params
@@ -16,6 +19,10 @@ namespace Loam{
     m_min_elevation = min_max_elevation.x();
     m_max_elevation = min_max_elevation.y();
   }
+
+
+
+  SphericalDepthImage::~SphericalDepthImage(){};
 
   void SphericalDepthImage::projectCloud(){
     if (m_cloud.size()>0){
@@ -409,7 +416,6 @@ namespace Loam{
           Eigen::JacobiSVD<Eigen::Matrix3f> svd(sigma, Eigen::ComputeFullU | Eigen::ComputeFullV);
 
           Eigen::Matrix3f R = svd.matrixU();
-          //try if taking the column the result is different 
           Eigen::Vector3f smallestEigenVec= R.col(2);
 
           Eigen::Vector3f p_coords =  m_cloud[ index_inContainer].coordinates();
@@ -497,8 +503,7 @@ namespace Loam{
     return pointsInside;
   }
 
-  vector<Matchable>  SphericalDepthImage::clusterizeCloud(){
-      vector<Matchable> matchables;
+  void SphericalDepthImage::clusterizeCloud( MatchablePtrVecPtr  t_matchablesPtrVecPtr ){
       m_clusterer = Clusterer(m_cloud, m_index_image, m_params);
      // cout<< "finding clusters\n";
       vector<cluster> clusters =  m_clusterer.findClusters();
@@ -537,32 +542,44 @@ namespace Loam{
         PointNormalColor3fVectorCloud currPoints = fetchPoints( c.indexes);
 
  //       cout << "p_m value : "<< c.mu.transpose() << " \n";
-        Line l  = Line( c.mu, R, Omega);
-        const float eigenval_constr_line  =  l.computeEigenvalueConstraint();
-        const float err_line = l.computeResidualError( currPoints);
+ //
+ //
+ //
+ //
+
+        LinePtr l( new Line(c.mu, R, Omega));
+
+
+
+
+
+
+        const float eigenval_constr_line  =  l->computeEigenvalueConstraint();
+        const float err_line = l->computeResidualError( currPoints);
    //     cout << "eigenval_constr_line " << eigenval_constr_line << "\n err_line "<< err_line <<"\n";
         if ( eigenval_constr_line < m_params.epsilon_l and
             err_line < m_params.epsilon_dl){
           //cout<< "Is a line !\n";
           ++cont_lines;
-          matchables.push_back( l);
+          t_matchablesPtrVecPtr->push_back( l);
+          cout<<"Debugging a line :" <<l->get_ClassName()<< "\n";
         }
         else{
     //      cout << "p_m value : "<< c.mu.transpose() << " \n";
-          Plane p = Plane( c.mu, R, Omega);
-          const float eigenval_constr_plane =  p.computeEigenvalueConstraint();
-          const float err_plane = p.computeResidualError( currPoints);
+          PlanePtr p( new  Plane( c.mu, R, Omega));
+          const float eigenval_constr_plane =  p->computeEigenvalueConstraint();
+          const float err_plane = p->computeResidualError( currPoints);
     //      cout << "eigenval_constr_plane " << eigenval_constr_plane<< "\n err_plane"<< err_plane<<"\n";
           if ( eigenval_constr_plane < m_params.epsilon_p and
               err_plane< m_params.epsilon_dp){
-           // cout<< "Is a plane !\n";
-          ++cont_planes;
-            matchables.push_back( p);
+            // cout<< "Is a plane !\n";
+            ++cont_planes;
+            t_matchablesPtrVecPtr->push_back( p);
+            cout<<"Debugging a plane:" <<p->get_ClassName()<< "\n";
           }
         }
       }
       cout<< " Num of lines : "<< cont_lines <<" , num of planes : "<< cont_planes<< "\n";
-      return matchables;
   }
 
 

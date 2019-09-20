@@ -4,25 +4,33 @@
 namespace Loam{
 
   class Matchable : public MatchableInterface{
+    protected:
+      std::string m_className;
 
     public:
-
-      Matchable() = default;
 
       Matchable( 
           const Eigen::Vector3f & p_m,
           const Eigen::Matrix3f & R_m,
           const Eigen::Matrix3f & Omega_m);
 
+
       float computeResidualError(const PointNormalColor3fVectorCloud & t_points);
 
-      float computeDistance(const  PointNormalColor3f & t_point);
+      virtual float computeDistance(
+          const  PointNormalColor3f & t_point) =0;
 
-      float computeEigenvalueConstraint();
+      virtual float computeEigenvalueConstraint() =0;
 
-  
-      ~Matchable() = default;
+      virtual PointNormalColor3fVectorCloud drawMatchable( const float length, const float precision ) =0;
+
+      inline const std::string  get_ClassName() const { return m_className;};
+
   };
+
+  using MatchablePtr = std::shared_ptr<Matchable>;
+  using MatchablePtrVec = std::vector< MatchablePtr>;
+  using MatchablePtrVecPtr = std::shared_ptr<MatchablePtrVec>;
 }
 
 

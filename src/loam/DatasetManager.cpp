@@ -33,4 +33,13 @@ namespace Loam {
     return point_cloud_with_normal;
   };
 
+
+  BaseSensorMessagePtr DatasetManager::readPointerToMessageFromDataset(){
+    BaseSensorMessagePtr msg;
+    Point3fVectorCloud current_point_cloud;
+    msg=m_source.getMessage();
+    ++m_current_index;
+    return msg;
+  }
+
 }

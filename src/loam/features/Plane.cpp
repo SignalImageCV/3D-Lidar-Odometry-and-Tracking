@@ -6,7 +6,9 @@ namespace Loam{
           const Eigen::Matrix3f & R_m,
           const Eigen::Matrix3f & Omega_m):
         Matchable(p_m, R_m, Omega_m)
-     {}
+     {
+       m_className = "Plane";
+     }
 
   float Plane::computeDistance(const  PointNormalColor3f & t_point){
 
@@ -51,5 +53,20 @@ namespace Loam{
     const float denom = diag.x() + diag.y() + diag.z();
     return num/denom;
  }
+
+  PointNormalColor3fVectorCloud Plane::drawMatchable( const float length, const float precision ){
+    Eigen::Vector3f diag = Omega_m.diagonal();
+    
+    PointNormalColor3fVectorCloud drawingPoints =
+      Drawer::createPlane( p_m,
+          R_m.col(0),
+          R_m.col(1),
+          length*diag.x(),
+          length*diag.y(),
+          precision*diag.x(),
+          precision*diag.y());
+
+    return drawingPoints;
+  }
  
 }

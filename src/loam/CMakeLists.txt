@@ -1,23 +1,46 @@
-add_library( loam_library
+add_library( loam_library SHARED
   MyMath.cpp
+  MyMath.hpp
   ScanPoint.cpp
+  ScanPoint.hpp
   DatasetManager.cpp
+  DatasetManager.hpp
+  Drawer.cpp
+  Drawer.hpp
   Visualizer.cpp
+  Visualizer.hpp
   features/SphericalDepthImage.cpp
+  features/SphericalDepthImage.hpp
   features/Clusterer.cpp
+  features/Clusterer.hpp
   features/FeatureExtractor.cpp
+  features/FeatureExtractor.hpp
   features/IntegralImage.cpp
+  features/IntegralImage.hpp
   features/IntegralCell.cpp
+  features/IntegralCell.hpp
   features/DataPoint.cpp
+  features/DataPoint.hpp
   features/Matchable.cpp
+  features/Matchable.hpp
   features/Point.cpp
+  features/Point.hpp
   features/Plane.cpp
+  features/Plane.hpp
   features/Line.cpp
+  features/Line.hpp
   MyMeasurementAdaptor.cpp
+  MyMeasurementAdaptor.hpp
   MyToyConfigurable.cpp
+  MyToyConfigurable.hpp
   features/CustomMatchable.cpp
+  features/CustomMatchable.hpp
   CustomMeasurementAdaptor.cpp
+  CustomMeasurementAdaptor.hpp
   instances.cpp
+  instances.h
+  include/structs.hpp
+  include/turboColors.hpp
   )
 
 target_link_libraries(loam_library

@@ -35,13 +35,16 @@ namespace Loam{
      
 
      public:
-      SphericalDepthImage()= default;
+
+
+      SphericalDepthImage();
 
       SphericalDepthImage(
           const PointNormalColor3fVectorCloud & cloud,
           const sphericalImage_params t_params);
 
-      ~SphericalDepthImage() = default;
+      virtual ~SphericalDepthImage();
+
 
       void executeOperations();
 
@@ -73,19 +76,14 @@ namespace Loam{
       IntegralImage computePointNormalsDeprecated();
 
 
-  
-
       PointNormalColor3fVectorCloud fetchPoints(const vector<int> & indexes);
 
       vector< Vector3f>  fetchPointsInBoundaries(
           const int t_rowMin,const int t_rowMax,const int t_colMin,const int t_colMax);
  
-      vector<Matchable> clusterizeCloud();
-        
+      void clusterizeCloud( MatchablePtrVecPtr  t_matchablesPtrVecPtr );
+
       int countPointsValid();
-
-
-
 
       vector<int> mapSphericalCoordsInIndexImage(
           const float t_azimuth, const float t_elevation);

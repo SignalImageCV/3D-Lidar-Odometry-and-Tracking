@@ -79,7 +79,9 @@ int main( int argc, char** argv){
     sph_Image.initializeIndexImage();
     sph_Image.executeOperations();
 
-    std::vector<Matchable> matchables = sph_Image.clusterizeCloud();
+    MatchablePtrVecPtr matchablePtrVecPtr = std::make_shared< std::vector< MatchablePtr>>();
+    sph_Image.clusterizeCloud( matchablePtrVecPtr);
+
     index_img = sph_Image.drawIndexImg(); 
     normals_img = sph_Image.drawNormalsImg();
     Clusterer clusterer = Clusterer(sph_Image.getPointCloud(), sph_Image.getIndexImage() , params);

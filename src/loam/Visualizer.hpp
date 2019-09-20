@@ -1,3 +1,4 @@
+#pragma once
 #include <srrg_qgl_viewport/viewer_core_shared_qgl.h>
 #include <srrg_system_utils/shell_colors.h>
 #include <thread>
@@ -10,26 +11,6 @@
 namespace Loam{
   class Visualizer {
     public:
-
-
-      static vector<PointNormalColor3fVectorCloud> createAxes();
-
-      static PointNormalColor3fVectorCloud createCircle(const float radius);
-
-      static PointNormalColor3fVectorCloud createLine(
-          const Vector3f & center_point,
-          const Vector3f & direction,
-          const float length,
-          const float precision);
-
-      static PointNormalColor3fVectorCloud createPlane(
-          const Vector3f & center_point,
-          const Vector3f & first_direction,
-          const Vector3f & second_direction,
-          const float length_firstDir,
-          const float length_secondDir,
-          const float precision_firstDir,
-          const float precision_secondDir);
 
       static void drawAxes(ViewerCanvasPtr canvas, const vector<PointNormalColor3fVectorCloud> & t_axes);
 

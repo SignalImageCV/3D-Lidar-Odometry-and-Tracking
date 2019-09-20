@@ -19,6 +19,7 @@
 #include "./MyToyConfigurable.hpp"
 
 #include "./features/CustomMatchable.hpp"
+
 namespace Loam{
   using namespace srrg2_core;
 

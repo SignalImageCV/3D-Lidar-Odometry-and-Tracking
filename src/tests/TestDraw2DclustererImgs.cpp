@@ -52,37 +52,37 @@ int main( int argc, char** argv){
 //  noise[6].coordinates() = coords_p_7;
 
 
-  PointNormalColor3fVectorCloud p1 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p1 = Drawer::createPlane(
     Vector3f( -35.,-35.,0.),Vector3f( 0.,0.,1.),
     Vector3f( -1.,1.,0.).normalized(), 18, 14, 0.25, 0.25);
 
-  PointNormalColor3fVectorCloud p2 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p2 = Drawer::createPlane(
     Vector3f( 0.,35.,0.),Vector3f( 0.,0.,1.),
     Vector3f( 1.,0.,0.), 18, 14, 0.25, 0.25);
 
-  PointNormalColor3fVectorCloud p3 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p3 = Drawer::createPlane(
     Vector3f( 35.,0.,0.),Vector3f( 0.,0.,1.),
     Vector3f( 0.,1.,0.).normalized(), 18, 14, 0.25, 0.25);
 
-  PointNormalColor3fVectorCloud p4 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p4 = Drawer::createPlane(
     Vector3f( -35.,35.,0.),Vector3f( 0.,0.,1.),
     Vector3f( 1.,1.,0.), 18, 14, 0.25, 0.25);
 
-  PointNormalColor3fVectorCloud p5 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p5 = Drawer::createPlane(
     Vector3f( 35.,-35.,0.),Vector3f( 0.,0.,1.),
     Vector3f( 1.,1.,0.), 18, 14, 0.25, 0.25);
 
 
-  PointNormalColor3fVectorCloud p6 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p6 = Drawer::createPlane(
     Vector3f( 0.,-35.,0.),Vector3f( 0.,0.,1.),
     Vector3f( 1.,0.,0.), 18, 14, 0.25, 0.25);
 
 
-  PointNormalColor3fVectorCloud p7 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p7 = Drawer::createPlane(
     Vector3f( -35.,0.,0.),Vector3f( 0.,0.,1.),
     Vector3f( 0.,1.,0.), 18, 14, 0.25, 0.25);
 
-  PointNormalColor3fVectorCloud p8 = Visualizer::createPlane(
+  PointNormalColor3fVectorCloud p8 = Drawer::createPlane(
     Vector3f( 35.,35.,0.),Vector3f( 0.,0.,1.),
     Vector3f( -1.,1.,0.), 18, 14, 0.25, 0.25);
 
@@ -141,7 +141,9 @@ int main( int argc, char** argv){
   sph_Image.initializeIndexImage();
   sph_Image.executeOperations();
 
-  std::vector<Matchable> matchables = sph_Image.clusterizeCloud();
+  MatchablePtrVecPtr matchablePtrVecPtr = std::make_shared< std::vector< MatchablePtr>>();
+  sph_Image.clusterizeCloud( matchablePtrVecPtr);
+
     
   RGBImage index_img; 
   RGBImage normals_img;
