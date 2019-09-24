@@ -38,9 +38,6 @@ namespace Loam{
     sph_Image.initializeIndexImage();
     sph_Image.executeOperations();
 
-    // std::shared_ptr<std::vector<Matchable>>  matchablesPtr( new std::vector<Matchable>());
-    //std::vector<Matchable> matchables = sph_Image.clusterizeCloud(); no more 
-    
     MatchablePtrVecPtr matchablePtrVecPtr = std::make_shared< std::vector< MatchablePtr>>();
     sph_Image.clusterizeCloud( matchablePtrVecPtr);
  
@@ -49,9 +46,20 @@ namespace Loam{
 
     (*_dest).reserve( matchablePtrVecPtr->size() );
     for ( auto  m : *matchablePtrVecPtr){
+      string className = m->get_ClassName();
+      Matchablef::Type type;
+      if ( className== "Line" ){
+        type=Matchablef::Type::Line; 
+      }
+      else if( className== "Plane" ){
+        type=Matchablef::Type::Plane; 
+      }
+      else {
+        type=Matchablef::Type::Point; 
+      }
 
       CustomMatchablef customMatchable(
-          Matchablef::Type::Line,
+          type,
           m->get_p_m(),
           m->get_R_m()
           );

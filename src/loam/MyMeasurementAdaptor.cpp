@@ -2,6 +2,7 @@
 
 namespace Loam{
 
+//todo remove this stub class: used to understand the srrg2 pipeline
   void MyMeasurementAdaptor::compute() {
     std::cout << " known number :" << this->param_toy.value()->spitOut() << "\n";
 

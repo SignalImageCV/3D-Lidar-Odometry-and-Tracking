@@ -1,6 +1,7 @@
 #pragma once
 #include <srrg_config/property_configurable.h>
 
+//todo remove this stub class: used to understand the srrg2 pipeline
 namespace Loam{
   using namespace srrg2_core;
 

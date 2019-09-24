@@ -40,7 +40,12 @@ add_library( loam_library SHARED
   instances.cpp
   instances.h
   include/structs.hpp
+  include/turboColors.cpp
   include/turboColors.hpp
+  matcher/CorrespondenceFinderMatchables.cpp
+  matcher/CorrespondenceFinderMatchables.hpp
+  matcher/CorrespondenceFinderMatchablesKDtree.cpp
+  matcher/CorrespondenceFinderMatchablesKDtree.hpp
   )
 
 target_link_libraries(loam_library

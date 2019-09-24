@@ -9,7 +9,9 @@ namespace Loam{
 
     BOSS_REGISTER_CLASS(MyMeasurementAdaptor);
     BOSS_REGISTER_CLASS(MyToyConfigurable);
-//    BOSS_REGISTER_CLASS(CustomMatchable_);   why ______________________________??????????????????
+    BOSS_REGISTER_CLASS(CorrespondenceFinderMatchables);
+    BOSS_REGISTER_CLASS(CorrespondenceFinderMatchablesKDTree);
+  //  BOSS_REGISTER_CLASS(CustomMatchable_);
     BOSS_REGISTER_CLASS(CustomMeasurementAdaptor);
     BOSS_REGISTER_BLOB(CustomMatchabledVectorData);
     BOSS_REGISTER_BLOB(CustomMatchablefVectorData);

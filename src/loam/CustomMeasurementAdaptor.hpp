@@ -23,8 +23,6 @@
 namespace Loam{
   using namespace srrg2_core;
 
-  //todo  fix two errors, add a datasetmanager object to initialize in setmeasurement function
-  //, the remaining part of the logic is found in compute func
 
   class CustomMeasurementAdaptor: public srrg2_slam_interfaces::MeasurementAdaptor_<CustomMatchablefVector> { 
   public:
@@ -39,13 +37,13 @@ namespace Loam{
     PARAM(PropertyFloat, epsilon_radius, "epsilon_radius",0.15, nullptr);
     PARAM(PropertyFloat, depth_differential_threshold, "depth_differential_threshold",2.1, nullptr);
     PARAM(PropertyUnsignedInt, min_neighboors_for_normal, "min_neighboors_for_normal", 7, nullptr);
-    PARAM(PropertyUnsignedInt, epsilon_c, "epsilon_c", 8, nullptr);
+    PARAM(PropertyUnsignedInt, epsilon_c, "epsilon_c", 20, nullptr);
     PARAM(PropertyFloat, epsilon_d, "epsilon_d",1.5, nullptr);
     PARAM(PropertyFloat, epsilon_n, "epsilon_n",0.3, nullptr);
-    PARAM(PropertyFloat, epsilon_l, "epsilon_l",1, nullptr);
-    PARAM(PropertyFloat, epsilon_dl, "epsilon_dl",1, nullptr);
-    PARAM(PropertyFloat, epsilon_p, "epsilon_p",1, nullptr);
-    PARAM(PropertyFloat, epsilon_dp, "epsilon_dp",1, nullptr);
+    PARAM(PropertyFloat, epsilon_l, "epsilon_l",0.1, nullptr);
+    PARAM(PropertyFloat, epsilon_dl, "epsilon_dl",0.1, nullptr);
+    PARAM(PropertyFloat, epsilon_p, "epsilon_p",0.4, nullptr);
+    PARAM(PropertyFloat, epsilon_dp, "epsilon_dp",0.5, nullptr);
 
     void compute() override;
     bool setMeasurement(BaseSensorMessagePtr measurement_) override;

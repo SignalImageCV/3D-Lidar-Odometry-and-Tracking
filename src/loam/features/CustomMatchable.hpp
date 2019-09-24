@@ -36,6 +36,16 @@ namespace Loam{
         : MatchableType(type_, origin_, rotation_) { }
 
 
+
+      //! @brief apply a transform to the matchable
+      inline ThisType transform(const Isometry3_<Scalar>& isometry_) const {
+        ThisType dest(*this);
+        dest.transformInPlace(isometry_);
+        return dest;
+      }
+
+
+
    };
 
    using CustomMatchablef = CustomMatchable_<float>;
