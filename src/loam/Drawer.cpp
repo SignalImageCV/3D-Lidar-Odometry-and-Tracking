@@ -70,7 +70,9 @@ namespace Loam{
       const Vector3f & center_point,
       const Vector3f & direction,
       const float length,
-      const float precision){
+      const float precision,
+      const Vector3f & color
+      ){
 
     const int num_points = length/precision;
     PointNormalColor3fVectorCloud linePoints;
@@ -90,9 +92,11 @@ namespace Loam{
       PointNormalColor3f right_edge_point;
 
       left_edge_point.coordinates() = left_edge_coords;
-      left_edge_point.color() = ColorPalette::color3fBlack();
+      left_edge_point.color() = color;
+      left_edge_point.normal() = Eigen::Vector3f::Zero();
       right_edge_point.coordinates() = right_edge_coords;
-      right_edge_point.color() = ColorPalette::color3fBlack();
+      right_edge_point.color() = color;
+      right_edge_point.normal() = Eigen::Vector3f::Zero();
 
       linePoints.push_back( left_edge_point);
       linePoints.push_back( right_edge_point);
@@ -113,7 +117,9 @@ namespace Loam{
       const float length_firstDir,
       const float length_secondDir,
       const float precision_firstDir,
-      const float precision_secondDir){
+      const float precision_secondDir,
+      const Vector3f & color
+      ){
 
     const int num_points_firstDir = length_firstDir/ precision_firstDir;
     const int num_points_secondDir = length_secondDir/ precision_secondDir;
@@ -133,10 +139,10 @@ namespace Loam{
     for ( unsigned int i=0; i<num_points_firstDir/2; ++i){
 
       PointNormalColor3fVectorCloud left_line = Drawer::createLine(
-          left_edge_coords, second_direction, length_secondDir, precision_secondDir);
+          left_edge_coords, second_direction, length_secondDir, precision_secondDir,color);
 
       PointNormalColor3fVectorCloud right_line = Drawer::createLine(
-          right_edge_coords, second_direction, length_secondDir, precision_secondDir);
+          right_edge_coords, second_direction, length_secondDir, precision_secondDir,color);
 
       planePoints.insert(
           planePoints.end(),

@@ -21,7 +21,14 @@ int main( int argc, char** argv){
 
   ParseCommandLine cmd_line(argv,banner);
   ArgumentString  dataset (&cmd_line, "d", "dataset", "path to dataset" , "");
+  ArgumentString  epsilon_l(&cmd_line, "l", "epsilon_l", "parameter that defines epsilon_l" , "");
+  ArgumentString  epsilon_dl(&cmd_line, "dl", "epsilon_dl", "parameter that defines epsilon_dl" , "");
+  ArgumentString  epsilon_p(&cmd_line, "p", "epsilon_p", "parameter that defines epsilon_p" , "");
+  ArgumentString  epsilon_dp(&cmd_line, "dp", "epsilon_dp", "parameter that defines epsilon_dp" , "");
   cmd_line.parse();
+
+
+
 
   const sphericalImage_params params(
     64, //num_vertical_rings
@@ -30,15 +37,15 @@ int main( int argc, char** argv){
     0.15, //epsilon_radius
     2.1, //depth_differential_threshold
     7,  //min_neighboors_for_normal
-    8, //epsilon_c
+    20, //epsilon_c
     1.5, //epsilon_d
     0.3, //epsilon_n
-    1, //epsilon_l
-    1, //epsilon_dl
-    1, //epsilon_p
-    1 //epsilon_dp
-    );
-  
+    std::stof( epsilon_l.value()), //epsilon_l
+    std::stof( epsilon_dl.value()), //epsilon_dl
+    std::stof( epsilon_p.value()), //epsilon_p
+    std::stof( epsilon_dp.value())//epsilon_dp
+  );
+ 
 
   DatasetManager dM( dataset.value());
   PointNormalColor3fVectorCloud cloud = dM.readMessageFromDataset();
@@ -55,12 +62,23 @@ int main( int argc, char** argv){
   features_cloud.reserve( cloud.size());
 
   PointNormalColor3fVectorCloud curr_drawing_points;
-  const float length= 10;
-  const float precision = 0.1;
+  const float length= 5;
+  const float precision = 0.5;
 
-
+  const int num_colors = matchablePtrVecPtr->size();
+  int color_counter = 0;
+  Vector3f currentColor = Vector3f::Zero();
   for ( auto m : *matchablePtrVecPtr){
-    curr_drawing_points = m->drawMatchable(length,  precision );
+
+   int color_index = color_counter* 256.f / num_colors;  
+    currentColor = Vector3f(
+      turbo_srgb_floats[color_index][0],
+      turbo_srgb_floats[color_index][1],
+      turbo_srgb_floats[color_index][2]);
+
+    ++color_counter;
+
+    curr_drawing_points = m->drawMatchable(length,  precision, currentColor);
 
     features_cloud.insert(
       features_cloud.end(),
@@ -68,8 +86,38 @@ int main( int argc, char** argv){
       std::make_move_iterator( curr_drawing_points.end())
     );
   }
- 
 
+  PointNormalColor3fVectorCloud clusters_points;
+
+  Clusterer clusterer = Clusterer(sph_Image.getPointCloud(), sph_Image.getIndexImage() , params);
+  vector<cluster> clusters = clusterer.findClusters();
+  const int num_colors_clusters = clusters.size();
+  int cluster_color_counter = 0;
+  Vector3f currentClusterColor = Vector3f::Zero();
+
+
+  for ( auto & c: clusters){
+    PointNormalColor3fVectorCloud  curr_clusterPoints  = sph_Image.fetchPoints(c.indexes);
+    int color_index = cluster_color_counter* 256.f / num_colors_clusters;  
+    currentClusterColor = Vector3f(
+      turbo_srgb_floats[color_index][0],
+      turbo_srgb_floats[color_index][1],
+      turbo_srgb_floats[color_index][2]);
+
+    ++cluster_color_counter;
+
+    for ( auto & p : curr_clusterPoints){
+      p.color() = currentClusterColor;
+    }
+
+    clusters_points.insert(
+      clusters_points.end(),
+      std::make_move_iterator( curr_clusterPoints.begin()),
+      std::make_move_iterator( curr_clusterPoints.end())
+    );
+
+  }
+ 
 
   messages_registerTypes();
   srrgInit( argc, argv, "hi");
@@ -80,13 +128,16 @@ int main( int argc, char** argv){
   ViewerCanvasPtr canvas1 = viewer.getCanvas("points");
   std::thread processing_thread1( Visualizer::visualizeCloud, canvas1, cloud, points_size);
 
-  ViewerCanvasPtr canvas2 = viewer.getCanvas("matchables");
-  std::thread processing_thread2( Visualizer::visualizeCloud, canvas2, features_cloud, points_size);
+  ViewerCanvasPtr canvas2 = viewer.getCanvas("clusters");
+  std::thread processing_thread2( Visualizer::visualizeCloud, canvas2, clusters_points, points_size);
+
+  ViewerCanvasPtr canvas3 = viewer.getCanvas("matchables");
+  std::thread processing_thread3( Visualizer::visualizeCloud, canvas3, features_cloud, points_size);
 
   viewer.startViewerServer();
   processing_thread1.join();
   processing_thread2.join();
- 
+  processing_thread3.join();
   return 0;
 }
 

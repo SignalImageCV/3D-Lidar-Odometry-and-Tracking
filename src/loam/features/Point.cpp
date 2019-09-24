@@ -23,10 +23,15 @@ namespace Loam{
   }
 
 
- PointNormalColor3fVectorCloud Point::drawMatchable( const float length, const float precision ){
+ PointNormalColor3fVectorCloud Point::drawMatchable(
+     const float length,
+     const float precision,
+     const Vector3f & color
+     ){
     PointNormalColor3fVectorCloud  drawingPoint;
     PointNormalColor3f p;
     p.coordinates() = p_m; 
+    p.color() = color; 
     drawingPoint.push_back( p);
     return drawingPoint;
  }

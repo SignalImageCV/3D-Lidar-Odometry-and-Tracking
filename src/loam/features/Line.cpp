@@ -26,10 +26,13 @@ namespace Loam{
     const float denom = diag.x() + diag.y() + diag.z();
     return num/denom;
   }
- 
-  PointNormalColor3fVectorCloud Line::drawMatchable( const float length, const float precision ){
+   PointNormalColor3fVectorCloud Line::drawMatchable(
+      const float length,
+      const float precision,
+      const Vector3f & color
+      ){
     PointNormalColor3fVectorCloud drawingPoints =
-      Drawer::createLine( p_m, R_m.col(0),length, precision );
+      Drawer::createLine( p_m, R_m.col(0),length, precision, color );
     return drawingPoints;
   }
 

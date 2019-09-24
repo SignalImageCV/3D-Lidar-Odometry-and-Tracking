@@ -19,8 +19,12 @@ namespace Loam{
       float computeDistance(const  PointNormalColor3f & t_point) override;
 
       float computeEigenvalueConstraint() override;
- 
-      PointNormalColor3fVectorCloud drawMatchable( const float length, const float precision ) override;
+  
+      PointNormalColor3fVectorCloud drawMatchable(
+          const float length,
+          const float precision,
+          const Vector3f & color
+          ) override;
   };
 
   // SHARED(Point)

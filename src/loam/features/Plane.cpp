@@ -54,7 +54,11 @@ namespace Loam{
     return num/denom;
  }
 
-  PointNormalColor3fVectorCloud Plane::drawMatchable( const float length, const float precision ){
+  PointNormalColor3fVectorCloud Plane::drawMatchable(
+      const float length,
+      const float precision,
+      const Vector3f & color
+      ){
     Eigen::Vector3f diag = Omega_m.diagonal();
     
     PointNormalColor3fVectorCloud drawingPoints =
@@ -64,7 +68,8 @@ namespace Loam{
           length*diag.x(),
           length*diag.y(),
           precision*diag.x(),
-          precision*diag.y());
+          precision*diag.y(),
+          color);
 
     return drawingPoints;
   }

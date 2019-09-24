@@ -17,7 +17,11 @@ namespace Loam{
 
       float computeEigenvalueConstraint() override;
  
-      PointNormalColor3fVectorCloud drawMatchable( const float length, const float precision ) override;
+     PointNormalColor3fVectorCloud drawMatchable(
+          const float length,
+          const float precision,
+          const Vector3f & color
+          ) override;
 
   };
 

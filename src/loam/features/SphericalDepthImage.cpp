@@ -541,22 +541,12 @@ namespace Loam{
 
         PointNormalColor3fVectorCloud currPoints = fetchPoints( c.indexes);
 
- //       cout << "p_m value : "<< c.mu.transpose() << " \n";
- //
- //
- //
- //
-
         LinePtr l( new Line(c.mu, R, Omega));
-
-
-
-
-
-
         const float eigenval_constr_line  =  l->computeEigenvalueConstraint();
         const float err_line = l->computeResidualError( currPoints);
-   //     cout << "eigenval_constr_line " << eigenval_constr_line << "\n err_line "<< err_line <<"\n";
+
+        cout << "p_m value : "<< c.mu.transpose() << " \n";
+        cout << "eigenval_constr_line " << eigenval_constr_line << "\n err_line "<< err_line <<"\n";
         if ( eigenval_constr_line < m_params.epsilon_l and
             err_line < m_params.epsilon_dl){
           //cout<< "Is a line !\n";
@@ -569,7 +559,7 @@ namespace Loam{
           PlanePtr p( new  Plane( c.mu, R, Omega));
           const float eigenval_constr_plane =  p->computeEigenvalueConstraint();
           const float err_plane = p->computeResidualError( currPoints);
-    //      cout << "eigenval_constr_plane " << eigenval_constr_plane<< "\n err_plane"<< err_plane<<"\n";
+          cout << "eigenval_constr_plane " << eigenval_constr_plane<< "\n err_plane"<< err_plane<<"\n";
           if ( eigenval_constr_plane < m_params.epsilon_p and
               err_plane< m_params.epsilon_dp){
             // cout<< "Is a plane !\n";

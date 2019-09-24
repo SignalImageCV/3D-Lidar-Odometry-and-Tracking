@@ -22,7 +22,11 @@ namespace Loam{
 
       virtual float computeEigenvalueConstraint() =0;
 
-      virtual PointNormalColor3fVectorCloud drawMatchable( const float length, const float precision ) =0;
+      virtual PointNormalColor3fVectorCloud drawMatchable(
+          const float length,
+          const float precision,
+          const Vector3f & color
+          ) =0;
 
       inline const std::string  get_ClassName() const { return m_className;};
 

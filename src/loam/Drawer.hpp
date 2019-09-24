@@ -17,7 +17,9 @@ namespace Loam{
           const Vector3f & center_point,
           const Vector3f & direction,
           const float length,
-          const float precision);
+          const float precision,
+          const Vector3f & color= Vector3f( 0.,0.,0.)
+          );
 
       static PointNormalColor3fVectorCloud createPlane(
           const Vector3f & center_point,
@@ -26,7 +28,9 @@ namespace Loam{
           const float length_firstDir,
           const float length_secondDir,
           const float precision_firstDir,
-          const float precision_secondDir);
+          const float precision_secondDir,
+          const Vector3f & color= Vector3f( 0.,0.,0.)
+          );
 
   };
 }
