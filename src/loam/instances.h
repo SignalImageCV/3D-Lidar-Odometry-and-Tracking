@@ -7,6 +7,7 @@
 #include "./features/CustomMatchable.hpp"
 #include "./CustomMeasurementAdaptor.hpp"
 #include "./matcher/CorrespondenceFinderMatchablesKDtree.hpp"
+#include "./matcher/CorrespondenceFinderMatchablesBruteForce.hpp"
 
 
 namespace Loam {

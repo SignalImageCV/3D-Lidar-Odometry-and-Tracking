@@ -69,14 +69,10 @@ namespace Loam{
 
 
 
-    //todo remove this, only for debugging purposes
-    _kd_tree_lines->printKDTree();
-    _kd_tree_planes->printKDTree();
-    //end
-
   }
 
   void CorrespondenceFinderMatchablesKDTree::compute() {
+    _correspondences->clear();
     _correspondences->reserve(_moving->size());
 
     for (size_t k = 0; k < _moving->size(); ++k) {
@@ -101,6 +97,7 @@ namespace Loam{
           break;
         }
         case MatchableBase::Type::Plane: {
+
           Correspondence c = _findPlaneAssociation(k, moving_m, moving_m_transformed);
           if (c.fixed_idx > 0 && c.moving_idx > 0) {
             _correspondences->emplace_back(c);
@@ -155,7 +152,7 @@ namespace Loam{
     //    return c;
     //  }
 
-    c.fixed_idx  = responce_idx;
+    c.fixed_idx  = _index_map_points[responce_idx];
     c.moving_idx = moving_idx_;
     // c.response   = descriptor_distance;
     c.response   = 0.; //todo assign a value to this variable since it describes how much the two features are similar
@@ -208,7 +205,7 @@ namespace Loam{
     //  return c;
     // }
 
-    c.fixed_idx  = responce_idx;
+    c.fixed_idx  = _index_map_lines[responce_idx];
     c.moving_idx = moving_idx_;
     //c.response   = descriptor_distance;
     c.response   = 0.; //todo assign a value to this variable since it describes how much the two features are similar
@@ -257,7 +254,7 @@ namespace Loam{
       return c;
     }
 
-    c.fixed_idx  = responce_idx;
+    c.fixed_idx  = _index_map_planes[responce_idx];
     c.moving_idx = moving_idx_;
     c.response   = dist; // ia is this good??
 

@@ -44,6 +44,8 @@ add_library( loam_library SHARED
   include/turboColors.hpp
   matcher/CorrespondenceFinderMatchables.cpp
   matcher/CorrespondenceFinderMatchables.hpp
+  matcher/CorrespondenceFinderMatchablesBruteForce.cpp
+  matcher/CorrespondenceFinderMatchablesBruteForce.hpp
   matcher/CorrespondenceFinderMatchablesKDtree.cpp
   matcher/CorrespondenceFinderMatchablesKDtree.hpp
   )

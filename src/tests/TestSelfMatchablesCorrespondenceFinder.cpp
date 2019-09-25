@@ -59,20 +59,23 @@ int main( int argc, char** argv){
     for ( auto & corresp: correspondances){
       ++counter;
       std::cout << " Correspondance num :  " << counter << " fixed index " << corresp.fixed_idx <<" moving index "<< corresp.moving_idx<< std::endl;
+      std::cout << " fixed origin :  " << matchables[corresp.fixed_idx].origin().transpose() << "\n";
+      std::cout << " fixed direction :  " << matchables[corresp.fixed_idx].direction().transpose() << "\n";
+      std::cout << " moving origin:  " << matchables[corresp.moving_idx].origin().transpose() << "\n";
+      std::cout << " moving direction :  " << matchables[corresp.moving_idx].direction().transpose() << "\n";
     }
     counter= 0;
-    for ( auto & match: matchables){
+   for ( auto & match: matchables){
+     ++counter;
+     std::cout << "Fixed Matchable num :  " << counter << " orign :  " << match.origin().transpose()<< std::endl;
+     std::cout << "Fixed Matchable num :  " << counter << " direction:  " << match.direction().transpose()<< std::endl;
+   }
+    counter= 0;
+    for ( auto & match: matchables_copy){
       ++counter;
- //     std::cout << "Fixed Matchable num :  " << counter << " orign :  " << match.origin().transpose()<< std::endl;
-//     std::cout << "Fixed Matchable num :  " << counter << " direction:  " << match.direction().transpose()<< std::endl;
+      std::cout << "Moving Matchable num :  " << counter << " orign :  " << match.origin().transpose()<< std::endl;
     }
-//    counter= 0;
-//    for ( auto & match: matchables_copy){
-//      ++counter;
-//      std::cout << "Moving Matchable num :  " << counter << " orign :  " << match.origin().transpose()<< std::endl;
-//    }
 
-    return 0;
 
     cloudPtr = dM.readPointerToMessageFromDataset();
   }
