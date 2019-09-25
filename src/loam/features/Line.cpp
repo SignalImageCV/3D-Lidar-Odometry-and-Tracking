@@ -31,8 +31,9 @@ namespace Loam{
       const float precision,
       const Vector3f & color
       ){
+    Eigen::Vector3f diag = Omega_m.diagonal();
     PointNormalColor3fVectorCloud drawingPoints =
-      Drawer::createLine( p_m, R_m.col(0),length, precision, color );
+      Drawer::createLine( p_m, R_m.col(0),length*diag.x(), precision*diag.x(), color );
     return drawingPoints;
   }
 

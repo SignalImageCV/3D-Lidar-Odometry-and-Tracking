@@ -42,7 +42,7 @@ namespace Loam{
     sph_Image.clusterizeCloud( matchablePtrVecPtr);
  
 
-    std::cout << " Number of matchables : "<<matchablePtrVecPtr->size() << "\n"; 
+   // std::cout << " Number of matchables : "<<matchablePtrVecPtr->size() << "\n"; 
 
     (*_dest).reserve( matchablePtrVecPtr->size() );
     for ( auto  m : *matchablePtrVecPtr){
@@ -63,6 +63,10 @@ namespace Loam{
           m->get_p_m(),
           m->get_R_m()
           );
+
+   //   std::cout << "MyMatchable origin : "<<m->get_p_m().transpose() << "\n"; 
+   //   std::cout << "MyMatchable direction : "<<m->get_R_m().col(0).transpose() << "\n"; 
+
 
       (*_dest).push_back( customMatchable  );
     }

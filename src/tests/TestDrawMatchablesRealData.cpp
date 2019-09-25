@@ -37,7 +37,7 @@ int main( int argc, char** argv){
     0.15, //epsilon_radius
     2.1, //depth_differential_threshold
     7,  //min_neighboors_for_normal
-    20, //epsilon_c
+    10, //epsilon_c
     1.5, //epsilon_d
     0.3, //epsilon_n
     std::stof( epsilon_l.value()), //epsilon_l

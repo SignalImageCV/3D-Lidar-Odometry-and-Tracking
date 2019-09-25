@@ -66,6 +66,14 @@ namespace Loam{
 
     _kd_tree_planes.reset(new KdTreeTypePlanes(
       planes_coordinates, param_max_leaf_range_points.value(), param_min_leaf_points.value()));
+
+
+
+    //todo remove this, only for debugging purposes
+    _kd_tree_lines->printKDTree();
+    _kd_tree_planes->printKDTree();
+    //end
+
   }
 
   void CorrespondenceFinderMatchablesKDTree::compute() {

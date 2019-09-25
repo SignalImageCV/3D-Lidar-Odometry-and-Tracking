@@ -32,12 +32,12 @@ namespace Loam{
     PARAM(srrg2_core::PropertyUnsignedInt,
           min_leaf_points,
           "minimum number of points in a leaf of the KDTree [points association]",
-          20,
+          1,
           0);
     PARAM(srrg2_core::PropertyFloat,
           max_leaf_range_points,
           "maximum leaf range in meters for the KDTree [points association]",
-          1e-2f,
+          1e-4f,
           0);
     PARAM(srrg2_core::PropertyUnsignedInt,
           max_hamming_distance_points,

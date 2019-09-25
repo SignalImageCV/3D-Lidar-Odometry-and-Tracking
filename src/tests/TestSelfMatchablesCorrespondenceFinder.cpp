@@ -61,16 +61,18 @@ int main( int argc, char** argv){
       std::cout << " Correspondance num :  " << counter << " fixed index " << corresp.fixed_idx <<" moving index "<< corresp.moving_idx<< std::endl;
     }
     counter= 0;
- //   for ( auto & match: matchables){
-//      ++counter;
-//      std::cout << "Fixed Matchable num :  " << counter << " orign :  " << match.origin().transpose()<< std::endl;
-//    }
+    for ( auto & match: matchables){
+      ++counter;
+ //     std::cout << "Fixed Matchable num :  " << counter << " orign :  " << match.origin().transpose()<< std::endl;
+//     std::cout << "Fixed Matchable num :  " << counter << " direction:  " << match.direction().transpose()<< std::endl;
+    }
 //    counter= 0;
 //    for ( auto & match: matchables_copy){
 //      ++counter;
 //      std::cout << "Moving Matchable num :  " << counter << " orign :  " << match.origin().transpose()<< std::endl;
 //    }
 
+    return 0;
 
     cloudPtr = dM.readPointerToMessageFromDataset();
   }
