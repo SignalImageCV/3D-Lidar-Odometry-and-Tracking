@@ -1,4 +1,13 @@
-#include "../loam/Visualizer.hpp"
+#include <srrg_qgl_viewport/viewer_core_shared_qgl.h>
+#include <srrg_system_utils/shell_colors.h>
+#include <thread>
+#include "../loam/features/SphericalDepthImage.hpp"
+#include "../loam/features/FeatureExtractor.hpp"
+#include "../loam/MyMath.hpp"
+
+//todo remove unused includes
+
+
 
 using namespace srrg2_core;
 using namespace srrg2_qgl_viewport;

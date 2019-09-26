@@ -48,6 +48,10 @@ add_library( loam_library SHARED
   matcher/CorrespondenceFinderMatchablesBruteForce.hpp
   matcher/CorrespondenceFinderMatchablesKDtree.cpp
   matcher/CorrespondenceFinderMatchablesKDtree.hpp
+  aligner/instances.cpp
+  aligner/instances.h
+  aligner/CustomAlignerSlice3d.cpp
+  aligner/CustomAlignerSlice3d.hpp
   )
 
 target_link_libraries(loam_library

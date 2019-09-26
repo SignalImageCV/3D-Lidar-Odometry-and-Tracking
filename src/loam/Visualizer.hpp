@@ -3,7 +3,6 @@
 #include <srrg_system_utils/shell_colors.h>
 #include <thread>
 
-#include "../loam/features/SphericalDepthImage.hpp"
 #include "../loam/features/FeatureExtractor.hpp"
 #include "../loam/DatasetManager.hpp"
 #include "../loam/MyMath.hpp"
@@ -23,8 +22,6 @@ namespace Loam{
 
       static void visualizeCloud( ViewerCanvasPtr canvas,const PointNormalColor3fVectorCloud & t_cloud, const float t_points_size);
 
-      static void visualizeLinesPlanes( ViewerCanvasPtr canvas);
-
       static void visualizeCondition( ViewerCanvasPtr canvas);
 
       static void visualizePointsWithNormals( ViewerCanvasPtr canvas);
@@ -32,15 +29,6 @@ namespace Loam{
       static void visualizeSphere(ViewerCanvasPtr canvas,const string & filename);
 
       static void visualizeCloudSmoothness( ViewerCanvasPtr canvas, const  string & filename);
-
-      static void visualizeFullClouds( ViewerCanvasPtr canvas, const  string & filename);
-
-      static void visualizeCleanedClouds(ViewerCanvasPtr first_canvas,
-          ViewerCanvasPtr second_canvas, const  string & filename);
-
-
-      static void visualizeCleanedWithNormals(ViewerCanvasPtr first_canvas,
-          ViewerCanvasPtr second_canvas, const  string & filename);
 
       static void drawingSampledSmoothness( ViewerCanvasPtr canvas);
 
