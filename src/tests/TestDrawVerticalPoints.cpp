@@ -1,5 +1,8 @@
-#include "../loam/Visualizer.hpp"
 #include <srrg_system_utils/parse_command_line.h>
+
+#include <srrg_qgl_viewport/viewer_core_shared_qgl.h>
+#include "loam/features/SphericalDepthImage.hpp"
+#include "loam/DatasetManager.hpp"
 
 using namespace srrg2_core;
 using namespace srrg2_core_ros;
@@ -11,8 +14,7 @@ const char* banner[] = {
       0
 };
 
-
-
+void visualizeCleanedClouds( ViewerCanvasPtr first_canvas, ViewerCanvasPtr second_canvas, const  string & filename);
 int main( int argc, char** argv){
 
   ParseCommandLine cmd_line(argv,banner);
@@ -27,11 +29,57 @@ int main( int argc, char** argv){
   ViewerCanvasPtr canvas1 = viewer.getCanvas("cleanedScene");
   ViewerCanvasPtr canvas2 = viewer.getCanvas("rawScene");
   std::thread processing_thread(
-      Visualizer::visualizeCleanedClouds,canvas1,canvas2,dataset.value());
+      visualizeCleanedClouds,canvas1,canvas2,dataset.value());
   viewer.startViewerServer();
   processing_thread.join();
   return 0;
 }
+
+void visualizeCleanedClouds( ViewerCanvasPtr first_canvas, ViewerCanvasPtr second_canvas, const  string & filename){
+    const sphericalImage_params params(
+      60, //num_vertical_rings
+      2000, //num_points_ring
+      10, //epsilon_times
+      0.15, //epsilon_radius
+      0.1, //depth_differential_threshold
+      8,  //min_neighboors_for_normal
+      5, //epsilon_c
+      0.1, //epsilon_d
+      0.02, //epsilon_n
+      1, //epsilon_l
+      1, //epsilon_dl
+      1, //epsilon_p
+      1 //epsilon_dp
+    );
+
+        
+    SphericalDepthImage sph_Image;
+    DatasetManager dM( filename);
+
+
+    while( ViewerCoreSharedQGL::isRunning()){
+
+      PointNormalColor3fVectorCloud current_point_cloud= dM.readMessageFromDataset();
+      if( current_point_cloud.size()> 0){
+
+ 
+        sph_Image= SphericalDepthImage(current_point_cloud,params);
+        sph_Image.initializeIndexImage();
+
+        PointNormalColor3fVectorCloud unprojected_cloud= sph_Image.getPointCloud();
+        sph_Image.removeFlatSurfaces();
+
+        PointNormalColor3fVectorCloud cleanedCloud= sph_Image.getPointCloud();
+
+        first_canvas->putPoints(cleanedCloud);
+
+        second_canvas->putPoints(unprojected_cloud);
+
+        first_canvas->flush();
+        second_canvas->flush();
+      }
+    }
+  }
 
 
 

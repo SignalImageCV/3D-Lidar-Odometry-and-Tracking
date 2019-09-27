@@ -1,6 +1,10 @@
 #include <srrg_system_utils/parse_command_line.h>
 #include <srrg_system_utils/system_utils.h>
 #include <srrg_messages/instances.h>
+#include <srrg_system_utils/shell_colors.h>
+#include <srrg_qgl_viewport/viewer_core_shared_qgl.h>
+#include <srrg_messages/instances.h>
+
 
 #include "loam/CustomMeasurementAdaptor.hpp"
 #include "loam/instances.h"

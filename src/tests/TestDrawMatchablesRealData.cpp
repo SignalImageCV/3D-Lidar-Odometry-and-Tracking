@@ -1,5 +1,13 @@
-#include "../loam/Visualizer.hpp"
 #include <srrg_system_utils/parse_command_line.h>
+#include <srrg_system_utils/system_utils.h>
+#include <srrg_messages/instances.h>
+#include <srrg_system_utils/shell_colors.h>
+
+#include "loam/DatasetManager.hpp"
+#include "loam/Visualizer.hpp"
+#include "loam/features/SphericalDepthImage.hpp"
+
+
 
 using namespace srrg2_core;
 using namespace srrg2_core_ros;

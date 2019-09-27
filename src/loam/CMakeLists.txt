@@ -5,6 +5,8 @@ add_library( loam_library SHARED
   DatasetManager.hpp
   Drawer.cpp
   Drawer.hpp
+  Visualizer.cpp
+  Visualizer.hpp
   features/SphericalDepthImage.cpp
   features/SphericalDepthImage.hpp
   features/Clusterer.cpp
@@ -40,11 +42,11 @@ add_library( loam_library SHARED
   matcher/CorrespondenceFinderMatchablesKDtree.hpp
   aligner/instances.cpp
   aligner/instances.h
-  aligner/CustomAlignerSlice3d.cpp
   aligner/CustomAlignerSlice3d.hpp
   )
 
 target_link_libraries(loam_library
+  srrg2_slam_interfaces_library
   ${OpenCV_LIBS}
   ${catkin_LIBRARIES}
   )

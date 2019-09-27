@@ -3,6 +3,7 @@
 #include <srrg_qgl_viewport/viewer_core_shared_qgl.h>
 #include <srrg_messages/instances.h>
 #include "loam/Drawer.hpp"
+#include "loam/MyMath.hpp"
 
 
 

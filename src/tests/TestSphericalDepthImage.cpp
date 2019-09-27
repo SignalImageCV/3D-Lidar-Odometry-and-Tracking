@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include "../loam/features/SphericalDepthImage.hpp"
-#include "../loam/Visualizer.hpp"
 #include "../loam/features/Line.hpp"
 #include "../loam/features/Plane.hpp"
 

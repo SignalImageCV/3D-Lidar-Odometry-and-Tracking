@@ -1,5 +1,7 @@
-#include "../loam/Visualizer.hpp"
+#include "loam/features/SphericalDepthImage.hpp"
+#include "loam/Visualizer.hpp"
 
+using namespace std;
 using namespace srrg2_core;
 using namespace srrg2_qgl_viewport;
 using namespace Loam;

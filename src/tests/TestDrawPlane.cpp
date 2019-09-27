@@ -1,9 +1,8 @@
 #include <srrg_qgl_viewport/viewer_core_shared_qgl.h>
 #include <srrg_system_utils/shell_colors.h>
 #include <thread>
-#include "../loam/features/SphericalDepthImage.hpp"
-#include "../loam/features/FeatureExtractor.hpp"
-#include "../loam/MyMath.hpp"
+#include "loam/features/SphericalDepthImage.hpp"
+#include "loam/MyMath.hpp"
 
 //todo remove unused includes
 

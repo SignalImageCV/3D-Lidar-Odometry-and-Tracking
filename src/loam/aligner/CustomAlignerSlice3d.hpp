@@ -1,10 +1,5 @@
 #pragma once
 
-// add the two files in cmakelists 
-//since i removed them to debug undef ref
-//
-//
-//
 
 //#include <srrg_slam_interfaces/multi_aligner_slice.h>
 
@@ -18,6 +13,7 @@
 #include "../matcher/CorrespondenceFinderMatchablesKDtree.hpp"
 
 namespace Loam{
+  using namespace srrg2_solver;
 
   class CustomAlignerSlice3d : public srrg2_slam_interfaces::MultiAlignerSlice_<
                            srrg2_solver::SE3Matchable2MatchableErrorFactorNoInfo,
@@ -31,12 +27,20 @@ namespace Loam{
     using CorrespondenceFinderType = CorrespondenceFinderMatchablesKDTree;
     //using CorrespondenceFinderType = CorrespondenceFinder_<EstimateType, FixedType, MovingType>;
 
-    CustomAlignerSlice3d();
+    CustomAlignerSlice3d() {
+    param_fixed_slice_name.setValue("customMatchables");
+    param_moving_slice_name.setValue("customMatchables");
+    param_robustifier.setValue(std::shared_ptr<RobustifierSaturated>(new RobustifierSaturated()));
+    param_robustifier->setName("aligner_robustifier");
+    setName("custom_aligner_slice_3d");
+  }
     virtual ~CustomAlignerSlice3d(){};
-    virtual void setupFactor() override;
+    void setupFactor() override {
+    };
   };
 
   using CustomAlignerSlice3dPtr = std::shared_ptr<CustomAlignerSlice3d>;
+
 
 }
 

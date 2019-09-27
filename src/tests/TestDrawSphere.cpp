@@ -5,6 +5,7 @@
 #include <srrg_messages/instances.h>
 #include "loam/MyMath.hpp"
 #include "loam/DatasetManager.hpp"
+#include "loam/Drawer.hpp"
 
 
 using namespace srrg2_core;
@@ -55,7 +56,6 @@ int main( int argc, char** argv){
      
     while(  ViewerCoreSharedQGL::isRunning()){
       canvas->putPoints(sphere_cloud);
-      Visualizer::drawAxes( canvas, axes);
       canvas->flush();
     }
   }

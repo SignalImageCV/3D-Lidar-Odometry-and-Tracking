@@ -1,6 +1,7 @@
 #include <srrg_qgl_viewport/viewer_core_shared_qgl.h>
 #include <srrg_system_utils/parse_command_line.h>
 #include "loam/features/SphericalDepthImage.hpp" 
+#include "loam/DatasetManager.hpp" 
 
 using namespace srrg2_core;
 using namespace srrg2_core_ros;

@@ -4,10 +4,9 @@
 #include <srrg_system_utils/shell_colors.h>
 #include <thread>
 
-#include "../loam/features/SphericalDepthImage.hpp"
-#include "../loam/features/FeatureExtractor.hpp"
-#include "../loam/DatasetManager.hpp"
-#include "../loam/MyMath.hpp"
+#include "loam/features/SphericalDepthImage.hpp"
+#include "loam/DatasetManager.hpp"
+#include "loam/MyMath.hpp"
 
 
 using namespace srrg2_core;
@@ -20,7 +19,6 @@ const char* banner[] = {
       0
 };
 
-void visualizeCleanedClouds( ViewerCanvasPtr first_canvas, ViewerCanvasPtr second_canvas, const  string & filename);
 void visualizeCleanedWithNormals( ViewerCanvasPtr first_canvas, ViewerCanvasPtr second_canvas, const  string & filename);
 
 int main( int argc, char** argv){
@@ -45,52 +43,6 @@ int main( int argc, char** argv){
   return 0;
 }
 
-
-  void visualizeCleanedClouds( ViewerCanvasPtr first_canvas, ViewerCanvasPtr second_canvas, const  string & filename){
-    const sphericalImage_params params(
-      60, //num_vertical_rings
-      2000, //num_points_ring
-      10, //epsilon_times
-      0.15, //epsilon_radius
-      0.1, //depth_differential_threshold
-      8,  //min_neighboors_for_normal
-      5, //epsilon_c
-      0.1, //epsilon_d
-      0.02, //epsilon_n
-      1, //epsilon_l
-      1, //epsilon_dl
-      1, //epsilon_p
-      1 //epsilon_dp
-    );
-
-        
-    SphericalDepthImage sph_Image;
-    DatasetManager dM( filename);
-
-
-    while( ViewerCoreSharedQGL::isRunning()){
-
-      PointNormalColor3fVectorCloud current_point_cloud= dM.readMessageFromDataset();
-      if( current_point_cloud.size()> 0){
-
- 
-        sph_Image= SphericalDepthImage(current_point_cloud,params);
-        sph_Image.initializeIndexImage();
-
-        PointNormalColor3fVectorCloud unprojected_cloud= sph_Image.getPointCloud();
-        sph_Image.removeFlatSurfaces();
-
-        PointNormalColor3fVectorCloud cleanedCloud= sph_Image.getPointCloud();
-
-        first_canvas->putPoints(cleanedCloud);
-
-        second_canvas->putPoints(unprojected_cloud);
-
-        first_canvas->flush();
-        second_canvas->flush();
-      }
-    }
-  }
 
   void visualizeCleanedWithNormals(ViewerCanvasPtr first_canvas,
           ViewerCanvasPtr second_canvas, const  string & filename){

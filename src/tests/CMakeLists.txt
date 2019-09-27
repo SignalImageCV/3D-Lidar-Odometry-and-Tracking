@@ -251,22 +251,6 @@ target_link_libraries(test_fullCloud
   pthread
   )
 
-
-
-add_executable(test_visualizeCloud
-  TestCloudVisualization.cpp
-  )
-target_link_libraries(test_visualizeCloud
-  loam_library
-  srrg2_system_utils_library
-  srrg2_qgl_viewport_library
-  ${SRRG_QT_LIBRARIES}
-  ${GLUT_LIBRARIES}
-  ${QGLViewer_LIBRARIES}
-  ${catkin_LIBRARIES}
-  pthread
-  )
-
 add_executable(test_boolCondition
   TestBooleanCondition.cpp
   )

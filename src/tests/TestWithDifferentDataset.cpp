@@ -1,5 +1,13 @@
-#include "../loam/Visualizer.hpp"
 #include <srrg_system_utils/parse_command_line.h>
+#include <srrg_system_utils/system_utils.h>
+#include <srrg_messages/instances.h>
+#include <srrg_system_utils/shell_colors.h>
+#include <srrg_qgl_viewport/viewer_core_shared_qgl.h>
+#include <srrg_messages/instances.h>
+
+#include "loam/DatasetManager.hpp"
+#include "loam/features/SphericalDepthImage.hpp"
+
 
 
 using namespace srrg2_core;
@@ -13,6 +21,30 @@ const char* banner[] = {
       0
 };
 
+void visualizeClouder( ViewerCanvasPtr canvas, string filename);
+
+
+int main( int argc, char** argv){
+  ParseCommandLine cmd_line(argv,banner);
+  ArgumentString  dataset (&cmd_line, "d", "dataset", "path to dataset" , "");
+  cmd_line.parse();
+
+  messages_registerTypes();
+  srrgInit( argc, argv, "hi");
+ 
+
+
+  QApplication qapp(argc, argv);
+  ViewerCoreSharedQGL viewer(argc, argv, &qapp);
+  ViewerCanvasPtr canvas1 = viewer.getCanvas("cloud");
+
+  std::thread processing_thread(
+      visualizeClouder,canvas1, dataset.value());
+
+  viewer.startViewerServer();
+  processing_thread.join();
+  return 0;
+}
 void visualizeClouder( ViewerCanvasPtr canvas, string filename){
   DatasetManager dM( filename);
   const sphericalImage_params params(
@@ -49,26 +81,4 @@ void visualizeClouder( ViewerCanvasPtr canvas, string filename){
     canvas->popAttribute();
     canvas->flush();
   }
-}
-
-int main( int argc, char** argv){
-  ParseCommandLine cmd_line(argv,banner);
-  ArgumentString  dataset (&cmd_line, "d", "dataset", "path to dataset" , "");
-  cmd_line.parse();
-
-  messages_registerTypes();
-  srrgInit( argc, argv, "hi");
- 
-
-
-  QApplication qapp(argc, argv);
-  ViewerCoreSharedQGL viewer(argc, argv, &qapp);
-  ViewerCanvasPtr canvas1 = viewer.getCanvas("cloud");
-
-  std::thread processing_thread(
-      visualizeClouder,canvas1, dataset.value());
-
-  viewer.startViewerServer();
-  processing_thread.join();
-  return 0;
 }
