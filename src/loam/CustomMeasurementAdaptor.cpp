@@ -40,6 +40,13 @@ namespace Loam{
 
     MatchablePtrVecPtr matchablePtrVecPtr = std::make_shared< std::vector< MatchablePtr>>();
     sph_Image.clusterizeCloud( matchablePtrVecPtr);
+
+    //maybe it shold be nice to memorize this pointer matchablePtrVecPtr then add a function
+    //for drawing clusters as is done in the drawMatchablesRealData test
+    //that can be called from the outside, namely from the aligner for example
+    //or every oher class or test, this way I can understand the situation of the
+    //features at each iteration ( issue, the feature matcher does not match the features)
+    //maybe they are too much rototranslated between pointclouds.
  
 
    // std::cout << " Number of matchables : "<<matchablePtrVecPtr->size() << "\n"; 

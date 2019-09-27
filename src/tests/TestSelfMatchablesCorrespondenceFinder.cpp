@@ -49,7 +49,7 @@ int main( int argc, char** argv){
     CustomMatchablefVectorData  matchables_copy = matchables;
 
     const float x = 0.;
-    const float y = 0;
+    const float y = 0.3;
     const float z = 0.3;
     const float rx = 0;
     const float ry = 0;
@@ -92,14 +92,14 @@ int main( int argc, char** argv){
     counter= 0;
    for ( auto & match: matchables){
      ++counter;
-     std::cout << "Fixed Matchable num  :  " << counter << " ||  orign      :  " << match.origin().transpose()<< std::endl;
-     std::cout << "Fixed Matchable num  :  " << counter << " ||  direction  :  " << match.direction().transpose()<< std::endl;
+ //    std::cout << "Fixed Matchable num  :  " << counter << " ||  orign      :  " << match.origin().transpose()<< std::endl;
+ //    std::cout << "Fixed Matchable num  :  " << counter << " ||  direction  :  " << match.direction().transpose()<< std::endl;
    }
     counter= 0;
     for ( auto & match_copy: matchables_copy){
       ++counter;
-      std::cout <<"Moving Matchable num :  " << counter << " ||  orign      :  " << match_copy.origin().transpose()<< std::endl;
-      std::cout <<"Moving Matchable num :  " << counter << " ||  direction  :  " << match_copy.direction().transpose()<< std::endl;
+ //     std::cout <<"Moving Matchable num :  " << counter << " ||  orign      :  " << match_copy.origin().transpose()<< std::endl;
+ //     std::cout <<"Moving Matchable num :  " << counter << " ||  direction  :  " << match_copy.direction().transpose()<< std::endl;
     }
 
 

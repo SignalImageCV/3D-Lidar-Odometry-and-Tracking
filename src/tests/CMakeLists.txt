@@ -65,6 +65,23 @@ target_link_libraries(test_selfMatchablesCorrespondenceFinder
   pthread
   )
 
+add_executable(test_correspondanceFinder
+  TestCorrespondanceFinder.cpp
+  )
+target_link_libraries(test_correspondanceFinder
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  srrg2_boss_library
+  ${SRRG_QT_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  ${QGLViewer_LIBRARIES}
+  ${catkin_LIBRARIES}
+  pthread
+  )
+
+
+
 add_executable(test_selfMatchablesSolver
   TestSelfMatchablesSolver.cpp
   )
@@ -80,10 +97,10 @@ target_link_libraries(test_selfMatchablesSolver
   pthread
   )
 
-add_executable(test_customAligner
-  TestCustomAligner.cpp
+add_executable(test_aligner
+  TestAligner.cpp
   )
-target_link_libraries(test_customAligner
+target_link_libraries(test_aligner
   loam_library
   srrg2_system_utils_library
   srrg2_qgl_viewport_library

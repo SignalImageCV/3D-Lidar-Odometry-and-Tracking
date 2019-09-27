@@ -85,7 +85,6 @@ namespace Loam{
   vector<cluster> Clusterer::findClusters(){
 
     blurNormals();
-
     vector<cluster> clusters;
     //find a good number to preserve space
 

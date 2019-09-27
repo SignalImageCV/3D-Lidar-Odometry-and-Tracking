@@ -40,10 +40,9 @@ add_library( loam_library SHARED
   matcher/CorrespondenceFinderMatchablesBruteForce.hpp
   matcher/CorrespondenceFinderMatchablesKDtree.cpp
   matcher/CorrespondenceFinderMatchablesKDtree.hpp
-  aligner/instances.cpp
-  aligner/instances.h
-  aligner/CustomAlignerSlice3d.hpp
-  )
+  aligner/Aligner.cpp
+  aligner/Aligner.hpp
+ )
 
 target_link_libraries(loam_library
   srrg2_slam_interfaces_library

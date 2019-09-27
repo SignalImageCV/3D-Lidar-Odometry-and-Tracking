@@ -569,7 +569,7 @@ namespace Loam{
           }
         }
       }
-      cout<< " Num of lines : "<< cont_lines <<" , num of planes : "<< cont_planes<< "\n";
+      //cout<< " Num of lines : "<< cont_lines <<" , num of planes : "<< cont_planes<< "\n";
   }
 
 
