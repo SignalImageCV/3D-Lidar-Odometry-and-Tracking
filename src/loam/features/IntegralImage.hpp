@@ -1,5 +1,5 @@
 #pragma once
-#include "../interfaces/IntegralImageInterface.hpp"
+#include "IntegralImageInterface.hpp"
 
 using namespace std;
 using namespace srrg2_core;
@@ -25,7 +25,6 @@ namespace Loam{
       IntegralCell getCellInsideBoundaries(
         const int t_rowMin,const int t_rowMax,
         const int t_colMin,const int t_colMax);
- 
   };
 }
   

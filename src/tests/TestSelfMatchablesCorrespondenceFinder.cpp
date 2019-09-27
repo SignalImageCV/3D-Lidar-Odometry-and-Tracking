@@ -1,9 +1,11 @@
-#include "../loam/Visualizer.hpp"
 #include <srrg_system_utils/parse_command_line.h>
-#include "../loam/CustomMeasurementAdaptor.hpp"
-#include "../loam/instances.h"
-#include "../loam/matcher/CorrespondenceFinderMatchablesKDtree.hpp"
+#include <srrg_system_utils/system_utils.h>
+#include <srrg_messages/instances.h>
 
+#include "loam/CustomMeasurementAdaptor.hpp"
+#include "loam/instances.h"
+#include "loam/matcher/CorrespondenceFinderMatchablesKDtree.hpp"
+#include "loam/DatasetManager.hpp"
 
 
 using namespace srrg2_core;

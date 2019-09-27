@@ -4,10 +4,10 @@
 #include <srrg_solver/SE3/instances.h>
 
 
-#include "../loam/CustomMeasurementAdaptor.hpp"
-#include "../loam/Visualizer.hpp"
-#include "../loam/instances.h"
-#include "../loam/matcher/CorrespondenceFinderMatchablesKDtree.hpp"
+#include "loam/CustomMeasurementAdaptor.hpp"
+#include "loam/Visualizer.hpp"
+#include "loam/instances.h"
+#include "loam/matcher/CorrespondenceFinderMatchablesKDtree.hpp"
 
 
 using namespace srrg2_core;

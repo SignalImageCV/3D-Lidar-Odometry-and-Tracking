@@ -1,5 +1,5 @@
 #pragma once
-#include "../interfaces/DataPointInterface.hpp"
+#include "DataPointInterface.hpp"
 
 namespace Loam{
 

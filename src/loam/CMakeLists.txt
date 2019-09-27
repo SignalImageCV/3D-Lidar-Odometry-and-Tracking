@@ -1,20 +1,14 @@
 add_library( loam_library SHARED
   MyMath.cpp
   MyMath.hpp
-  ScanPoint.cpp
-  ScanPoint.hpp
   DatasetManager.cpp
   DatasetManager.hpp
   Drawer.cpp
   Drawer.hpp
-  Visualizer.cpp
-  Visualizer.hpp
   features/SphericalDepthImage.cpp
   features/SphericalDepthImage.hpp
   features/Clusterer.cpp
   features/Clusterer.hpp
-  features/FeatureExtractor.cpp
-  features/FeatureExtractor.hpp
   features/IntegralImage.cpp
   features/IntegralImage.hpp
   features/IntegralCell.cpp
@@ -29,10 +23,6 @@ add_library( loam_library SHARED
   features/Plane.hpp
   features/Line.cpp
   features/Line.hpp
-  MyMeasurementAdaptor.cpp
-  MyMeasurementAdaptor.hpp
-  MyToyConfigurable.cpp
-  MyToyConfigurable.hpp
   features/CustomMatchable.cpp
   features/CustomMatchable.hpp
   CustomMeasurementAdaptor.cpp

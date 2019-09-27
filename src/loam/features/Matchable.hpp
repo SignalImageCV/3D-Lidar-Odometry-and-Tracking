@@ -1,5 +1,5 @@
 #pragma once
-#include "../interfaces/MatchableInterface.hpp"
+#include "MatchableInterface.hpp"
 
 namespace Loam{
 

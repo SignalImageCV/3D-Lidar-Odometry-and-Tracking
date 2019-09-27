@@ -7,11 +7,7 @@ namespace Loam{
   void loam_registerTypes() {
     point_cloud_registerTypes();
 
-    BOSS_REGISTER_CLASS(MyMeasurementAdaptor);
 
- //   BOSS_REGISTER_CLASS(CustomAlignerSlice3d);
-
-    BOSS_REGISTER_CLASS(MyToyConfigurable);
     BOSS_REGISTER_CLASS(CorrespondenceFinderMatchables);
     BOSS_REGISTER_CLASS(CorrespondenceFinderMatchablesBruteForce);
     BOSS_REGISTER_CLASS(CorrespondenceFinderMatchablesKDTree);

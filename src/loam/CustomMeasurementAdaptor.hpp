@@ -1,28 +1,18 @@
 #pragma once
 
 #include <srrg_config/configurable.h>
-
 #include <srrg_config/property_configurable.h>
-
 #include <srrg_slam_interfaces/measurement_adaptor.h>
-
 #include <srrg_messages/instances.h>
-
 #include <srrg_matchable/visual_matchable.h>
-
 #include <srrg_messages/messages/image_message.h>
-
 #include <srrg_pcl/point_unprojector_types.h>
 
-#include "./features/SphericalDepthImage.hpp"
-
-#include "./MyToyConfigurable.hpp"
-
-#include "./features/CustomMatchable.hpp"
+#include "features/SphericalDepthImage.hpp"
+#include "features/CustomMatchable.hpp"
 
 namespace Loam{
   using namespace srrg2_core;
-
 
   class CustomMeasurementAdaptor: public srrg2_slam_interfaces::MeasurementAdaptor_<CustomMatchablefVector> { 
   public:

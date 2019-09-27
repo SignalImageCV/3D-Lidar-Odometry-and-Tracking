@@ -1,6 +1,4 @@
-#include <srrg_system_utils/system_utils.h>
 #include <srrg_messages/instances.h>
-
 #include <srrg_viewer/viewer_core/color_palette.h>
 
 using namespace std;
