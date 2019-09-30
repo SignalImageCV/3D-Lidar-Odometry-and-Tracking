@@ -9,6 +9,7 @@
 
 
 
+//Not very useful, this was written very early in the process.
 
 using namespace srrg2_core;
 using namespace srrg2_qgl_viewport;

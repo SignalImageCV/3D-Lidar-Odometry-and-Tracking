@@ -85,6 +85,8 @@ void processVisualizeRealMatchables(
   DatasetManager dM(  filename);
   BaseSensorMessagePtr cloudPtr;
   cloudPtr = dM.readPointerToMessageFromDataset();
+
+  const float points_size = 2.0;
   while( ViewerCoreSharedQGL::isRunning() and  cloudPtr){
 
     CustomMatchablefVectorData  matchables;
@@ -96,9 +98,16 @@ void processVisualizeRealMatchables(
     PointNormalColor3fVectorCloud  clusters_cloud = measurementAdaptor->drawClusters();
     PointNormalColor3fVectorCloud  matchables_cloud= measurementAdaptor->drawMatchables();
 
-    const float points_size = 2.0;
-    Visualizer::visualizeCloud( canvas_1, clusters_cloud, points_size);
-    Visualizer::visualizeCloud( canvas_2, matchables_cloud, points_size);
+    canvas_1->pushPointSize();
+    canvas_1->setPointSize(points_size);
+    canvas_1->putPoints( clusters_cloud);
+    canvas_1->flush();
+ 
+    canvas_2->pushPointSize();
+    canvas_2->setPointSize(points_size);
+    canvas_2->putPoints( matchables_cloud);
+    canvas_2->flush();
+ 
     cloudPtr = dM.readPointerToMessageFromDataset();
   }
 }

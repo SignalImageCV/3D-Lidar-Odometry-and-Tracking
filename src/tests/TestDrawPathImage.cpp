@@ -60,6 +60,7 @@ int main( int argc, char** argv){
   while( current_point_cloud.size()> 0){
  
     sph_Image= SphericalDepthImage(current_point_cloud,params);
+    sph_Image.initializeIndexImage();
     sph_Image.collectNormals();
     sph_Image.removeFlatSurfaces();
     index_img = sph_Image.drawIndexImg(); 
