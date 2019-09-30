@@ -52,6 +52,7 @@ namespace Loam{
     void compute() override;
     bool setMeasurement(BaseSensorMessagePtr measurement_) override;
 
+    void setMyParams( const sphericalImage_params & t_params);
     PointNormalColor3fVectorCloud drawMatchables();
     PointNormalColor3fVectorCloud drawClusters();
     void reset() override;

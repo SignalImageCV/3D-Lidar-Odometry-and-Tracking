@@ -7,7 +7,6 @@ namespace Loam{
 
   void CustomMeasurementAdaptor::compute() {
 
-
     const sphericalImage_params params(
       param_num_vertical_rings.value(),
       param_num_points_ring.value(),
@@ -74,6 +73,22 @@ namespace Loam{
      return true;
    };
 
+   void CustomMeasurementAdaptor::setMyParams( const sphericalImage_params & t_params){
+
+     param_num_vertical_rings.setValue(t_params.num_vertical_rings);
+     param_num_points_ring.setValue(t_params.num_points_ring);
+     param_epsilon_times.setValue(t_params.epsilon_times);
+     param_epsilon_radius.setValue(t_params.epsilon_radius);
+     param_depth_differential_threshold.setValue(t_params.depth_differential_threshold);
+     param_min_neighboors_for_normal.setValue(t_params.min_neighboors_for_normal);
+     param_epsilon_c.setValue(t_params.epsilon_c);
+     param_epsilon_d.setValue(t_params.epsilon_d);
+     param_epsilon_n.setValue(t_params.epsilon_n);
+     param_epsilon_l.setValue(t_params.epsilon_l);
+     param_epsilon_dl.setValue(t_params.epsilon_dl);
+     param_epsilon_p.setValue(t_params.epsilon_p);
+     param_epsilon_dp.setValue(t_params.epsilon_dp);
+   }
 
    PointNormalColor3fVectorCloud CustomMeasurementAdaptor::drawClusters(){
      PointNormalColor3fVectorCloud clusters_cloud;

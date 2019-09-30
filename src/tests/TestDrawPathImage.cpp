@@ -25,9 +25,9 @@ int main( int argc, char** argv){
   const sphericalImage_params params(
       64, //num_vertical_rings
       768, //num_points_ring
-      10, //epsilon_times
+      8, //epsilon_times
       0.15, //epsilon_radius
-      0.1, //depth_differential_threshold
+      2.1, //depth_differential_threshold
       8,  //min_neighboors_for_normal
       5, //epsilon_c
       0.1, //epsilon_d

@@ -36,27 +36,37 @@ int main( int argc, char** argv){
   srrgInit( argc, argv, "hi");
 
   ParseCommandLine cmd_line(argv,banner);
+
   ArgumentString  dataset (&cmd_line, "d", "dataset", "path to dataset" , "");
-  ArgumentString  epsilon_l(&cmd_line, "l", "epsilon_l", "parameter that defines epsilon_l" , "");
-  ArgumentString  epsilon_dl(&cmd_line, "dl", "epsilon_dl", "parameter that defines epsilon_dl" , "");
-  ArgumentString  epsilon_p(&cmd_line, "p", "epsilon_p", "parameter that defines epsilon_p" , "");
-  ArgumentString  epsilon_dp(&cmd_line, "dp", "epsilon_dp", "parameter that defines epsilon_dp" , "");
+  ArgumentString  num_vertical_rings(&cmd_line, "vr", "num_vertical_rings", "num of vertical rings" , "");
+  ArgumentString  num_points_ring(&cmd_line, "hr", "num_points_ring", "num of horizontal rings (slices)" , "");
+  ArgumentString  epsilon_t(&cmd_line, "et", "epsilon_t", "min num of times points have to fall in the base circle to be considered vertical " , "");
+  ArgumentString  epsilon_r(&cmd_line, "er", "epsilon_r", "min radius of the circle in which vertical points have to fall" , "");
+  ArgumentString  depth_differential_threshold(&cmd_line, "dd", "depth_differential_threshold", "max difference between depths in near points to be considered valid points" , "");
+  ArgumentString  min_neighboors_for_normal(&cmd_line, "nn", "min_neighboors_for_normal", "min num of points to use to compute the normals" , "");
+  ArgumentString  epsilon_c(&cmd_line, "ec", "epsilon_c", "min num of points that forma a cluster" , "");
+  ArgumentString  epsilon_d(&cmd_line, "ed", "epsilon_d", "min cartesian distance between points of the same cluster" , ""); //currently unused
+  ArgumentString  epsilon_n(&cmd_line, "en", "epsilon_n", "min distance between directions of normals of points in the same cluster" , "");
+  ArgumentString  epsilon_l(&cmd_line, "el", "epsilon_l", "min number that descibes the eigenvalue constraint of a line" , "");
+  ArgumentString  epsilon_dl(&cmd_line,"edl", "epsilon_dl", "min number of the cumulative cartesian error of the matchable fitted to a line" , "");
+  ArgumentString  epsilon_p(&cmd_line, "ep", "epsilon_p", "min number that descibes the eigenvalue constraint of a plane" , "");
+  ArgumentString  epsilon_dp(&cmd_line,"edp", "epsilon_dp", "min number of the cumulative cartesian error of the matchable fitted to a plane" , "");
   cmd_line.parse();
 
   const sphericalImage_params params(
-    64, //num_vertical_rings
-    768, //num_points_ring
-    7, //epsilon_times
-    0.15, //epsilon_radius
-    2.1, //depth_differential_threshold
-    7,  //min_neighboors_for_normal
-    10, //epsilon_c
-    1.5, //epsilon_d
-    0.3, //epsilon_n
-    std::stof( epsilon_l.value()), //epsilon_l
-    std::stof( epsilon_dl.value()), //epsilon_dl
-    std::stof( epsilon_p.value()), //epsilon_p
-    std::stof( epsilon_dp.value())//epsilon_dp
+    std::stoi( num_vertical_rings.value()), 
+    std::stoi( num_points_ring.value()),
+    std::stoi( epsilon_t.value()),
+    std::stof( epsilon_r.value()),
+    std::stof( depth_differential_threshold.value()),
+    std::stoi( min_neighboors_for_normal.value()),
+    std::stoi( epsilon_c.value()),
+    std::stof( epsilon_d.value()),
+    std::stof( epsilon_n.value()),
+    std::stof( epsilon_l.value()),
+    std::stof( epsilon_dl.value()),
+    std::stof( epsilon_p.value()),
+    std::stof( epsilon_dp.value())
   );
 
   QApplication qapp(argc, argv);
@@ -92,6 +102,8 @@ void processVisualizeRealMatchables(
     CustomMatchablefVectorData  matchables;
     CustomMeasurementAdaptorPtr measurementAdaptor =
       CustomMeasurementAdaptorPtr(new CustomMeasurementAdaptor);
+
+    measurementAdaptor->setMyParams( t_params);
     measurementAdaptor->setDest( &matchables);
     measurementAdaptor->setMeasurement( cloudPtr );
     measurementAdaptor->compute();
