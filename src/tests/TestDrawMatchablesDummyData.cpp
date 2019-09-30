@@ -180,37 +180,7 @@ int main( int argc, char** argv){
   }
 
 
-  PointNormalColor3fVectorCloud clusters_points;
-
-  Clusterer clusterer = Clusterer(sph_Image.getPointCloud(), sph_Image.getIndexImage() , params);
-  vector<cluster> clusters = clusterer.findClusters();
-  const int num_colors_clusters = clusters.size();
-  int cluster_color_counter = 0;
-  Vector3f currentClusterColor = Vector3f::Zero();
-
-
-  for ( auto & c: clusters){
-    PointNormalColor3fVectorCloud  curr_clusterPoints  = sph_Image.fetchPoints(c.indexes);
-    int color_index = cluster_color_counter* 256.f / num_colors_clusters;  
-    currentClusterColor = Vector3f(
-      turbo_srgb_floats[color_index][0],
-      turbo_srgb_floats[color_index][1],
-      turbo_srgb_floats[color_index][2]);
-
-    ++cluster_color_counter;
-
-    for ( auto & p : curr_clusterPoints){
-      p.color() = currentClusterColor;
-    }
-
-    clusters_points.insert(
-      clusters_points.end(),
-      std::make_move_iterator( curr_clusterPoints.begin()),
-      std::make_move_iterator( curr_clusterPoints.end())
-    );
-
-  }
-   
+  PointNormalColor3fVectorCloud clusters_points = sph_Image.drawClusters3D();
  
   const float points_size = 2.0;
   QApplication qapp(argc, argv);

@@ -33,26 +33,18 @@ namespace Loam{
     point_cloud_with_normal.resize( current_point_cloud.size());
     current_point_cloud.copyFieldTo<0,0,PointNormalColor3fVectorCloud>(point_cloud_with_normal);
 
+    m_sph_ImagePtr = std::make_shared<SphericalDepthImage>( SphericalDepthImage(point_cloud_with_normal,params));
 
-    SphericalDepthImage sph_Image = SphericalDepthImage(point_cloud_with_normal,params);
-    sph_Image.initializeIndexImage();
-    sph_Image.executeOperations();
+    m_sph_ImagePtr->initializeIndexImage();
+    m_sph_ImagePtr->executeOperations();
 
-    MatchablePtrVecPtr matchablePtrVecPtr = std::make_shared< std::vector< MatchablePtr>>();
-    sph_Image.clusterizeCloud( matchablePtrVecPtr);
+    m_sph_ImagePtr->clusterizeCloud( m_matchablePtrVecPtr);
 
-    //maybe it shold be nice to memorize this pointer matchablePtrVecPtr then add a function
-    //for drawing clusters as is done in the drawMatchablesRealData test
-    //that can be called from the outside, namely from the aligner for example
-    //or every oher class or test, this way I can understand the situation of the
-    //features at each iteration ( issue, the feature matcher does not match the features)
-    //maybe they are too much rototranslated between pointclouds.
- 
 
    // std::cout << " Number of matchables : "<<matchablePtrVecPtr->size() << "\n"; 
 
-    (*_dest).reserve( matchablePtrVecPtr->size() );
-    for ( auto  m : *matchablePtrVecPtr){
+    (*_dest).reserve( m_matchablePtrVecPtr->size() );
+    for ( auto  m : *m_matchablePtrVecPtr){
       string className = m->get_ClassName();
       Matchablef::Type type;
       if ( className== "Line" ){
@@ -73,8 +65,6 @@ namespace Loam{
 
    //   std::cout << "MyMatchable origin : "<<m->get_p_m().transpose() << "\n"; 
    //   std::cout << "MyMatchable direction : "<<m->get_R_m().col(0).transpose() << "\n"; 
-
-
       (*_dest).push_back( customMatchable  );
     }
   }
@@ -82,6 +72,57 @@ namespace Loam{
    bool CustomMeasurementAdaptor::setMeasurement(BaseSensorMessagePtr measurement_){
      BaseType::setMeasurement( measurement_);
      return true;
+   };
+
+
+   PointNormalColor3fVectorCloud CustomMeasurementAdaptor::drawClusters(){
+     PointNormalColor3fVectorCloud clusters_cloud;
+     if ( m_sph_ImagePtr){
+       clusters_cloud = m_sph_ImagePtr->drawClusters3D();
+     }
+     return clusters_cloud;
+   }
+
+   PointNormalColor3fVectorCloud CustomMeasurementAdaptor::drawMatchables(){
+
+     PointNormalColor3fVectorCloud features_cloud;
+     if ( m_sph_ImagePtr and m_matchablePtrVecPtr->size()>0){
+
+       features_cloud.reserve( m_sph_ImagePtr->getPointCloud().size());
+
+       PointNormalColor3fVectorCloud curr_drawing_points;
+       const float length= 5;
+       const float precision = 0.5;
+
+       const int num_colors = m_matchablePtrVecPtr->size();
+       int color_counter = 0;
+       Vector3f currentColor = Vector3f::Zero();
+       for ( auto m : *m_matchablePtrVecPtr){
+
+         int color_index = color_counter* 256.f / num_colors;  
+         currentColor = Vector3f(
+             turbo_srgb_floats[color_index][0],
+             turbo_srgb_floats[color_index][1],
+             turbo_srgb_floats[color_index][2]);
+
+         ++color_counter;
+
+         curr_drawing_points = m->drawMatchable(length,  precision, currentColor);
+
+         features_cloud.insert(
+             features_cloud.end(),
+             std::make_move_iterator( curr_drawing_points.begin()),
+             std::make_move_iterator( curr_drawing_points.end())
+             );
+       }
+     }
+     return  features_cloud;
+   }
+
+   void CustomMeasurementAdaptor::reset(){
+    BaseType::reset();
+    m_sph_ImagePtr = nullptr;
+    m_matchablePtrVecPtr = std::make_shared< std::vector< MatchablePtr>>();
    };
 }
 

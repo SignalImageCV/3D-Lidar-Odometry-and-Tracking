@@ -5,11 +5,11 @@ namespace Loam{
   SphericalDepthImage::SphericalDepthImage(){};
 
   SphericalDepthImage::SphericalDepthImage(
-          const PointNormalColor3fVectorCloud  & t_cloud,
-          const sphericalImage_params t_params
-          ):
-  m_cloud( t_cloud),
-  m_params( t_params)
+      const PointNormalColor3fVectorCloud  & t_cloud,
+      const sphericalImage_params t_params
+      ):
+    m_cloud( t_cloud),
+    m_params( t_params)
   {
     m_index_image.resize( t_params.num_vertical_rings);
     for ( auto & v : m_index_image){
@@ -18,6 +18,7 @@ namespace Loam{
     Vector2f min_max_elevation = extimateMinMaxElevation( t_cloud);
     m_min_elevation = min_max_elevation.x();
     m_max_elevation = min_max_elevation.y();
+    m_clustersPtr = std::make_shared<std::vector<cluster>>(std::vector<cluster>());
   }
 
 
@@ -81,9 +82,9 @@ namespace Loam{
     discoverNormalsBoundaryIndexes();
     removePointsWithoutNormal();
     return computePointNormalsDeprecated();
-    
- }
- void SphericalDepthImage::markVerticalPoints(){
+
+  }
+  void SphericalDepthImage::markVerticalPoints(){
 
     for (unsigned int col= 0; col<m_index_image[0].size(); ++col){
       for (int row = m_index_image.size() -1; row >= 0; --row){
@@ -273,7 +274,7 @@ namespace Loam{
           MyMath::directMappingFunc( other_cartesian_coords);
 
         if ( fabs( starting_spherical_coords.z() - other_spherical_coords.z()) >
-           m_params.depth_differential_threshold ){
+            m_params.depth_differential_threshold ){
           hasExpanded= false;
         }
         else{
@@ -317,7 +318,7 @@ namespace Loam{
     for( unsigned int r = old_row_min; r < old_row_max; ++r){
       DataPoint other_point = m_index_image[r][new_col_max];
       if ( other_point.getIndexContainer() != -1){
-   
+
         const Eigen::Vector3f other_cartesian_coords =
           m_cloud[ other_point.getIndexContainer()].coordinates();
         const Eigen::Vector3f other_spherical_coords =
@@ -368,29 +369,29 @@ namespace Loam{
               ){
             switch( direction_counter % 4){
               case(0):
-               topFree =  expandNormalBoundariesUp( curr_point, up_neighboors_count);
-               break;
+                topFree =  expandNormalBoundariesUp( curr_point, up_neighboors_count);
+                break;
               case(1):
-               downFree =  expandNormalBoundariesDown( curr_point, down_neighboors_count);
-               break;
+                downFree =  expandNormalBoundariesDown( curr_point, down_neighboors_count);
+                break;
               case(2):
-               leftFree =  expandNormalBoundariesLeft( curr_point, left_neighboors_count);
-               break;
+                leftFree =  expandNormalBoundariesLeft( curr_point, left_neighboors_count);
+                break;
               case(3):
-               rightFree =  expandNormalBoundariesRight( curr_point, right_neighboors_count);
-               break;
+                rightFree =  expandNormalBoundariesRight( curr_point, right_neighboors_count);
+                break;
             }
             ++direction_counter;
             ++iteration_counter;
             total_neighboors_count = up_neighboors_count + down_neighboors_count+
               left_neighboors_count + right_neighboors_count;
-          
+
           }
           const bool hasExpandedInEveryDirection =
             up_neighboors_count>0 and down_neighboors_count>0 and
             left_neighboors_count>0 and right_neighboors_count>0;
-         const bool hasNormal = (total_neighboors_count >=  m_params.min_neighboors_for_normal);
-           // and hasExpandedInEveryDirection;
+          const bool hasNormal = (total_neighboors_count >=  m_params.min_neighboors_for_normal);
+          // and hasExpandedInEveryDirection;
           curr_point.setHasNormal( hasNormal );
         }
       }
@@ -398,7 +399,7 @@ namespace Loam{
   }
 
   IntegralImage SphericalDepthImage::computePointNormals(){
-    
+
     for (int row =0; row <m_index_image.size() ; ++row){
       for (int col=0; col <m_index_image[0].size(); ++col){
         DataPoint & curr_point = m_index_image[row][col];
@@ -438,7 +439,7 @@ namespace Loam{
   IntegralImage SphericalDepthImage::computePointNormalsDeprecated(){
     IntegralImage integ_img = IntegralImage( m_cloud, m_index_image);
     integ_img.buildIntegMatrix();
-    
+
     for (int row =0; row <m_index_image.size() ; ++row){
       for (int col=0; col <m_index_image[0].size(); ++col){
         DataPoint & curr_point = m_index_image[row][col];
@@ -488,7 +489,7 @@ namespace Loam{
   }
 
   vector< Vector3f>  SphericalDepthImage::fetchPointsInBoundaries(
-          const int t_rowMin,const int t_rowMax,const int t_colMin,const int t_colMax){
+      const int t_rowMin,const int t_rowMax,const int t_colMin,const int t_colMax){
     vector< Vector3f> pointsInside; 
     pointsInside.reserve( m_cloud.size());
     for (int row =t_rowMin; row <= t_rowMax ; ++row){
@@ -504,76 +505,76 @@ namespace Loam{
   }
 
   void SphericalDepthImage::clusterizeCloud( MatchablePtrVecPtr  t_matchablesPtrVecPtr ){
-      m_clusterer = Clusterer(m_cloud, m_index_image, m_params);
-     // cout<< "finding clusters\n";
-      vector<cluster> clusters =  m_clusterer.findClusters();
+    m_clusterer = Clusterer(m_cloud, m_index_image, m_params);
+    // cout<< "finding clusters\n";
+    m_clusterer.findClusters( m_clustersPtr);
     //  cout<< "num clusters:   " << clusters.size() <<"\n";
     //  int cluster_counter = 0;
-      int cont_lines = 0; 
-      int cont_planes= 0; 
+    int cont_lines = 0; 
+    int cont_planes= 0; 
 
 
-      for ( auto &c: clusters){
+    for ( auto &c: *m_clustersPtr){
 
-        Eigen::JacobiSVD<Eigen::Matrix3f> svd(c.sigma, Eigen::ComputeFullU | Eigen::ComputeFullV);
-        //remember (different from the paper) decreasing order for singularvalues (it follows that R is at reverse)
-        Eigen::Matrix3f R = svd.matrixU();
-        Eigen::Vector3f s = svd.singularValues();
-        
-        Eigen::Vector3f s_scaled = Eigen::Vector3f(
-            s.x()/s.x(),
-            s.y()/s.x(),
-            s.z()/s.x());
+      Eigen::JacobiSVD<Eigen::Matrix3f> svd(c.sigma, Eigen::ComputeFullU | Eigen::ComputeFullV);
+      //remember (different from the paper) decreasing order for singularvalues (it follows that R is at reverse)
+      Eigen::Matrix3f R = svd.matrixU();
+      Eigen::Vector3f s = svd.singularValues();
+
+      Eigen::Vector3f s_scaled = Eigen::Vector3f(
+          s.x()/s.x(),
+          s.y()/s.x(),
+          s.z()/s.x());
 
 
-        Eigen::Matrix3f Omega;
-        Omega << s_scaled.x() ,0, 0,
+      Eigen::Matrix3f Omega;
+      Omega << s_scaled.x() ,0, 0,
             0, s_scaled.y(), 0,
             0, 0, s_scaled.z();
 
-        //
-       // cout << "Cluster num "<< cluster_counter<< " eigenvalues : "<< s.x() << ", "<< s.y()<< ", "<< s.z()<< "\n";
-//        cout << "eigenvalues scaled : "<< s_scaled.x() << ", "<< s_scaled.y()<< ", "<< s_scaled.z()<< "\n";
-//        cout << "eigenvectors : "<<R.col(0).transpose()<<", "<< R.col(1).transpose()<<", "<< R.col(2).transpose()<<"\n";
-//        ++cluster_counter;
-        //
-        //
+      //
+      // cout << "Cluster num "<< cluster_counter<< " eigenvalues : "<< s.x() << ", "<< s.y()<< ", "<< s.z()<< "\n";
+      //        cout << "eigenvalues scaled : "<< s_scaled.x() << ", "<< s_scaled.y()<< ", "<< s_scaled.z()<< "\n";
+      //        cout << "eigenvectors : "<<R.col(0).transpose()<<", "<< R.col(1).transpose()<<", "<< R.col(2).transpose()<<"\n";
+      //        ++cluster_counter;
+      //
+      //
 
-        PointNormalColor3fVectorCloud currPoints = fetchPoints( c.indexes);
+      PointNormalColor3fVectorCloud currPoints = fetchPoints( c.indexes);
 
-        LinePtr l( new Line(c.mu, R, Omega));
-        const float eigenval_constr_line  =  l->computeEigenvalueConstraint();
-        const float err_line = l->computeResidualError( currPoints);
+      LinePtr l( new Line(c.mu, R, Omega));
+      const float eigenval_constr_line  =  l->computeEigenvalueConstraint();
+      const float err_line = l->computeResidualError( currPoints);
 
-    //    cout << "p_m value : "<< c.mu.transpose() << " \n";
-    //    cout << "eigenval_constr_line " << eigenval_constr_line << "\n err_line "<< err_line <<"\n";
-        if ( eigenval_constr_line < m_params.epsilon_l and
-            err_line < m_params.epsilon_dl){
-          //cout<< "Is a line !\n";
-          ++cont_lines;
-          t_matchablesPtrVecPtr->push_back( l);
-         // cout<<"Debugging a line :" <<l->get_ClassName()<< "\n";
-        }
-        else{
-    //      cout << "p_m value : "<< c.mu.transpose() << " \n";
-          PlanePtr p( new  Plane( c.mu, R, Omega));
-          const float eigenval_constr_plane =  p->computeEigenvalueConstraint();
-          const float err_plane = p->computeResidualError( currPoints);
-     //     cout << "eigenval_constr_plane " << eigenval_constr_plane<< "\n err_plane"<< err_plane<<"\n";
-          if ( eigenval_constr_plane < m_params.epsilon_p and
-              err_plane< m_params.epsilon_dp){
-            // cout<< "Is a plane !\n";
-            ++cont_planes;
-            t_matchablesPtrVecPtr->push_back( p);
-         //   cout<<"Debugging a plane:" <<p->get_ClassName()<< "\n";
-          }
+      //    cout << "p_m value : "<< c.mu.transpose() << " \n";
+      //    cout << "eigenval_constr_line " << eigenval_constr_line << "\n err_line "<< err_line <<"\n";
+      if ( eigenval_constr_line < m_params.epsilon_l and
+          err_line < m_params.epsilon_dl){
+        //cout<< "Is a line !\n";
+        ++cont_lines;
+        t_matchablesPtrVecPtr->push_back( l);
+        // cout<<"Debugging a line :" <<l->get_ClassName()<< "\n";
+      }
+      else{
+        //      cout << "p_m value : "<< c.mu.transpose() << " \n";
+        PlanePtr p( new  Plane( c.mu, R, Omega));
+        const float eigenval_constr_plane =  p->computeEigenvalueConstraint();
+        const float err_plane = p->computeResidualError( currPoints);
+        //     cout << "eigenval_constr_plane " << eigenval_constr_plane<< "\n err_plane"<< err_plane<<"\n";
+        if ( eigenval_constr_plane < m_params.epsilon_p and
+            err_plane< m_params.epsilon_dp){
+          // cout<< "Is a plane !\n";
+          ++cont_planes;
+          t_matchablesPtrVecPtr->push_back( p);
+          //   cout<<"Debugging a plane:" <<p->get_ClassName()<< "\n";
         }
       }
-      //cout<< " Num of lines : "<< cont_lines <<" , num of planes : "<< cont_planes<< "\n";
+    }
+    //cout<< " Num of lines : "<< cont_lines <<" , num of planes : "<< cont_planes<< "\n";
   }
 
 
-  
+
   vector<int> SphericalDepthImage::mapSphericalCoordsInIndexImage(
       const float t_azimuth, const float t_elevation ){
 
@@ -601,7 +602,7 @@ namespace Loam{
     Vector3f spherical_coords = MyMath::directMappingFunc( t_coords);
     return  mapSphericalCoordsInIndexImage( spherical_coords.x(), spherical_coords.y()); 
   }
- 
+
 
   Vector2f SphericalDepthImage::extimateMinMaxElevation( const PointNormalColor3fVectorCloud & cloud){
     float min_elevation = 0;
@@ -637,12 +638,45 @@ namespace Loam{
     return points;
   }
 
-  
+  PointNormalColor3fVectorCloud SphericalDepthImage::drawClusters3D(){
+
+    PointNormalColor3fVectorCloud clusters_cloud;
+    if ( m_clustersPtr->size()>0){
+
+      clusters_cloud.reserve( m_cloud.size());
+      const int num_colors_clusters = m_clustersPtr->size();
+      int cluster_color_counter = 0;
+      Vector3f currentClusterColor = Vector3f::Zero();
+      for ( auto & c: *m_clustersPtr){
+        PointNormalColor3fVectorCloud  curr_clusterPoints  = fetchPoints(c.indexes);
+        int color_index = cluster_color_counter* 256.f / num_colors_clusters;  
+        currentClusterColor = Vector3f(
+            turbo_srgb_floats[color_index][0],
+            turbo_srgb_floats[color_index][1],
+            turbo_srgb_floats[color_index][2]);
+
+        ++cluster_color_counter;
+
+        for ( auto & p : curr_clusterPoints){
+          p.color() = currentClusterColor;
+        }
+
+        clusters_cloud.insert(
+            clusters_cloud.end(),
+            std::make_move_iterator( curr_clusterPoints.begin()),
+            std::make_move_iterator( curr_clusterPoints.end())
+            );
+      }
+    }
+    return clusters_cloud;
+  }
+
+
   RGBImage SphericalDepthImage::drawIndexImg(){
     RGBImage result_img;
     result_img.create( m_params.num_vertical_rings, m_params.num_points_ring);
     result_img = cv::Vec3b(253, 246, 227);
-    
+
 
     std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >  colors;
     const int num_colors = 100;
@@ -675,7 +709,7 @@ namespace Loam{
           color_index= num_colors;
         }
         result_img.at<cv::Vec3b>( row,col) =
-        cv::Vec3b(colors[color_index].x() ,colors[color_index].y() ,colors[color_index].z());
+          cv::Vec3b(colors[color_index].x() ,colors[color_index].y() ,colors[color_index].z());
       }
     }
     return result_img;
@@ -685,7 +719,7 @@ namespace Loam{
     RGBImage result_img;
     result_img.create( m_params.num_vertical_rings, m_params.num_points_ring);
     result_img = cv::Vec3b(253, 246, 227);
- 
+
     for (unsigned int row =0; row <m_index_image.size() ; ++row){
       for (unsigned int col=0; col <m_index_image[0].size(); ++col){
         DataPoint curr_point =   m_index_image[row][col];
@@ -693,7 +727,7 @@ namespace Loam{
           const  Vector3f normal =  m_cloud[ curr_point.getIndexContainer()].normal() ;
           result_img.at<cv::Vec3b>( row,col) =
             cv::Vec3b( 255.f*normal.x(), 255.f* normal.y(), 255.f* normal.z());
-            //cout << "normal values : "<< avg_normal.x() << " " << avg_normal.y() << " " << avg_normal.z() << " \n";
+          //cout << "normal values : "<< avg_normal.x() << " " << avg_normal.y() << " " << avg_normal.z() << " \n";
         }
         else{
           result_img.at<cv::Vec3b>( row,col) =
@@ -716,7 +750,7 @@ namespace Loam{
     RGBImage result_img;
     result_img.create( m_params.num_vertical_rings, m_params.num_points_ring);
     result_img = cv::Vec3b(253, 246, 227);
- 
+
 
     vector<int> coords = mapCartesianCoordsInIndexImage( t_point.coordinates());
     DataPoint dp = m_index_image[ coords[0]][coords[1]];
@@ -747,63 +781,32 @@ namespace Loam{
     return result_img;
   }
 
-   
-  RGBImage SphericalDepthImage::drawClustersImg(vector<cluster> t_clusters ){
+
+  RGBImage SphericalDepthImage::drawClustersImg(){
     RGBImage result_img;
     result_img.create( m_params.num_vertical_rings, m_params.num_points_ring);
     result_img = cv::Vec3b(253, 246, 227);
-    
-    const int num_colors = t_clusters.size();
-    //std::vector<Vector3f, Eigen::aligned_allocator<Vector3f> >  colors;
-    //colors.resize(num_colors);
-    //for(size_t i=0; i < colors.size(); ++i) {
-   //   colors[i]= Vector3f(
-//          (255.f -255.f* float(i)/num_colors),
-//          (255.f-255.f* float(i)/num_colors),
-//          255.f* float(i)/num_colors
-//          );
-    //}
-    //
-    //find  a way to include turbocolors from an external cpp  or hpp
 
-    float cluster_counter = 0;
+    if( m_clustersPtr->size() > 0){
+      const int num_colors = m_clustersPtr->size();
+      float cluster_counter = 0;
 
-    for( auto & c: t_clusters){
-      //
-      //
-    //  cout << ">>>>>>>>>>>>>>>>>>>>>cluster num "<< cluster_counter<< "\n";
-//      int last_color_index = 0;
-      //
+      for( auto & c: *m_clustersPtr){
 
+        int num_of_indexes = 0;
+        for( auto & index:  c.indexes){
+          ++num_of_indexes;
+          vector<int>  img_coords = mapCartesianCoordsInIndexImage(m_cloud[index].coordinates() );
+          int color_index = cluster_counter* 256.f / num_colors;  
+          result_img.at<cv::Vec3b>( img_coords[0],img_coords[1]) =
+            cv::Vec3b(
+                turbo_srgb_floats[color_index][0]*255.f,
+                turbo_srgb_floats[color_index][1]*255.f,
+                turbo_srgb_floats[color_index][2]*255.f) ;
 
-
-      int num_of_indexes = 0;
-      for( auto & index:  c.indexes){
-        ++num_of_indexes;
-        vector<int>  img_coords = mapCartesianCoordsInIndexImage(m_cloud[index].coordinates() );
-        int color_index = cluster_counter* 256.f / num_colors;  
-        result_img.at<cv::Vec3b>( img_coords[0],img_coords[1]) =
-          cv::Vec3b(
-              turbo_srgb_floats[color_index][0]*255.f,
-              turbo_srgb_floats[color_index][1]*255.f,
-              turbo_srgb_floats[color_index][2]*255.f) ;
-
-        //
- //       last_color_index = color_index;
-        //
-
-   
-       // result_img.at<cv::Vec3b>( img_coords[0],img_coords[1]) =
-        //  cv::Vec3b( colors[cluster_counter].x(),colors[cluster_counter].y(),colors[cluster_counter].z()) ;
+        }
+        ++cluster_counter;
       }
-      ++cluster_counter;
-
-      //
-//      cout << ">>num  of indexes"<< num_of_indexes<< "\n";
-//      cout << ">>color index "<< last_color_index<< "\n";
-//      cout << ">>color "<< turbo_srgb_floats[last_color_index][0] << "\n";
-      //
-
     }
     return result_img;
   }

@@ -32,6 +32,7 @@ namespace Loam{
        float m_min_elevation;
        float m_max_elevation;
        Clusterer m_clusterer;
+       std::shared_ptr<std::vector<cluster>> m_clustersPtr;
      
 
      public:
@@ -94,12 +95,14 @@ namespace Loam{
       static Vector2f extimateMinMaxElevation( const PointNormalColor3fVectorCloud & cloud);
 
 
+      PointNormalColor3fVectorCloud drawClusters3D();
+
       RGBImage drawIndexImg();
       RGBImage drawNormalsImg();
-      RGBImage drawClustersImg(vector<cluster> t_clusters );
-
-
+      RGBImage drawClustersImg();
       vector<RGBImage> drawImgsClusterer();
+
+
 
       RGBImage drawPointNormalBoundaries( const PointNormalColor3f & t_point );
 

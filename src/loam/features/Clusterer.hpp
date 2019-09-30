@@ -88,7 +88,7 @@ namespace Loam{
 
       vector<pathCell> findNeighboors(pathCell & t_pathCell);
       cluster computeCluster(const matrixCoords & t_seed_coords);
-      vector<cluster> findClusters();
+      void findClusters( std::shared_ptr<std::vector<cluster>> t_clusters );
 
       RGBImage drawPathImg();
 

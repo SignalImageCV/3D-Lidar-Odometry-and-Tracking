@@ -82,11 +82,9 @@ namespace Loam{
     }
   }
 
-  vector<cluster> Clusterer::findClusters(){
+  void Clusterer::findClusters( std::shared_ptr<std::vector<cluster>> t_clusters ){
 
     blurNormals();
-    vector<cluster> clusters;
-    //find a good number to preserve space
 
     bool allCellsChosen = false;
     const int max_iterations = m_pathMatrix.size() * m_pathMatrix[0].size();
@@ -100,11 +98,10 @@ namespace Loam{
       else{
         cluster c = computeCluster( coords);
         if ( c.indexes.size() >= m_params.epsilon_c){
-          clusters.push_back( c);
+          t_clusters->push_back( c);
         }
       }
     }
-    return clusters;
   }
 
   matrixCoords Clusterer::findSeed(){

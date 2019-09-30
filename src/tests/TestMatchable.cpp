@@ -3,7 +3,6 @@
 #include "../loam/features/Line.hpp"
 #include "../loam/features/Plane.hpp"
 #include "../loam/MyMath.hpp"
-#include "../loam/Visualizer.hpp"
 
 namespace Loam{
   using namespace testing;
@@ -57,7 +56,7 @@ namespace Loam{
     const Eigen::Vector3f u( 0.,0.,1.);
     const Eigen::Vector3f v( 0.,1.,0.);
     
-    PointNormalColor3fVectorCloud plane_cloud =  Visualizer::createPlane( p, u, v, 10, 8, 1, 1);
+    PointNormalColor3fVectorCloud plane_cloud =  Drawer::createPlane( p, u, v, 10, 8, 1, 1);
     vector<Eigen::Vector3f> points;
     points.reserve( plane_cloud.size());
     for( auto & p: plane_cloud){

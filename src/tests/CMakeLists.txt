@@ -1,5 +1,4 @@
 catkin_add_gtest(test_runner 
-  TestDatasetManager.cpp
   TestSphericalDepthImage.cpp
   TestIntegralImage.cpp
   TestPoint3f.cpp
@@ -161,21 +160,6 @@ add_executable(test_drawNormalOfLine
   TestDrawNormalOfLine.cpp
   )
 target_link_libraries(test_drawNormalOfLine
-  loam_library
-  srrg2_system_utils_library
-  srrg2_qgl_viewport_library
-  ${SRRG_QT_LIBRARIES}
-  ${GLUT_LIBRARIES}
-  ${QGLViewer_LIBRARIES}
-  ${catkin_LIBRARIES}
-  pthread
-  )
-
-
-add_executable(test_WithDifferentDataset
-  TestWithDifferentDataset.cpp
-  )
-target_link_libraries(test_WithDifferentDataset
   loam_library
   srrg2_system_utils_library
   srrg2_qgl_viewport_library
@@ -368,6 +352,22 @@ target_link_libraries(test_drawMatchablesRealData
   ${catkin_LIBRARIES}
   pthread
   )
+
+
+add_executable(test_tuningParamsForMatchables
+  TestTuningParamsForMatchables.cpp
+  )
+target_link_libraries(test_tuningParamsForMatchables
+  loam_library
+  srrg2_system_utils_library
+  srrg2_qgl_viewport_library
+  ${SRRG_QT_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  ${QGLViewer_LIBRARIES}
+  ${catkin_LIBRARIES}
+  pthread
+  )
+
 
 
 

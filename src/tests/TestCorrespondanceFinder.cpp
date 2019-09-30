@@ -2,13 +2,13 @@
 #include <srrg_system_utils/system_utils.h>
 #include <srrg_messages/instances.h>
 #include <srrg_system_utils/shell_colors.h>
-#include <srrg_qgl_viewport/viewer_core_shared_qgl.h>
 #include <srrg_messages/instances.h>
 
 #include "loam/CustomMeasurementAdaptor.hpp"
 #include "loam/instances.h"
 #include "loam/matcher/CorrespondenceFinderMatchablesKDtree.hpp"
 #include "loam/DatasetManager.hpp"
+#include "loam/Visualizer.hpp"
 
 
 using namespace srrg2_core;
@@ -31,6 +31,7 @@ int main( int argc, char** argv){
   loam_registerTypes();
   srrgInit( argc, argv, "hi");
 
+
   DatasetManager dM(  dataset.value());
   BaseSensorMessagePtr cloudPtr_1 = dM.readPointerToMessageFromDataset();
   BaseSensorMessagePtr cloudPtr_2 = dM.readPointerToMessageFromDataset();
@@ -44,11 +45,17 @@ int main( int argc, char** argv){
   measurementAdaptor->setDest( &matchables_1);
   measurementAdaptor->setMeasurement( cloudPtr_1 );
   measurementAdaptor->compute();
+  PointNormalColor3fVectorCloud  features_cloud_1 = measurementAdaptor->drawMatchables();
+  measurementAdaptor->reset();
+
+
+
+
 
   measurementAdaptor->setDest( &matchables_2);
   measurementAdaptor->setMeasurement( cloudPtr_2 );
   measurementAdaptor->compute();
-
+  PointNormalColor3fVectorCloud  features_cloud_2 = measurementAdaptor->drawMatchables();
 
 
   CorrespondenceVector correspondances;
@@ -85,6 +92,23 @@ int main( int argc, char** argv){
     //     std::cout <<"Moving Matchable num :  " << counter << " ||  orign      :  " << m.origin().transpose()<< std::endl;
     //     std::cout <<"Moving Matchable num :  " << counter << " ||  direction  :  " << m.direction().transpose()<< std::endl;
   }
+
+  std::cout <<"features point number 1:  " <<features_cloud_1.size() << "\n";
+  std::cout <<"features point number 2:  " <<features_cloud_2.size() << "\n";
+  const float points_size = 2.0;
+  QApplication qapp(argc, argv);
+  ViewerCoreSharedQGL viewer(argc, argv, &qapp);
+  ViewerCanvasPtr canvas1 = viewer.getCanvas("first_scene");
+  std::thread processing_thread1( Visualizer::visualizeCloud, canvas1, features_cloud_1, points_size);
+
+  ViewerCanvasPtr canvas2 = viewer.getCanvas("second_scene");
+  std::thread processing_thread2( Visualizer::visualizeCloud, canvas2, features_cloud_2, points_size);
+
+  viewer.startViewerServer();
+  processing_thread1.join();
+  processing_thread2.join();
+  
+
   return 0;
 }
 

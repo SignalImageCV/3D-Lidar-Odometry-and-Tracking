@@ -88,11 +88,12 @@ int main( int argc, char** argv){
 
     index_img = sph_Image.drawIndexImg(); 
     normals_img = sph_Image.drawNormalsImg();
+    clusters_img= sph_Image.drawClustersImg();
+
     Clusterer clusterer = Clusterer(sph_Image.getPointCloud(), sph_Image.getIndexImage() , params);
     path_img = clusterer.drawPathImg();
-    vector<cluster> clusters = clusterer.findClusters();
+    clusterer.blurNormals();
     blurred_normals_img = clusterer.drawBlurredNormalsImg();
-    clusters_img= sph_Image.drawClustersImg( clusters);
 
     cv::resize( index_img, index_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);
     cv::resize( normals_img, normals_img_resized, cv::Size( 0,0) , horizontal_scale, vertical_scale);

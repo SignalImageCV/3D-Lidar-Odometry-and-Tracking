@@ -35,8 +35,26 @@ namespace Loam{
     PARAM(PropertyFloat, epsilon_p, "epsilon_p",0.4, nullptr);
     PARAM(PropertyFloat, epsilon_dp, "epsilon_dp",0.5, nullptr);
 
+    std::shared_ptr<SphericalDepthImage> m_sph_ImagePtr;
+
+    MatchablePtrVecPtr m_matchablePtrVecPtr;
+
+
+    CustomMeasurementAdaptor():
+      BaseType(),
+      m_sph_ImagePtr(nullptr),
+      m_matchablePtrVecPtr(std::make_shared< std::vector< MatchablePtr>>())
+    {
+    };
+
+    virtual ~CustomMeasurementAdaptor(){};
+
     void compute() override;
     bool setMeasurement(BaseSensorMessagePtr measurement_) override;
+
+    PointNormalColor3fVectorCloud drawMatchables();
+    PointNormalColor3fVectorCloud drawClusters();
+    void reset() override;
 
     
   };

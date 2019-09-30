@@ -16,6 +16,7 @@ void visualizeSubrutine(ViewerCanvasPtr canvas, const std::string& filename);
 int main( int argc, char** argv){
 
   messages_registerTypes();
+  srrgInit( argc, argv, "hi");
   QApplication qapp(argc, argv);
   ViewerCoreSharedQGL viewer(argc, argv, &qapp);
   ViewerCanvasPtr canvas = viewer.getCanvas("viewer_test");

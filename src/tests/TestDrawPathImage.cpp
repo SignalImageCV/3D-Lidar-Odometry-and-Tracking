@@ -65,7 +65,7 @@ int main( int argc, char** argv){
     index_img = sph_Image.drawIndexImg(); 
     normals_img = sph_Image.drawNormalsImg();
     Clusterer c= Clusterer( sph_Image.getPointCloud(), sph_Image.getIndexImage(), params);
-  path_img = c.drawPathImg();
+    path_img = c.drawPathImg();
 
     cv::imshow("IndexImage",index_img);
     cv::imshow("NormalsImage",normals_img);

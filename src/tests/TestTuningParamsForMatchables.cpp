@@ -4,10 +4,10 @@
 #include <srrg_system_utils/shell_colors.h>
 
 #include "loam/instances.h"
+#include "loam/Visualizer.hpp"
 #include "loam/DatasetManager.hpp"
 #include "loam/Visualizer.hpp"
 #include "loam/features/SphericalDepthImage.hpp"
-#include "loam/CustomMeasurementAdaptor.hpp"
 
 
 
@@ -22,13 +22,18 @@ const char* banner[] = {
 };
 
 
+void processVisualizeRealMatchables(
+    ViewerCanvasPtr canvas_1,
+    ViewerCanvasPtr canvas_2,
+    const  string & filename,
+    const sphericalImage_params t_params);
+
+
 int main( int argc, char** argv){
 
-  loam_registerTypes();
   messages_registerTypes();
+  loam_registerTypes();
   srrgInit( argc, argv, "hi");
-
-
 
   ParseCommandLine cmd_line(argv,banner);
   ArgumentString  dataset (&cmd_line, "d", "dataset", "path to dataset" , "");
@@ -37,9 +42,6 @@ int main( int argc, char** argv){
   ArgumentString  epsilon_p(&cmd_line, "p", "epsilon_p", "parameter that defines epsilon_p" , "");
   ArgumentString  epsilon_dp(&cmd_line, "dp", "epsilon_dp", "parameter that defines epsilon_dp" , "");
   cmd_line.parse();
-
-
-
 
   const sphericalImage_params params(
     64, //num_vertical_rings
@@ -57,38 +59,48 @@ int main( int argc, char** argv){
     std::stof( epsilon_dp.value())//epsilon_dp
   );
 
-  DatasetManager dM(  dataset.value());
-  BaseSensorMessagePtr cloudPtr_1 = dM.readPointerToMessageFromDataset();
-
-
-
-  CustomMatchablefVectorData  matchables_1;
-  CustomMeasurementAdaptorPtr measurementAdaptor =
-    CustomMeasurementAdaptorPtr(new CustomMeasurementAdaptor);
-  measurementAdaptor->setDest( &matchables_1);
-  measurementAdaptor->setMeasurement( cloudPtr_1 );
-  measurementAdaptor->compute();
-  PointNormalColor3fVectorCloud  features_cloud = measurementAdaptor->drawMatchables();
-  PointNormalColor3fVectorCloud  clusters_cloud = measurementAdaptor->drawClusters();
-
-
-  messages_registerTypes();
-  srrgInit( argc, argv, "hi");
-
-  const float points_size = 2.0;
   QApplication qapp(argc, argv);
   ViewerCoreSharedQGL viewer(argc, argv, &qapp);
-
   ViewerCanvasPtr canvas1 = viewer.getCanvas("clusters");
-  std::thread processing_thread1( Visualizer::visualizeCloud, canvas1, clusters_cloud, points_size);
-
   ViewerCanvasPtr canvas2 = viewer.getCanvas("matchables");
-  std::thread processing_thread2( Visualizer::visualizeCloud, canvas2, features_cloud, points_size);
+  std::thread processing_thread1(
+      processVisualizeRealMatchables,
+      canvas1,
+      canvas2,
+      dataset.value(),
+      params
+      );
 
   viewer.startViewerServer();
   processing_thread1.join();
-  processing_thread2.join();
   return 0;
+}
+
+
+void processVisualizeRealMatchables(
+    ViewerCanvasPtr canvas_1,
+    ViewerCanvasPtr canvas_2,
+    const  string & filename,
+    const sphericalImage_params t_params){
+  DatasetManager dM(  filename);
+  BaseSensorMessagePtr cloudPtr;
+  cloudPtr = dM.readPointerToMessageFromDataset();
+  while( ViewerCoreSharedQGL::isRunning() and  cloudPtr){
+
+    CustomMatchablefVectorData  matchables;
+    CustomMeasurementAdaptorPtr measurementAdaptor =
+      CustomMeasurementAdaptorPtr(new CustomMeasurementAdaptor);
+    measurementAdaptor->setDest( &matchables);
+    measurementAdaptor->setMeasurement( cloudPtr );
+    measurementAdaptor->compute();
+    PointNormalColor3fVectorCloud  clusters_cloud = measurementAdaptor->drawClusters();
+    PointNormalColor3fVectorCloud  matchables_cloud= measurementAdaptor->drawMatchables();
+
+    const float points_size = 2.0;
+    Visualizer::visualizeCloud( canvas_1, clusters_cloud, points_size);
+    Visualizer::visualizeCloud( canvas_2, matchables_cloud, points_size);
+    cloudPtr = dM.readPointerToMessageFromDataset();
+  }
 }
 
 
