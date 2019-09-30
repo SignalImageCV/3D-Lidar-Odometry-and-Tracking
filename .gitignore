@@ -1,4 +1,11 @@
 datasets/
 
+
 compile_commands.json
 
+
+*.aux
+*.log
+*.out
+*.toc
+*.pdf
