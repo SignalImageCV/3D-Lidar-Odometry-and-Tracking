@@ -12,6 +12,7 @@ using namespace srrg2_solver;
 namespace Loam{
     class Aligner{
     protected:
+      sphericalImage_params m_params;
       int m_num_iterations_solver;
       bool m_flag_not_started_yet;
       CustomMeasurementAdaptorPtr  m_measurement_adaptor;
@@ -20,7 +21,7 @@ namespace Loam{
       using FactorType          = SE3Matchable2MatchableErrorFactorNoInfo;
       using FactorBaseType      = Factor_<FactorType::VariableType::BaseVariableType>;
 
-      Aligner(const int t_num_iterations_solver = 10);
+      Aligner(const sphericalImage_params & t_params, const int t_num_iterations_solver = 10 );
 
       virtual ~Aligner();
 

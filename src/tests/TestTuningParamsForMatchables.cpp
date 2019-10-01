@@ -10,6 +10,8 @@
 #include "loam/features/SphericalDepthImage.hpp"
 
 
+//good params
+// -vr 64 -hr 768 -et 7 -er 0.15 -dd 2.1 -nn 7 -ec 30 -ed 1.5 -en 0.3  -el 0.03 -edl 0.7 -ep 0.02 -edp 0.2
 
 using namespace srrg2_core;
 using namespace srrg2_core_ros;

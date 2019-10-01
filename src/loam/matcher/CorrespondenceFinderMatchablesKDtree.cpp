@@ -61,13 +61,12 @@ namespace Loam{
     _kd_tree_points.reset(new KdTreeTypePoints(
       points_coordinates, param_max_leaf_range_points.value(), param_min_leaf_points.value()));
 
+
     _kd_tree_lines.reset(new KdTreeTypeLines(
       lines_coordinates, param_max_leaf_range_points.value(), param_min_leaf_points.value()));
 
     _kd_tree_planes.reset(new KdTreeTypePlanes(
       planes_coordinates, param_max_leaf_range_points.value(), param_min_leaf_points.value()));
-
-
 
   }
 
@@ -80,33 +79,48 @@ namespace Loam{
       // ia transform the moving according to estimate
       CustomMatchablef moving_m_transformed = moving_m.transform(_estimate);
 
+
       // ia query the right tree
       switch (moving_m.type()) {
         case MatchableBase::Type::Point: {
-          Correspondence c = _findPointAssociation(k, moving_m, moving_m_transformed);
-          if (c.fixed_idx > 0 && c.moving_idx > 0) {
-            _correspondences->emplace_back(c);
+          try{
+            Correspondence c = _findPointAssociation(k, moving_m, moving_m_transformed);
+            if (c.fixed_idx > 0 && c.moving_idx > 0) {
+              _correspondences->emplace_back(c);
+            }
+            break;
           }
-          break;
+          catch( const std::runtime_error & ){
+             break;
+          }
         }
         case MatchableBase::Type::Line: {
-          Correspondence c = _findLineAssociation(k, moving_m, moving_m_transformed);
-          if (c.fixed_idx > 0 && c.moving_idx > 0) {
-            _correspondences->emplace_back(c);
+          try{
+            Correspondence c = _findLineAssociation(k, moving_m, moving_m_transformed);
+            if (c.fixed_idx > 0 && c.moving_idx > 0) {
+              _correspondences->emplace_back(c);
+            }
+            break;
           }
-          break;
+          catch( const std::runtime_error & ){
+            break;
+          }
         }
         case MatchableBase::Type::Plane: {
-
-          Correspondence c = _findPlaneAssociation(k, moving_m, moving_m_transformed);
-          if (c.fixed_idx > 0 && c.moving_idx > 0) {
-            _correspondences->emplace_back(c);
+          try{
+            Correspondence c = _findPlaneAssociation(k, moving_m, moving_m_transformed);
+            if (c.fixed_idx > 0 && c.moving_idx > 0) {
+              _correspondences->emplace_back(c);
+            }
+            break;
           }
-          break;
+          catch( const std::runtime_error & ){
+            break;
+          }
         }
         default:
-          std::cerr << "CorrespondenceFinderMatchablesKDTree::compute|unknown matchable type [" +
-                         std::to_string((int) moving_m.type()) + "]";
+                                         std::cerr << "CorrespondenceFinderMatchablesKDTree::compute|unknown matchable type [" +
+                                           std::to_string((int) moving_m.type()) + "]";
       }
     }
   }
@@ -195,16 +209,13 @@ namespace Loam{
       responce_matchable.type() == moving_.type() &&
       "CorrespondenceFinderMatchablesKDTree::_findLineAssociation|correspondence types mismatch");
 
-    // ia check appearence of association
-    //const auto descriptor_distance =
-    //  cv::norm(responce_matchable.descriptor(), moving_.descriptor(), cv::NORM_HAMMING);
+   
+    float dist_origin   =  (responce_matchable.origin() - moving_.origin()).norm();
 
-    // ia if appearence is not good return invalid
-    // if (descriptor_distance >= param_max_hamming_distance_lines.value()) {
-    //   ++_stats.non_associated;
-    //  return c;
-    // }
-
+    if (dist_origin > 5) {
+      ++_stats.non_associated;
+      return c;
+    }
     c.fixed_idx  = _index_map_lines[responce_idx];
     c.moving_idx = moving_idx_;
     //c.response   = descriptor_distance;
@@ -221,6 +232,7 @@ namespace Loam{
     CustomMatchablef& moving_transformed_) {
     Correspondence c;
 
+
     KdTreeTypePlanes::VectorTD responce_coords    = KdTreeTypePlanes::VectorTD::Zero();
     KdTreeTypePlanes::VectorTD moving_tree_coords = KdTreeTypePlanes::VectorTD::Zero();
     moving_tree_coords.head<3>() = moving_transformed_.direction() * _plane_direction_tree_weight;
@@ -233,6 +245,7 @@ namespace Loam{
     _kd_tree_planes->findNeighbor(
       responce_coords, responce_idx, moving_tree_coords, param_max_leaf_range_points.value());
 
+    std::cout << " kdtree responce index "<< responce_idx<< "\n";
     // ia if kdtree fails return invalid correspondence
     if (responce_idx < 0) {
       ++_stats.non_associated;
@@ -246,17 +259,23 @@ namespace Loam{
       "CorrespondenceFinderMatchablesKDTree::_findPlaneAssociation|correspondence types mismatch");
 
     // ia check consistency of the association
+    float dist_origin   =  (responce_matchable.origin() - moving_.origin()).norm();
     float dist   = responce_matchable.direction().dot(moving_.direction());
     float dist_d = std::fabs(responce_matchable.direction().dot(responce_matchable.origin()) -
                              (moving_.direction()).dot(moving_.origin()));
-    if (dist < 0.8 || dist_d > 0.1) {
+
+    std::cout << " dist origin plane matcher"<< dist_origin<< "\n";
+    std::cout << " dist plane  matcher"<< dist<< "\n";
+    std::cout << " dist_d plane  matcher"<< dist_d<< "\n";
+
+    if (dist_origin > 8 or  dist < 0.8 or dist_d > 0.4) {
       ++_stats.non_associated;
       return c;
     }
 
     c.fixed_idx  = _index_map_planes[responce_idx];
     c.moving_idx = moving_idx_;
-    c.response   = dist; // ia is this good??
+    c.response   = 0;
 
     ++_stats.associated_planes;
     return c;

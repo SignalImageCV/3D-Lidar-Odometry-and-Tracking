@@ -64,6 +64,7 @@ namespace Loam{
       sphericalImage_params m_params;
       vector<vector< Eigen::Vector3f>>  m_blurredNormalsMatrix;
       vector<vector< pathCell>>  m_pathMatrix;
+      int m_blur_extension;
 
     public:
 

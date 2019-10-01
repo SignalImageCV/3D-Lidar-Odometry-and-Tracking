@@ -6,7 +6,8 @@ using namespace srrg2_solver;
 
 namespace Loam{
 
-  Aligner::Aligner(const int t_num_iterations_solver):
+  Aligner::Aligner(const sphericalImage_params & t_params, const int t_num_iterations_solver ):
+    m_params( t_params),
     m_num_iterations_solver( t_num_iterations_solver),
     m_flag_not_started_yet( true),
     m_measurement_adaptor( CustomMeasurementAdaptorPtr(new CustomMeasurementAdaptor))
@@ -27,10 +28,11 @@ namespace Loam{
       std::cout  << "Number of new matchables empty: ";
       std::cout  << new_matchables.size() <<"\n";
 
-
+      m_measurement_adaptor->setMyParams( m_params);
       m_measurement_adaptor->setDest( &new_matchables);
       m_measurement_adaptor->setMeasurement( t_raw_data);
       m_measurement_adaptor->compute();
+      m_measurement_adaptor->reset();
 
       std::cout  << "Number of this new matchables: ";
       std::cout  << new_matchables.size() <<"\n";

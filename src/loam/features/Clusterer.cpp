@@ -8,7 +8,9 @@ namespace Loam{
          const sphericalImage_params t_params):
     m_cloud(t_cloud),
     m_index_image( t_index_image),
-    m_params(t_params){
+    m_params(t_params),
+    m_blur_extension(3)
+  {
 
     m_pathMatrix = populatePathMatrix(
       t_cloud, t_index_image,t_params);
@@ -53,16 +55,13 @@ namespace Loam{
 
   void Clusterer::blurNormals(){
     
-     
-
-    const int  blur_extension = 4;
     for (int row =0; row < m_pathMatrix.size() ; ++row){
       for (int col=0; col < m_pathMatrix[0].size(); ++col){
         int num_near_normals= 0;
         Eigen::Vector3f cumulative_normal = Eigen::Vector3f::Zero();
        
-        for (int near_row= row - blur_extension; near_row <= row + blur_extension; ++near_row){
-          for (int near_col= col - blur_extension; near_col <= col + blur_extension; ++near_col){
+        for (int near_row= row - m_blur_extension; near_row <= row + m_blur_extension; ++near_row){
+          for (int near_col= col - m_blur_extension; near_col <= col + m_blur_extension; ++near_col){
             if ( near_row >= 0 and near_row < m_params.num_vertical_rings and
               near_col >= 0 and near_col < m_params.num_points_ring){
               if ( m_pathMatrix[near_row][near_col].normal.norm() > 1e-3 ){
