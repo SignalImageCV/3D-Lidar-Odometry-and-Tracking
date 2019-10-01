@@ -245,7 +245,7 @@ namespace Loam{
     _kd_tree_planes->findNeighbor(
       responce_coords, responce_idx, moving_tree_coords, param_max_leaf_range_points.value());
 
-    std::cout << " kdtree responce index "<< responce_idx<< "\n";
+    //std::cout << " kdtree responce index "<< responce_idx<< "\n";
     // ia if kdtree fails return invalid correspondence
     if (responce_idx < 0) {
       ++_stats.non_associated;
@@ -264,9 +264,9 @@ namespace Loam{
     float dist_d = std::fabs(responce_matchable.direction().dot(responce_matchable.origin()) -
                              (moving_.direction()).dot(moving_.origin()));
 
-    std::cout << " dist origin plane matcher"<< dist_origin<< "\n";
-    std::cout << " dist plane  matcher"<< dist<< "\n";
-    std::cout << " dist_d plane  matcher"<< dist_d<< "\n";
+   // std::cout << " dist origin plane matcher"<< dist_origin<< "\n";
+   // std::cout << " dist plane  matcher"<< dist<< "\n";
+   // std::cout << " dist_d plane  matcher"<< dist_d<< "\n";
 
     if (dist_origin > 8 or  dist < 0.8 or dist_d > 0.4) {
       ++_stats.non_associated;

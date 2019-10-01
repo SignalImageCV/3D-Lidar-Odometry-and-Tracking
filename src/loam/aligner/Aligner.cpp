@@ -25,17 +25,12 @@ namespace Loam{
  
       CustomMatchablefVectorData  new_matchables;
 
-      std::cout  << "Number of new matchables empty: ";
-      std::cout  << new_matchables.size() <<"\n";
 
       m_measurement_adaptor->setMyParams( m_params);
       m_measurement_adaptor->setDest( &new_matchables);
       m_measurement_adaptor->setMeasurement( t_raw_data);
       m_measurement_adaptor->compute();
       m_measurement_adaptor->reset();
-
-      std::cout  << "Number of this new matchables: ";
-      std::cout  << new_matchables.size() <<"\n";
 
 
   

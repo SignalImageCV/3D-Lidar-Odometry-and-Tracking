@@ -116,14 +116,14 @@ int main( int argc, char** argv){
   counter= 0;
   for ( auto & m: matchables_1){
     ++counter;
-        std::cout << "Fixed Matchable num  :  " << counter << " ||  orign      :  " << m.origin().transpose()<< std::endl;
-        std::cout << "Fixed Matchable num  :  " << counter << " ||  direction  :  " << m.direction().transpose()<< std::endl;
+//        std::cout << "Fixed Matchable num  :  " << counter << " ||  orign      :  " << m.origin().transpose()<< std::endl;
+//        std::cout << "Fixed Matchable num  :  " << counter << " ||  direction  :  " << m.direction().transpose()<< std::endl;
   }
   counter= 0;
   for ( auto & m: matchables_2){
     ++counter;
-         std::cout <<"Moving Matchable num :  " << counter << " ||  orign      :  " << m.origin().transpose()<< std::endl;
-         std::cout <<"Moving Matchable num :  " << counter << " ||  direction  :  " << m.direction().transpose()<< std::endl;
+//         std::cout <<"Moving Matchable num :  " << counter << " ||  orign      :  " << m.origin().transpose()<< std::endl;
+//         std::cout <<"Moving Matchable num :  " << counter << " ||  direction  :  " << m.direction().transpose()<< std::endl;
   }
 
   std::cout <<"features point number 1:  " <<features_cloud_1.size() << "\n";
