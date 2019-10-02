@@ -29,6 +29,8 @@ namespace Loam{
           BaseSensorMessagePtr t_raw_data,
           const  Isometry3f & t_initial_guess =Isometry3f::Identity()
           );
+
+      void fillClustersPoints( std::shared_ptr<PointNormalColor3fVectorCloud> clusterPointsPtr);
   };
 }
 

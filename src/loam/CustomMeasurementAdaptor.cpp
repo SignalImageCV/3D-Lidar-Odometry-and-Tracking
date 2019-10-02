@@ -136,7 +136,6 @@ namespace Loam{
 
    void CustomMeasurementAdaptor::reset(){
     BaseType::reset();
-    m_sph_ImagePtr = nullptr;
     m_matchablePtrVecPtr = std::make_shared< std::vector< MatchablePtr>>();
    };
 }

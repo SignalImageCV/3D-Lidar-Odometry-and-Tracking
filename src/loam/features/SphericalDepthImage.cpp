@@ -639,7 +639,6 @@ namespace Loam{
   }
 
   PointNormalColor3fVectorCloud SphericalDepthImage::drawClusters3D(){
-
     PointNormalColor3fVectorCloud clusters_cloud;
     if ( m_clustersPtr->size()>0){
 
@@ -671,6 +670,16 @@ namespace Loam{
     return clusters_cloud;
   }
 
+
+  void SphericalDepthImage::fillWithClusters3D(std::shared_ptr<PointNormalColor3fVectorCloud> clusterPointsPtr){
+    PointNormalColor3fVectorCloud drawingPoints = drawClusters3D();
+
+      clusterPointsPtr->insert(
+        clusterPointsPtr->end(),
+        std::make_move_iterator( drawingPoints.begin()),
+        std::make_move_iterator( drawingPoints.end())
+        );
+  }
 
   RGBImage SphericalDepthImage::drawIndexImg(){
     RGBImage result_img;

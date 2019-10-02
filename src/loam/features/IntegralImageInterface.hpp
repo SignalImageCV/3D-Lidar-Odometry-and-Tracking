@@ -1,8 +1,8 @@
 #pragma once
 #include <srrg_messages/instances.h>
-#include "../MyMath.hpp"
-#include "../features/IntegralCell.hpp"
-#include "../features/DataPoint.hpp"
+#include "loam/MyMath.hpp"
+#include "loam/features/IntegralCell.hpp"
+#include "loam/features/DataPoint.hpp"
 
 
 

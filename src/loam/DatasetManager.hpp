@@ -16,7 +16,8 @@ namespace Loam {
     int m_current_index;
 
   public:
-    DatasetManager( string filename);
+    DatasetManager(const  string & filename);
+    virtual ~DatasetManager();
 
     PointNormalColor3fVectorCloud  readMessageFromDataset();
 

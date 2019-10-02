@@ -2,11 +2,13 @@
 
 namespace Loam {
 
-  DatasetManager::DatasetManager(string filename):m_current_index(0){
+  DatasetManager::DatasetManager(const string & filename):m_current_index(0){
     messages_registerTypes();
     m_source.param_topics.value().push_back("/kitti/velo/pointcloud");
     m_source.open(filename);
   };
+
+  DatasetManager::~DatasetManager(){};
 
 
   PointNormalColor3fVectorCloud  DatasetManager::readMessageFromDataset(){

@@ -42,6 +42,10 @@ add_library( loam_library SHARED
   matcher/CorrespondenceFinderMatchablesKDtree.hpp
   aligner/Aligner.cpp
   aligner/Aligner.hpp
+  tracker/Tracker.cpp
+  tracker/Tracker.hpp
+  tracker/Map.cpp
+  tracker/Map.hpp
  )
 
 target_link_libraries(loam_library
