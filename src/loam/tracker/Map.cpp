@@ -2,8 +2,10 @@
 
 namespace Loam{
 
-  Map::Map(){
-      m_worldPointsPtr= std::make_shared<PointNormalColor3fVectorCloud>();
+  Map::Map():
+    m_max_numPoints( 200000),
+    m_worldPointsPtr(std::make_shared<PointNormalColor3fVectorCloud>())
+  {
   };
 
   Map::~Map(){};
@@ -17,5 +19,13 @@ namespace Loam{
       std::make_move_iterator( t_current_points.begin()),
       std::make_move_iterator( t_current_points.end())
     );
+
+    if ( m_worldPointsPtr->size() >  m_max_numPoints){
+      int num_points_toRemove = m_worldPointsPtr->size() -  m_max_numPoints;
+      m_worldPointsPtr->erase(
+          m_worldPointsPtr->begin(),
+          m_worldPointsPtr->begin()+ num_points_toRemove);
+
+    }
   }
 }

@@ -1,6 +1,8 @@
 #include <srrg_system_utils/parse_command_line.h>
 #include <srrg_system_utils/system_utils.h>
 #include <srrg_messages/instances.h>
+#include <srrg_qgl_viewport/viewer_core_shared_qgl.h>
+#include <srrg_pcl/point_unprojector_types.h>
 
 #include "loam/tracker/Tracker.hpp"
 
@@ -8,12 +10,21 @@
 using namespace srrg2_core;
 using namespace srrg2_core_ros;
 using namespace Loam;
+using namespace srrg2_qgl_viewport;
+
 
 
 const char* banner[] = {
     "dynamic executor",
       0
 };
+
+void processVisualizeTraking(
+    ViewerCanvasPtr canvas_1,
+    ViewerCanvasPtr canvas_2,
+    const  string & filename,
+    const sphericalImage_params t_params);
+
 
 
 int main( int argc, char** argv){
@@ -53,25 +64,76 @@ int main( int argc, char** argv){
 
 
   messages_registerTypes();
-  point_cloud_registerTypes();
   SE3_registerTypes();
   loam_registerTypes();
-
   srrgInit( argc, argv, "hi");
 
-  Tracker tracker( dataset.value(), params);
+  QApplication qapp(argc, argv);
+  ViewerCoreSharedQGL viewer(argc, argv, &qapp);
+  ViewerCanvasPtr canvas1 = viewer.getCanvas("globalMap");
+  ViewerCanvasPtr canvas2 = viewer.getCanvas("currentClusters");
+  std::thread processing_thread1(
+      processVisualizeTraking,
+      canvas1,
+      canvas2,
+      dataset.value(),
+      params
+      );
 
+  viewer.startViewerServer();
+  processing_thread1.join();
+  return 0;
+ 
+}
+
+void processVisualizeTraking(
+    ViewerCanvasPtr canvas_1,
+    ViewerCanvasPtr canvas_2,
+    const  string & filename,
+    const sphericalImage_params t_params){
+
+  PointNormalColor3f origin;
+  origin.coordinates() = Vector3f(0.,0.,0.);
+  PointNormalColor3fVectorCloud  robotWorldPoints = PointNormalColor3fVectorCloud();
+
+
+  Tracker tracker( filename, t_params);
+
+  float points_size = 3.0;
   int counter = 0;
   while( counter < 100){
     tracker.executeCycle();
     ++counter;
     std::cout<< "Isometry solution: \n";
     std::cout << FG_GREEN(tracker.getRelativeT().matrix()) << std::endl;
+
+    PointNormalColor3fVectorCloud robot_world_position_vec;
+    robot_world_position_vec.push_back( origin);
+    const Isometry3f  world_T= tracker.getAbsoluteT();
+
+    robot_world_position_vec.transformInPlace(world_T);
+    for ( auto & p : robot_world_position_vec){
+      robotWorldPoints.push_back( p);
+    }
+
+
+    canvas_1->pushPointSize();
+    canvas_1->setPointSize(points_size);
+    canvas_1->putPoints( tracker.getWorldPoints() );
+    canvas_1->popAttribute();
+    canvas_1->pushPointSize();
+    canvas_1->setPointSize(points_size*3);
+    canvas_1->putPoints( robotWorldPoints );
+    canvas_1->popAttribute();
+    canvas_1->flush();
+ 
+    canvas_2->pushPointSize();
+    canvas_2->setPointSize( points_size );
+    canvas_2->putPoints(*tracker.m_current_clusterPointsPtr);
+    canvas_1->popAttribute();
+    canvas_2->flush();
   }
 
-
-
-  return 0;
 }
 
 

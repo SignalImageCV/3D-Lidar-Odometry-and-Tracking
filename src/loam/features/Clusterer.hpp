@@ -65,6 +65,8 @@ namespace Loam{
       vector<vector< Eigen::Vector3f>>  m_blurredNormalsMatrix;
       vector<vector< pathCell>>  m_pathMatrix;
       int m_blur_extension;
+      int m_neigh_ext_vertical;
+      int m_neigh_ext_horizontal;
 
     public:
 

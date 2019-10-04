@@ -12,7 +12,6 @@
 
 //good params
 // -vr 64 -hr 768 -et 7 -er 0.15 -dd 2.1 -nn 7 -ec 30 -ed 1.5 -en 0.3  -el 0.03 -edl 0.7 -ep 0.02 -edp 0.2
-
 using namespace srrg2_core;
 using namespace srrg2_core_ros;
 using namespace srrg2_qgl_viewport;
@@ -22,7 +21,6 @@ const char* banner[] = {
     "dynamic executor",
       0
 };
-
 
 void processVisualizeRealMatchables(
     ViewerCanvasPtr canvas_1,
@@ -47,7 +45,7 @@ int main( int argc, char** argv){
   ArgumentString  depth_differential_threshold(&cmd_line, "dd", "depth_differential_threshold", "max difference between depths in near points to be considered valid points" , "");
   ArgumentString  min_neighboors_for_normal(&cmd_line, "nn", "min_neighboors_for_normal", "min num of points to use to compute the normals" , "");
   ArgumentString  epsilon_c(&cmd_line, "ec", "epsilon_c", "min num of points that forma a cluster" , "");
-  ArgumentString  epsilon_d(&cmd_line, "ed", "epsilon_d", "min cartesian distance between points of the same cluster" , ""); //currently unused
+  ArgumentString  epsilon_d(&cmd_line, "ed", "epsilon_d", "min depth difference between points of the same cluster" , ""); //currently unused
   ArgumentString  epsilon_n(&cmd_line, "en", "epsilon_n", "min distance between directions of normals of points in the same cluster" , "");
   ArgumentString  epsilon_l(&cmd_line, "el", "epsilon_l", "min number that descibes the eigenvalue constraint of a line" , "");
   ArgumentString  epsilon_dl(&cmd_line,"edl", "epsilon_dl", "min number of the cumulative cartesian error of the matchable fitted to a line" , "");
@@ -98,7 +96,9 @@ void processVisualizeRealMatchables(
   BaseSensorMessagePtr cloudPtr;
   cloudPtr = dM.readPointerToMessageFromDataset();
 
-  const float points_size = 2.0;
+  int counter = 0;
+
+  const float points_size = 3.5;
   while( ViewerCoreSharedQGL::isRunning() and  cloudPtr){
 
     CustomMatchablefVectorData  matchables;
@@ -121,6 +121,9 @@ void processVisualizeRealMatchables(
     canvas_2->setPointSize(points_size);
     canvas_2->putPoints( matchables_cloud);
     canvas_2->flush();
+
+    ++counter;
+    std::cout<< "Iteration number : "<<counter<<"\n";
  
     cloudPtr = dM.readPointerToMessageFromDataset();
   }

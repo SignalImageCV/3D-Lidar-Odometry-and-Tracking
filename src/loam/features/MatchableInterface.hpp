@@ -11,6 +11,30 @@ using namespace srrg2_core;
 
 
 namespace Loam{
+
+  typedef struct eigenvaluesBasedStats_tag{
+    float linearity;
+    float planarity;
+    float scattering;
+    float omnivariance;
+    float anisotropy;
+    float eigenentropy;
+    float sumOfEigenvalues;
+    float changeOfCurvature;
+    eigenvaluesBasedStats_tag():
+      linearity(0.),
+      planarity(0.),
+      scattering(0.),
+      omnivariance(0.),
+      anisotropy(0.),
+      eigenentropy(0.),
+      sumOfEigenvalues(0.),
+      changeOfCurvature(0.)
+    {}
+  }eigenvaluesBasedStats;
+
+
+
   class MatchableInterface{
     protected:
       Eigen::Vector3f p_m;
@@ -19,6 +43,7 @@ namespace Loam{
 
     public:
 
+      eigenvaluesBasedStats stats;
       MatchableInterface(
           const Eigen::Vector3f & p_m,
           const Eigen::Matrix3f & R_m,

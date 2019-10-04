@@ -9,7 +9,9 @@ namespace Loam{
     m_cloud(t_cloud),
     m_index_image( t_index_image),
     m_params(t_params),
-    m_blur_extension(3)
+    m_blur_extension(2),
+    m_neigh_ext_vertical(6),
+    m_neigh_ext_horizontal(2)
   {
 
     m_pathMatrix = populatePathMatrix(
@@ -128,28 +130,22 @@ namespace Loam{
   }
 
   vector<pathCell> Clusterer::findNeighboors(pathCell & t_pathCell){
-    matrixCoords upLeft( t_pathCell.matCoords.row -1, t_pathCell.matCoords.col -1);
-    matrixCoords up( t_pathCell.matCoords.row -1, t_pathCell.matCoords.col);
-    matrixCoords upRight( t_pathCell.matCoords.row -1, t_pathCell.matCoords.col +1);
-    matrixCoords left( t_pathCell.matCoords.row , t_pathCell.matCoords.col -1);
-    matrixCoords right( t_pathCell.matCoords.row , t_pathCell.matCoords.col +1);
-    matrixCoords downLeft( t_pathCell.matCoords.row +1, t_pathCell.matCoords.col -1);
-    matrixCoords down( t_pathCell.matCoords.row +1, t_pathCell.matCoords.col );
-    matrixCoords downRight( t_pathCell.matCoords.row +1, t_pathCell.matCoords.col +1);
-
-    vector<matrixCoords> coords = {
-      upLeft, up, upRight, left, right, downLeft, down, downRight
-    };
 
     vector<pathCell> cells;
-    cells.reserve( coords.size());
+    cells.reserve( m_neigh_ext_horizontal*m_neigh_ext_vertical);
 
-    for( auto& coord: coords){
-      if ( coord.row >= 0 and coord.row < m_params.num_vertical_rings and
-          coord.col >= 0 and coord.col < m_params.num_points_ring and
-          not m_pathMatrix[coord.row][coord.col].hasBeenChosen and
-          m_pathMatrix[coord.row][coord.col].depth < 1e+4 ){
-        cells.push_back( m_pathMatrix[coord.row][coord.col]);
+    const int curr_row=t_pathCell.matCoords.row;
+    const int curr_col=t_pathCell.matCoords.col;
+
+    for (int neigh_row= curr_row- m_neigh_ext_vertical;neigh_row <= curr_row  + m_neigh_ext_vertical;++neigh_row){
+      for (int neigh_col= curr_col- m_neigh_ext_horizontal; neigh_col<= curr_col+ m_neigh_ext_horizontal; ++neigh_col){
+        if ( neigh_row >= 0 and neigh_row < m_params.num_vertical_rings and
+             neigh_col >= 0 and neigh_col < m_params.num_points_ring and
+             not ( neigh_row == curr_row and neigh_col == curr_col) and
+             not m_pathMatrix[neigh_row][neigh_col].hasBeenChosen and
+             m_pathMatrix[neigh_row][neigh_col].depth < 1e+4 ){
+          cells.push_back( m_pathMatrix[neigh_row][neigh_col]);
+        }
       }
     }
     return cells;
@@ -171,7 +167,8 @@ namespace Loam{
       cellStack.pop();
       for ( auto & otherCell: neighboors){
         const float diff_normal= 1- ( currCell.normal.transpose() * otherCell.normal);
-        if ( diff_normal < m_params.epsilon_n){
+        const float diff_depth =  std::fabs( currCell.depth -  otherCell.depth);
+        if ( diff_normal < m_params.epsilon_n and  diff_depth < m_params.epsilon_d){
             m_pathMatrix[otherCell.matCoords.row][otherCell.matCoords.col].hasBeenChosen = true;
             cellStack.push( otherCell);
         }

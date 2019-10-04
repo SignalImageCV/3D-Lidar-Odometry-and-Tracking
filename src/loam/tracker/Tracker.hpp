@@ -27,11 +27,15 @@ namespace Loam{
       void executeCycle();
 
 
+      inline const  PointNormalColor3fVectorCloud getWorldPoints() const { return  m_map.getWorldPoints(); };
+
+
       inline const Isometry3f & getRelativeT() const { return m_relative_transformation;};
       inline Isometry3f & getRelativeT(){ return m_relative_transformation;};
 
       inline const Isometry3f & getAbsoluteT() const { return m_absolute_transformation;};
       inline Isometry3f & getAbsoluteT(){ return m_absolute_transformation;};
+
   };
 
 }

@@ -40,31 +40,49 @@ namespace Loam{
     m_sph_ImagePtr->clusterizeCloud( m_matchablePtrVecPtr);
 
 
-   // std::cout << " Number of matchables : "<<matchablePtrVecPtr->size() << "\n"; 
+ //   std::cout << " ****************************************************************************** \n"; 
+ //   std::cout << " Number of matchables : "<<m_matchablePtrVecPtr->size() << "\n"; 
+ 
 
-    (*_dest).reserve( m_matchablePtrVecPtr->size() );
+   (*_dest).reserve( m_matchablePtrVecPtr->size() );
     for ( auto  m : *m_matchablePtrVecPtr){
-      string className = m->get_ClassName();
-      Matchablef::Type type;
-      if ( className== "Line" ){
-        type=Matchablef::Type::Line; 
-      }
-      else if( className== "Plane" ){
-        type=Matchablef::Type::Plane; 
-      }
-      else {
-        type=Matchablef::Type::Point; 
-      }
+          string className = m->get_ClassName();
+        Matchablef::Type type;
+        if ( className== "Line" ){
+          type=Matchablef::Type::Line; 
+        }
+        else if( className== "Plane" ){
+          type=Matchablef::Type::Plane; 
+        }
+        else {
+          type=Matchablef::Type::Point; 
+        }
 
-      CustomMatchablef customMatchable(
-          type,
-          m->get_p_m(),
-          m->get_R_m()
-          );
+        CustomMatchablef customMatchable(
+            type,
+            m->get_p_m(),
+            m->get_R_m()
+            );
 
-   //   std::cout << "MyMatchable origin : "<<m->get_p_m().transpose() << "\n"; 
-   //   std::cout << "MyMatchable direction : "<<m->get_R_m().col(0).transpose() << "\n"; 
-      (*_dest).push_back( customMatchable  );
+
+        //    std::cout << "Matchable type : "<<className << " "; 
+        //      std::cout << "origin : "<<m->get_p_m().transpose() << " "; 
+        //      std::cout << "first direction : "<<m->get_R_m().col(0).transpose() << " "; 
+        //      std::cout << "second direction : "<<m->get_R_m().col(1).transpose() << " "; 
+        //      std::cout << "eigenvalues : "<<m->get_Omega_m().diagonal().transpose() << "\n"; 
+        //
+        //      std::cout << "linearity : "<<m->stats.linearity << " "; 
+        //      std::cout << "planarity : "<<m->stats.planarity<< " "; 
+        //      std::cout << "scattering : "<<m->stats.scattering<< " "; 
+        //      std::cout << "omnivariance: "<<m->stats.omnivariance<< " "; 
+        //      std::cout << "anisotropy: "<<m->stats.anisotropy<< " "; 
+        //      std::cout << "eigenentropy: "<<m->stats.eigenentropy<< " "; 
+        //      std::cout << "sumOfEigenvalues: "<<m->stats.sumOfEigenvalues<< " "; 
+        //      std::cout << "changeOfCurvature: "<<m->stats.changeOfCurvature<< "\n"; 
+        //      std::cout << "________________________________________________________________\n"; 
+
+
+        (*_dest).push_back( customMatchable  );
     }
   }
 

@@ -9,6 +9,8 @@ namespace Loam{
   using namespace srrg2_core;
 
   class Map{
+    private:
+      int m_max_numPoints;
     public:
       std::shared_ptr<PointNormalColor3fVectorCloud> m_worldPointsPtr;
       Map();

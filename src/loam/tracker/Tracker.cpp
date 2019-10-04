@@ -25,7 +25,9 @@ namespace Loam{
 
       m_aligner.fillClustersPoints(m_current_clusterPointsPtr);
 
-      m_map.insertPoints( *m_current_clusterPointsPtr, m_absolute_transformation);
+      PointNormalColor3fVectorCloud current_clusterPoints_copy= *m_current_clusterPointsPtr;
+
+      m_map.insertPoints(current_clusterPoints_copy , m_absolute_transformation);
     }
   };
 

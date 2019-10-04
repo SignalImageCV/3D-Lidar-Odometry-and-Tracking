@@ -81,7 +81,8 @@ namespace Loam{
   IntegralImage SphericalDepthImage::collectNormals(){
     discoverNormalsBoundaryIndexes();
     removePointsWithoutNormal();
-    return computePointNormalsDeprecated();
+    //return computePointNormalsDeprecated();
+    return computePointNormals();
 
   }
   void SphericalDepthImage::markVerticalPoints(){
@@ -359,7 +360,7 @@ namespace Loam{
           bool downFree = true;
           bool leftFree = true;
           bool rightFree = true;
-          int direction_counter = 0;
+//          int direction_counter = 0;
           int iteration_counter= 0;
           const int iteration_limit = m_params.min_neighboors_for_normal*4;
           while (
@@ -367,21 +368,35 @@ namespace Loam{
               (topFree or downFree or leftFree or rightFree) and
               iteration_counter < iteration_limit
               ){
-            switch( direction_counter % 4){
-              case(0):
+            if (topFree){
                 topFree =  expandNormalBoundariesUp( curr_point, up_neighboors_count);
-                break;
-              case(1):
-                downFree =  expandNormalBoundariesDown( curr_point, down_neighboors_count);
-                break;
-              case(2):
-                leftFree =  expandNormalBoundariesLeft( curr_point, left_neighboors_count);
-                break;
-              case(3):
-                rightFree =  expandNormalBoundariesRight( curr_point, right_neighboors_count);
-                break;
             }
-            ++direction_counter;
+            if (downFree){
+                downFree =  expandNormalBoundariesDown( curr_point, down_neighboors_count);
+            }
+            if (leftFree){
+                leftFree =  expandNormalBoundariesLeft( curr_point, left_neighboors_count);
+            }
+            if (rightFree){
+                rightFree =  expandNormalBoundariesRight( curr_point, right_neighboors_count);
+            }
+
+            //Try to expand in every direction at once 
+//            switch( direction_counter % 4){
+//              case(0):
+//                topFree =  expandNormalBoundariesUp( curr_point, up_neighboors_count);
+//                break;
+//              case(1):
+//                downFree =  expandNormalBoundariesDown( curr_point, down_neighboors_count);
+//                break;
+//              case(2):
+//                leftFree =  expandNormalBoundariesLeft( curr_point, left_neighboors_count);
+//                break;
+//              case(3):
+//                rightFree =  expandNormalBoundariesRight( curr_point, right_neighboors_count);
+//                break;
+//            }
+//            ++direction_counter;
             ++iteration_counter;
             total_neighboors_count = up_neighboors_count + down_neighboors_count+
               left_neighboors_count + right_neighboors_count;
@@ -390,8 +405,8 @@ namespace Loam{
           const bool hasExpandedInEveryDirection =
             up_neighboors_count>0 and down_neighboors_count>0 and
             left_neighboors_count>0 and right_neighboors_count>0;
-          const bool hasNormal = (total_neighboors_count >=  m_params.min_neighboors_for_normal);
-          // and hasExpandedInEveryDirection;
+          const bool hasNormal = (total_neighboors_count >=  m_params.min_neighboors_for_normal)
+            and hasExpandedInEveryDirection;
           curr_point.setHasNormal( hasNormal );
         }
       }
@@ -518,14 +533,16 @@ namespace Loam{
 
       Eigen::JacobiSVD<Eigen::Matrix3f> svd(c.sigma, Eigen::ComputeFullU | Eigen::ComputeFullV);
       //remember (different from the paper) decreasing order for singularvalues (it follows that R is at reverse)
+      //here x > y > z        1^ > 2^ > 3^
       Eigen::Matrix3f R = svd.matrixU();
       Eigen::Vector3f s = svd.singularValues();
 
-      Eigen::Vector3f s_scaled = Eigen::Vector3f(
-          s.x()/s.x(),
-          s.y()/s.x(),
-          s.z()/s.x());
 
+
+      Eigen::Vector3f s_scaled = Eigen::Vector3f(
+          s.x()/ (s.x()+s.y()+s.z()),
+          s.y()/ (s.x()+s.y()+s.z()),
+          s.z()/ (s.x()+s.y()+s.z()));
 
       Eigen::Matrix3f Omega;
       Omega << s_scaled.x() ,0, 0,
@@ -539,17 +556,23 @@ namespace Loam{
       //        ++cluster_counter;
       //
       //
-
+      float threshold_change_of_curvature = 0.01;
+      float threshold_scattering = 0.01;
+      
       PointNormalColor3fVectorCloud currPoints = fetchPoints( c.indexes);
 
       LinePtr l( new Line(c.mu, R, Omega));
       const float eigenval_constr_line  =  l->computeEigenvalueConstraint();
       const float err_line = l->computeResidualError( currPoints);
 
+
       //    cout << "p_m value : "<< c.mu.transpose() << " \n";
       //    cout << "eigenval_constr_line " << eigenval_constr_line << "\n err_line "<< err_line <<"\n";
       if ( eigenval_constr_line < m_params.epsilon_l and
-          err_line < m_params.epsilon_dl){
+          err_line < m_params.epsilon_dl and 
+          l->stats.scattering < threshold_scattering and
+          l->stats.changeOfCurvature < threshold_change_of_curvature
+          ){
         //cout<< "Is a line !\n";
         ++cont_lines;
         t_matchablesPtrVecPtr->push_back( l);
@@ -562,7 +585,10 @@ namespace Loam{
         const float err_plane = p->computeResidualError( currPoints);
         //     cout << "eigenval_constr_plane " << eigenval_constr_plane<< "\n err_plane"<< err_plane<<"\n";
         if ( eigenval_constr_plane < m_params.epsilon_p and
-            err_plane< m_params.epsilon_dp){
+            err_plane< m_params.epsilon_dp and 
+            p->stats.scattering < threshold_scattering and
+            p->stats.changeOfCurvature < threshold_change_of_curvature
+            ){
           // cout<< "Is a plane !\n";
           ++cont_planes;
           t_matchablesPtrVecPtr->push_back( p);
