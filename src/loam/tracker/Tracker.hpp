@@ -26,6 +26,7 @@ namespace Loam{
 
       void executeCycle();
 
+      inline void jumpDataEntry(){ m_datasetManager.readPointerToMessageFromDataset();};
 
       inline const  PointNormalColor3fVectorCloud getWorldPoints() const { return  m_map.getWorldPoints(); };
 

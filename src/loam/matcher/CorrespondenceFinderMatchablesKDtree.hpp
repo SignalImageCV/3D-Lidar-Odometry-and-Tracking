@@ -37,7 +37,7 @@ namespace Loam{
     PARAM(srrg2_core::PropertyFloat,
           max_leaf_range_points,
           "maximum leaf range in meters for the KDTree [points association]",
-          1.,
+          10.,
           0);
     PARAM(srrg2_core::PropertyUnsignedInt,
           max_hamming_distance_points,

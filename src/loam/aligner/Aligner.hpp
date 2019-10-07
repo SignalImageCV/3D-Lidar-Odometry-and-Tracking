@@ -5,7 +5,8 @@
 
 #include "loam/instances.h"
 #include "loam/CustomMeasurementAdaptor.hpp"
-#include "loam/matcher/CorrespondenceFinderMatchablesKDtree.hpp"
+//#include "loam/matcher/CorrespondenceFinderMatchablesKDtree.hpp"
+#include "loam/matcher/CorrespondenceFinderMatchablesBruteForce.hpp"
 
 
 using namespace srrg2_solver;

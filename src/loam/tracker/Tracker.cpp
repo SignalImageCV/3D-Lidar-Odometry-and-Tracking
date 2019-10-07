@@ -17,9 +17,12 @@ namespace Loam{
     BaseSensorMessagePtr cloudPtr = m_datasetManager.readPointerToMessageFromDataset();
 
     if( cloudPtr ) {
-      m_relative_transformation =   m_aligner.compute(cloudPtr, m_relative_transformation);
 
-      m_absolute_transformation = m_absolute_transformation * m_relative_transformation;
+      //Isometry3f identity = Isometry3f::Identity();
+
+      m_relative_transformation =   m_aligner.compute(cloudPtr,m_relative_transformation);
+
+      m_absolute_transformation = m_absolute_transformation * m_relative_transformation.inverse();
 
       m_current_clusterPointsPtr = std::make_shared<PointNormalColor3fVectorCloud>();
 

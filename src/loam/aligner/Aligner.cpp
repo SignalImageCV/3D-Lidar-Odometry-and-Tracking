@@ -37,8 +37,12 @@ namespace Loam{
     if (not m_flag_not_started_yet){
       CorrespondenceVector correspondances;
 
+ //   CorrespondenceFinderMatchablesBruteForcePtr correspondenceFinder =
+  //   CorrespondenceFinderMatchablesBruteForcePtr( new CorrespondenceFinderMatchablesBruteForce);
+
+
       CorrespondenceFinderMatchablesKDTreePtr correspondenceFinder =
-        CorrespondenceFinderMatchablesKDTreePtr( new CorrespondenceFinderMatchablesKDTree);
+       CorrespondenceFinderMatchablesKDTreePtr( new CorrespondenceFinderMatchablesKDTree);
 
 
       correspondenceFinder->setCorrespondences( &correspondances);
@@ -48,47 +52,53 @@ namespace Loam{
       correspondenceFinder->reset();
       correspondenceFinder->compute();
 
-      std::cout  << "Number of old matchables: ";
-      std::cout  << m_previous_matchables.size() <<"\n";
+//      std::cout  << "Number of old matchables: ";
+//      std::cout  << m_previous_matchables.size() <<"\n";
+//
+//      std::cout  << "Number of new matchables: ";
+//      std::cout  << new_matchables.size() <<"\n";
+//
+//      std::cout  << "Number of correspondences : ";
+//      std::cout  << correspondances.size() <<"\n";
 
-      std::cout  << "Number of new matchables: ";
-      std::cout  << new_matchables.size() <<"\n";
+      const int min_num_matchables =5;
 
-      std::cout  << "Number of correspondences : ";
-      std::cout  << correspondances.size() <<"\n";
+      if ( correspondances.size() > min_num_matchables){
+
+        std::vector<FactorBaseType*> factors;
+        factors.reserve(correspondances.size());
+
+        for ( auto & c : correspondances){
+          FactorType* factor = new FactorType();
+          factor->bindFixed(&m_previous_matchables[c.fixed_idx]);
+          factor->bindMoving(&new_matchables[c.moving_idx]);
+          factors.emplace_back(factor);
+        }
+
+        SolverDefault_<VariableSE3EulerLeftAD> solver;
+        solver.param_max_iterations.pushBack(m_num_iterations_solver);
+        solver.param_termination_criteria.setValue(nullptr);
+        solver.clearFactorIterators(); // ia JIC
+        solver.addFactorContainer(factors);
+        solver.setEstimate(t_initial_guess);
+        solver.compute();
+
+        //potential memory leak, ask if possible to use smart pointers instead of raw ones
+        for (size_t i = 0; i < factors.size(); ++i) {
+          delete factors[i];
+        }
 
 
+        auto estimated_T = solver.estimate();
 
+        m_previous_matchables = new_matchables;
 
-      std::vector<FactorBaseType*> factors;
-      factors.reserve(correspondances.size());
-
-      for ( auto & c : correspondances){
-        FactorType* factor = new FactorType();
-        factor->bindFixed(&m_previous_matchables[c.fixed_idx]);
-        factor->bindMoving(&new_matchables[c.moving_idx]);
-        factors.emplace_back(factor);
+        return  estimated_T;
       }
-
-      SolverDefault_<VariableSE3EulerLeftAD> solver;
-      solver.param_max_iterations.pushBack(m_num_iterations_solver);
-      solver.param_termination_criteria.setValue(nullptr);
-      solver.clearFactorIterators(); // ia JIC
-      solver.addFactorContainer(factors);
-      solver.setEstimate(t_initial_guess);
-      solver.compute();
-
-      //potential memory leak, ask if possible to use smart pointers instead of raw ones
-      for (size_t i = 0; i < factors.size(); ++i) {
-        delete factors[i];
+      else{
+        m_previous_matchables = new_matchables;
+        return Isometry3f::Identity();
       }
-
-
-      auto estimated_T = solver.estimate();
-
-      m_previous_matchables = new_matchables;
-
-      return  estimated_T;
 
     }
     else{

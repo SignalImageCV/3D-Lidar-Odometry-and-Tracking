@@ -27,6 +27,7 @@ namespace Loam{
     // ia populate
     for (size_t k = 0; k < _fixed->size(); ++k) {
       const CustomMatchablef & m = _fixed->at(k);
+      const Vector3f origin_normalized = m.origin().normalized();
       switch (m.type()) {
         case MatchableBase::Type::Point: {
           points_coordinates.emplace_back(m.origin());
@@ -36,7 +37,8 @@ namespace Loam{
 
         case MatchableBase::Type::Line: {
           KdTreeTypeLines::VectorTD coords = KdTreeTypeLines::VectorTD::Zero();
-          coords.head<3>()                 = (m.direction()).cross(m.origin());
+         // coords.head<3>()                 = (m.direction()).cross(m.origin());
+          coords.head<3>()                 = (m.direction()).cross(origin_normalized);
           coords.tail<3>()                 = m.direction() * _line_direction_tree_weight;
           lines_coordinates.emplace_back(coords);
           _index_map_lines.emplace_back(k);
@@ -46,7 +48,8 @@ namespace Loam{
         case MatchableBase::Type::Plane: {
           KdTreeTypePlanes::VectorTD coords = KdTreeTypePlanes::VectorTD::Zero();
           coords.head<3>()                  = m.direction() * _plane_direction_tree_weight;
-          coords(3)                         = m.direction().dot(m.origin());
+          //coords(3)                         = m.direction().dot(m.origin());
+          coords(3)                         = m.direction().dot(origin_normalized);
           planes_coordinates.emplace_back(coords);
           _index_map_planes.emplace_back(k);
           break;
@@ -186,10 +189,12 @@ namespace Loam{
     KdTreeTypeLines::VectorTD responce_coords = KdTreeTypeLines::VectorTD::Zero();
     int responce_idx                          = -1;
 
+    const Vector3f moving_origin_normalized = moving_transformed_.origin().normalized();
     // ia transform the moved matchable into tree compliant coords
     KdTreeTypeLines::VectorTD moving_tree_coords = KdTreeTypeLines::VectorTD::Zero();
     moving_tree_coords.head<3>() =
-      (moving_transformed_.direction()).cross(moving_transformed_.origin());
+      (moving_transformed_.direction()).cross(moving_origin_normalized);
+     // (moving_transformed_.direction()).cross(moving_transformed_.origin());
     moving_tree_coords.tail<3>() = moving_transformed_.direction() * _line_direction_tree_weight;
 
     // ia query the tree
@@ -197,6 +202,8 @@ namespace Loam{
     _kd_tree_lines->findNeighbor(
       responce_coords, responce_idx, moving_tree_coords, param_max_leaf_range_points.value());
 
+
+//  std::cout << " line kdtree responce index "<< responce_idx<< "\n";
     // ia if kdtree fails return invalid correspondence
     if (responce_idx < 0) {
       ++_stats.non_associated;
@@ -209,11 +216,13 @@ namespace Loam{
       responce_matchable.type() == moving_.type() &&
       "CorrespondenceFinderMatchablesKDTree::_findLineAssociation|correspondence types mismatch");
 
-   
+
     float dist_origin   =  (responce_matchable.origin() - moving_.origin()).norm();
 
-    if (dist_origin > 5) {
+//    std::cout << " dist origin line matcher    "<< dist_origin<< "\n";
+    if (dist_origin > 4.) {
       ++_stats.non_associated;
+//      std::cout << "DISCARDED >>>>>>>>>>>>>>>>>>>>>>>>>>>>> \n";
       return c;
     }
     c.fixed_idx  = _index_map_lines[responce_idx];
@@ -233,10 +242,13 @@ namespace Loam{
     Correspondence c;
 
 
+    const Vector3f moving_origin_normalized = moving_transformed_.origin().normalized();
+
     KdTreeTypePlanes::VectorTD responce_coords    = KdTreeTypePlanes::VectorTD::Zero();
     KdTreeTypePlanes::VectorTD moving_tree_coords = KdTreeTypePlanes::VectorTD::Zero();
     moving_tree_coords.head<3>() = moving_transformed_.direction() * _plane_direction_tree_weight;
-    moving_tree_coords(3) = moving_transformed_.direction().dot(moving_transformed_.origin());
+    moving_tree_coords(3) = moving_transformed_.direction().dot(moving_origin_normalized);
+    //moving_tree_coords(3) = moving_transformed_.direction().dot(moving_transformed_.origin());
 
     int responce_idx = -1;
 
@@ -245,7 +257,7 @@ namespace Loam{
     _kd_tree_planes->findNeighbor(
       responce_coords, responce_idx, moving_tree_coords, param_max_leaf_range_points.value());
 
-    //std::cout << " kdtree responce index "<< responce_idx<< "\n";
+//    std::cout << " plane kdtree responce index "<< responce_idx<< "\n";
     // ia if kdtree fails return invalid correspondence
     if (responce_idx < 0) {
       ++_stats.non_associated;
@@ -261,15 +273,22 @@ namespace Loam{
     // ia check consistency of the association
     float dist_origin   =  (responce_matchable.origin() - moving_.origin()).norm();
     float dist   = responce_matchable.direction().dot(moving_.direction());
-    float dist_d = std::fabs(responce_matchable.direction().dot(responce_matchable.origin()) -
-                             (moving_.direction()).dot(moving_.origin()));
+    //float dist_d = std::fabs(responce_matchable.direction().dot(responce_matchable.origin()) -
+    //                            (moving_.direction()).dot(moving_.origin()));
 
-   // std::cout << " dist origin plane matcher"<< dist_origin<< "\n";
-   // std::cout << " dist plane  matcher"<< dist<< "\n";
-   // std::cout << " dist_d plane  matcher"<< dist_d<< "\n";
+    const Vector3f responce_matchable_origin_normalized = responce_matchable.origin().normalized();
+    float dist_d = std::fabs(responce_matchable.direction().dot(responce_matchable_origin_normalized) -
+                             (moving_.direction()).dot(moving_origin_normalized));
 
-    if (dist_origin > 8 or  dist < 0.8 or dist_d > 0.4) {
+
+//    std::cout << " dist origin plane matcher ______  "<< dist_origin<< "\n";
+//    std::cout << " dist plane  matcher ________  "<< dist<< "\n";
+//    std::cout << " dist_d plane  matcher ______  "<< dist_d<< "\n";
+
+    //if (dist_origin > 8. or  dist < 0.8) {
+    if (dist_origin > 4. or  dist < 0.8 or dist_d > 0.4) {
       ++_stats.non_associated;
+//      std::cout << "DISCARDED >>>>>>>>>>>>>>>>>>>>>>>>>>>>> \n";
       return c;
     }
 

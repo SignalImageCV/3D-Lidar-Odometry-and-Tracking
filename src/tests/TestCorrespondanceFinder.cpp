@@ -7,6 +7,7 @@
 #include "loam/CustomMeasurementAdaptor.hpp"
 #include "loam/instances.h"
 #include "loam/matcher/CorrespondenceFinderMatchablesKDtree.hpp"
+#include "loam/matcher/CorrespondenceFinderMatchablesBruteForce.hpp"
 #include "loam/DatasetManager.hpp"
 #include "loam/Visualizer.hpp"
 
@@ -25,8 +26,11 @@ const char* banner[] = {
 void processCorrespondences_test(
     ViewerCanvasPtr canvas_1,
     ViewerCanvasPtr canvas_2,
+    ViewerCanvasPtr canvas_3,
     const  string & filename,
     const sphericalImage_params t_params);
+
+PointNormalColor3fVectorCloud drawLine( Vector3f p1,  Vector3f p2, Vector3f color );
 
 
 
@@ -74,10 +78,12 @@ int main( int argc, char** argv){
   ViewerCoreSharedQGL viewer(argc, argv, &qapp);
   ViewerCanvasPtr canvas1 = viewer.getCanvas("old_matchables");
   ViewerCanvasPtr canvas2 = viewer.getCanvas("new_matchables");
+  ViewerCanvasPtr canvas3 = viewer.getCanvas("correspondances");
   std::thread processing_thread1(
       processCorrespondences_test,
       canvas1,
       canvas2,
+      canvas3,
       dataset.value(),
       params
       );
@@ -87,9 +93,29 @@ int main( int argc, char** argv){
   return 0;
 }
 
+PointNormalColor3fVectorCloud drawLine( Vector3f p1,  Vector3f p2, Vector3f color ){
+
+  const float dist_points = (p1 - p2).norm();
+  const float epsilon = 0.1;
+  const int num_points = static_cast <int> ( dist_points / epsilon);
+  PointNormalColor3fVectorCloud linePoints;
+  linePoints.resize( num_points);
+
+  const Vector3f line_vec= p2 - p1; 
+  for ( float  i = 0; i< num_points; ++i){
+    const float curr_advancement= ( i / num_points);
+    const Vector3f from_p1 =  line_vec * curr_advancement; 
+    const Vector3f curr_coord = p1 + from_p1;
+    linePoints[i].coordinates() = curr_coord;
+    linePoints[i].color() = color;
+ }
+  return linePoints;
+}
+
 void processCorrespondences_test(
     ViewerCanvasPtr canvas_1,
     ViewerCanvasPtr canvas_2,
+    ViewerCanvasPtr canvas_3,
     const  string & filename,
     const sphericalImage_params t_params){
 
@@ -97,8 +123,8 @@ void processCorrespondences_test(
   DatasetManager dM(  filename);
   int relative_counter= 0;
   int total_counter= 0;
-  const int total_num_iterations = 90;
-  const int starting_data_point_index = 250;
+  const int total_num_iterations = 200;
+  const int starting_data_point_index = 0;
 
   BaseSensorMessagePtr old_cloudPtr;
   BaseSensorMessagePtr new_cloudPtr;
@@ -109,11 +135,11 @@ void processCorrespondences_test(
     ++total_counter;
   }
 
+
   while (  ViewerCoreSharedQGL::isRunning() and relative_counter < total_num_iterations){
     ++relative_counter;
     ++total_counter;
     new_cloudPtr = dM.readPointerToMessageFromDataset();
-
     CustomMatchablefVectorData  matchables_1;
     CustomMatchablefVectorData  matchables_2;
 
@@ -136,8 +162,10 @@ void processCorrespondences_test(
 
     CorrespondenceVector correspondances;
 
+
     CorrespondenceFinderMatchablesKDTreePtr correspondenceFinder =
-      CorrespondenceFinderMatchablesKDTreePtr( new CorrespondenceFinderMatchablesKDTree);
+     CorrespondenceFinderMatchablesKDTreePtr( new CorrespondenceFinderMatchablesKDTree);
+
 
     correspondenceFinder->setCorrespondences( &correspondances);
     correspondenceFinder->setEstimate(Isometry3f::Identity() );
@@ -148,12 +176,13 @@ void processCorrespondences_test(
 
     old_cloudPtr = new_cloudPtr;
 
+
     std::cout << "iteration number : "   <<total_counter<< std::endl;
     std::cout << "correspondances || " << correspondenceFinder->stats() << std::endl;
     int counter= 0;
     for ( auto & corresp: correspondances){
       ++counter;
-//      std::cout << " Correspondance num :  " << counter << " fixed index " << corresp.fixed_idx <<" moving index "<< corresp.moving_idx<< std::endl;
+  //    std::cout << " Correspondance num :  " << counter << " fixed index " << corresp.fixed_idx <<" moving index "<< corresp.moving_idx<< std::endl;
 //      std::cout << " fixed origin               :  " << matchables_1[corresp.fixed_idx].origin().transpose() << " || ";
 //      std::cout << " fixed direction            :  " << matchables_1[corresp.fixed_idx].direction().transpose() << "\n";
 //      std::cout << " moving origin              :  " << matchables_2[corresp.moving_idx].origin().transpose() << " || ";
@@ -172,9 +201,9 @@ void processCorrespondences_test(
       //         std::cout <<"Moving Matchable num :  " << counter << " ||  direction  :  " << m.direction().transpose()<< std::endl;
     }
 
-    std::cout <<"features point number 1:  " <<features_cloud_1.size() << "\n";
-    std::cout <<"features point number 2:  " <<features_cloud_2.size() << "\n";
-    const float points_size = 3.5;
+    //std::cout <<"features point number 1:  " <<features_cloud_1.size() << "\n";
+    //std::cout <<"features point number 2:  " <<features_cloud_2.size() << "\n";
+    const float points_size = 1.5;
     canvas_1->pushPointSize();
     canvas_1->setPointSize(points_size);
     canvas_1->putPoints( features_cloud_1);
@@ -185,6 +214,24 @@ void processCorrespondences_test(
     canvas_2->putPoints( features_cloud_2);
     canvas_2->flush();
 
+    canvas_3->pushPointSize();
+    canvas_3->setPointSize(points_size);
+    canvas_3->putPoints( features_cloud_1);
+    canvas_3->putPoints( features_cloud_2);
+    canvas_3->popAttribute();
+    canvas_3->setPointSize(points_size*4);
+
+    for ( auto & c: correspondances){
+      const PointNormalColor3fVectorCloud  linePoints =
+        drawLine(
+            matchables_1[c.fixed_idx].origin(),
+            matchables_2[c.moving_idx].origin(),
+            Vector3f(0.,0.,0. ));
+      canvas_3->putPoints( linePoints);
+      
+    }
+    canvas_3->popAttribute();
+    canvas_3->flush();
   }
 }
 

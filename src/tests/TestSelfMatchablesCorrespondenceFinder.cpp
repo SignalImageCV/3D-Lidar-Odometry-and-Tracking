@@ -8,7 +8,8 @@
 
 #include "loam/CustomMeasurementAdaptor.hpp"
 #include "loam/instances.h"
-#include "loam/matcher/CorrespondenceFinderMatchablesKDtree.hpp"
+//#include "loam/matcher/CorrespondenceFinderMatchablesKDtree.hpp"
+#include "loam/matcher/CorrespondenceFinderMatchablesBruteForce.hpp"
 #include "loam/DatasetManager.hpp"
 
 
@@ -100,8 +101,13 @@ int main( int argc, char** argv){
 
     CorrespondenceVector correspondances;
 
+    //CorrespondenceFinderMatchablesBruteForcePtr correspondenceFinder =
+    //  CorrespondenceFinderMatchablesBruteForcePtr( new CorrespondenceFinderMatchablesBruteForce);
+
     CorrespondenceFinderMatchablesKDTreePtr correspondenceFinder =
       CorrespondenceFinderMatchablesKDTreePtr( new CorrespondenceFinderMatchablesKDTree);
+
+
 
     correspondenceFinder->setCorrespondences( &correspondances);
     correspondenceFinder->setEstimate(Isometry3f::Identity() );
@@ -110,7 +116,7 @@ int main( int argc, char** argv){
     correspondenceFinder->reset();
     correspondenceFinder->compute();
 
-    std::cout << "correspondances [00 - 00] -> " << correspondenceFinder->stats() << std::endl;
+    std::cout << " \n\n\nCorrespondances  -> " << correspondenceFinder->stats() << std::endl;
     int counter= 0;
     for ( auto & corresp: correspondances){
       ++counter;
@@ -135,6 +141,8 @@ int main( int argc, char** argv){
  //     std::cout <<"Moving Matchable num :  " << counter << " ||  orign      :  " << match_copy.origin().transpose()<< std::endl;
  //     std::cout <<"Moving Matchable num :  " << counter << " ||  direction  :  " << match_copy.direction().transpose()<< std::endl;
     }
+
+    return 0;
 
 
     cloudPtr = dM.readPointerToMessageFromDataset();

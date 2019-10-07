@@ -22,6 +22,7 @@ const char* banner[] = {
 void processVisualizeTraking(
     ViewerCanvasPtr canvas_1,
     ViewerCanvasPtr canvas_2,
+    ViewerCanvasPtr canvas_3,
     const  string & filename,
     const sphericalImage_params t_params);
 
@@ -72,10 +73,12 @@ int main( int argc, char** argv){
   ViewerCoreSharedQGL viewer(argc, argv, &qapp);
   ViewerCanvasPtr canvas1 = viewer.getCanvas("globalMap");
   ViewerCanvasPtr canvas2 = viewer.getCanvas("currentClusters");
+  ViewerCanvasPtr canvas3 = viewer.getCanvas("robot");
   std::thread processing_thread1(
       processVisualizeTraking,
       canvas1,
       canvas2,
+      canvas3,
       dataset.value(),
       params
       );
@@ -89,6 +92,7 @@ int main( int argc, char** argv){
 void processVisualizeTraking(
     ViewerCanvasPtr canvas_1,
     ViewerCanvasPtr canvas_2,
+    ViewerCanvasPtr canvas_3,
     const  string & filename,
     const sphericalImage_params t_params){
 
@@ -99,13 +103,26 @@ void processVisualizeTraking(
 
   Tracker tracker( filename, t_params);
 
-  float points_size = 3.0;
-  int counter = 0;
-  while( counter < 100){
+  int relative_counter= 0;
+  int total_counter= 0;
+  const int total_num_iterations = 450;
+  const int starting_data_point_index = 0;
+
+  const float points_size = 2.0;
+
+  for( int i= 0; i< starting_data_point_index; ++i){
+    tracker.jumpDataEntry();
+    ++total_counter;
+  }
+
+
+  while( ViewerCoreSharedQGL::isRunning() and relative_counter < total_num_iterations){
+    ++relative_counter;
+    ++total_counter;
     tracker.executeCycle();
-    ++counter;
-    std::cout<< "Isometry solution: \n";
-    std::cout << FG_GREEN(tracker.getRelativeT().matrix()) << std::endl;
+//   std::cout<< "Iteration number: "<< total_counter<< "\n";
+//    std::cout<< "Isometry solution: \n";
+//    std::cout << FG_GREEN(tracker.getRelativeT().matrix()) << std::endl;
 
     PointNormalColor3fVectorCloud robot_world_position_vec;
     robot_world_position_vec.push_back( origin);
@@ -130,8 +147,15 @@ void processVisualizeTraking(
     canvas_2->pushPointSize();
     canvas_2->setPointSize( points_size );
     canvas_2->putPoints(*tracker.m_current_clusterPointsPtr);
-    canvas_1->popAttribute();
+    canvas_2->popAttribute();
     canvas_2->flush();
+
+    canvas_3->pushPointSize();
+    canvas_3->setPointSize(points_size*3);
+    canvas_3->putPoints( robotWorldPoints );
+    canvas_3->popAttribute();
+    canvas_3->flush();
+
   }
 
 }
