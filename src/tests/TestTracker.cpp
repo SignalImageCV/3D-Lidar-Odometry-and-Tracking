@@ -6,6 +6,8 @@
 
 #include "loam/tracker/Tracker.hpp"
 
+//good params to show the traking: -vr 64 -hr 1768 -et 7 -er 0.15 -dd 2. -nn 6 -ec 12 -ed 1.5 -en 0.1  -el 0.09 -edl 0.2 -ep 0.02 -edp 0.3
+
 
 using namespace srrg2_core;
 using namespace srrg2_core_ros;

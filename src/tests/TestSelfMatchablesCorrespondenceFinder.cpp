@@ -101,12 +101,8 @@ int main( int argc, char** argv){
 
     CorrespondenceVector correspondances;
 
-    //CorrespondenceFinderMatchablesBruteForcePtr correspondenceFinder =
-    //  CorrespondenceFinderMatchablesBruteForcePtr( new CorrespondenceFinderMatchablesBruteForce);
-
     CorrespondenceFinderMatchablesKDTreePtr correspondenceFinder =
       CorrespondenceFinderMatchablesKDTreePtr( new CorrespondenceFinderMatchablesKDTree);
-
 
 
     correspondenceFinder->setCorrespondences( &correspondances);

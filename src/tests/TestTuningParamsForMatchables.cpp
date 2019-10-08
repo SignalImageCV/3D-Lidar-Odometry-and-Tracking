@@ -123,7 +123,6 @@ void processVisualizeRealMatchables(
     canvas_2->flush();
 
     ++counter;
-    std::cout<< "Iteration number : "<<counter<<"\n";
  
     cloudPtr = dM.readPointerToMessageFromDataset();
   }
