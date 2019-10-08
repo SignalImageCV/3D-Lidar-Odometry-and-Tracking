@@ -58,13 +58,25 @@ namespace Loam{
           type=Matchablef::Type::Point; 
         }
 
-        CustomMatchablef customMatchable(
+        const Matrix3f rotation_mat= m->get_R_m();
+
+
+        if(type==Matchablef::Type::Line) { 
+          CustomMatchablef customMatchable(
             type,
-            m->get_p_m(),
-            m->get_R_m()
+            m->get_p_m()
             );
-
-
+           customMatchable.setDirection(rotation_mat.col(0));
+          _dest->push_back( customMatchable  );
+        }
+        else{
+          CustomMatchablef customMatchable(
+            type,
+            m->get_p_m()
+            );
+           customMatchable.setDirection(rotation_mat.col(2));
+          _dest->push_back( customMatchable  );
+        }
         //    std::cout << "Matchable type : "<<className << " "; 
         //      std::cout << "origin : "<<m->get_p_m().transpose() << " "; 
         //      std::cout << "first direction : "<<m->get_R_m().col(0).transpose() << " "; 
@@ -80,9 +92,6 @@ namespace Loam{
         //      std::cout << "sumOfEigenvalues: "<<m->stats.sumOfEigenvalues<< " "; 
         //      std::cout << "changeOfCurvature: "<<m->stats.changeOfCurvature<< "\n"; 
         //      std::cout << "________________________________________________________________\n"; 
-
-
-        (*_dest).push_back( customMatchable  );
     }
   }
 

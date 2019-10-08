@@ -84,11 +84,11 @@ int main( int argc, char** argv){
     CustomMatchablefVectorData  matchables_copy = matchables;
 
     const float x = 0.;
-    const float y = 0.3;
-    const float z = 0.3;
+    const float y = 0;
+    const float z = 0;
     const float rx = 0;
     const float ry = 0;
-    const float rz = 0;
+    const float rz = 0.2;
     Vector6f pose;
     pose << x, y, z, rx, ry, rz;
     const Isometry3f rotoTransl = srrg2_core::geometry3d::v2t(pose);

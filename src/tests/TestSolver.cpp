@@ -7,12 +7,17 @@
 #include "loam/CustomMeasurementAdaptor.hpp"
 #include "loam/instances.h"
 #include "loam/matcher/CorrespondenceFinderMatchablesKDtree.hpp"
-#include "loam/matcher/CorrespondenceFinderMatchablesBruteForce.hpp"
 #include "loam/DatasetManager.hpp"
 #include "loam/Visualizer.hpp"
 
 
+#include <srrg_solver/solver_core/instances.h>
+#include <srrg_solver/SE3/instances.h>
+
+
+
 using namespace srrg2_core;
+using namespace srrg2_solver;
 using namespace srrg2_core_ros;
 using namespace srrg2_qgl_viewport;
 using namespace Loam;
@@ -23,12 +28,13 @@ const char* banner[] = {
       0
 };
 
-void processCorrespondences_test(
+void processSolve(
     ViewerCanvasPtr canvas_1,
     ViewerCanvasPtr canvas_2,
     ViewerCanvasPtr canvas_3,
     const  string & filename,
     const sphericalImage_params t_params);
+
 
 PointNormalColor3fVectorCloud drawLine( Vector3f p1,  Vector3f p2, Vector3f color );
 
@@ -38,9 +44,11 @@ int main( int argc, char** argv){
 
   messages_registerTypes();
   loam_registerTypes();
+  SE3_registerTypes();
   srrgInit( argc, argv, "hi");
 
   ParseCommandLine cmd_line(argv,banner);
+
   ArgumentString  dataset (&cmd_line, "d", "dataset", "path to dataset" , "");
   ArgumentString  num_vertical_rings(&cmd_line, "vr", "num_vertical_rings", "num of vertical rings" , "");
   ArgumentString  num_points_ring(&cmd_line, "hr", "num_points_ring", "num of horizontal rings (slices)" , "");
@@ -73,14 +81,13 @@ int main( int argc, char** argv){
     std::stof( epsilon_dp.value())
   );
 
-
   QApplication qapp(argc, argv);
   ViewerCoreSharedQGL viewer(argc, argv, &qapp);
-  ViewerCanvasPtr canvas1 = viewer.getCanvas("old_matchables");
-  ViewerCanvasPtr canvas2 = viewer.getCanvas("new_matchables");
-  ViewerCanvasPtr canvas3 = viewer.getCanvas("correspondances");
+  ViewerCanvasPtr canvas1 = viewer.getCanvas("matchables");
+  ViewerCanvasPtr canvas2 = viewer.getCanvas("clusters");
+  ViewerCanvasPtr canvas3 = viewer.getCanvas("associations");
   std::thread processing_thread1(
-      processCorrespondences_test,
+      processSolve,
       canvas1,
       canvas2,
       canvas3,
@@ -92,6 +99,7 @@ int main( int argc, char** argv){
   processing_thread1.join();
   return 0;
 }
+
 
 PointNormalColor3fVectorCloud drawLine( Vector3f p1,  Vector3f p2, Vector3f color ){
 
@@ -112,143 +120,167 @@ PointNormalColor3fVectorCloud drawLine( Vector3f p1,  Vector3f p2, Vector3f colo
   return linePoints;
 }
 
-void processCorrespondences_test(
+
+
+
+void processSolve(
     ViewerCanvasPtr canvas_1,
     ViewerCanvasPtr canvas_2,
     ViewerCanvasPtr canvas_3,
     const  string & filename,
     const sphericalImage_params t_params){
 
-
   DatasetManager dM(  filename);
-  int relative_counter= 0;
-  int total_counter= 0;
-  const int total_num_iterations = 200;
-  const int starting_data_point_index = 0;
+  BaseSensorMessagePtr cloudPtr1 = dM.readPointerToMessageFromDataset();
+  BaseSensorMessagePtr cloudPtr2 = dM.readPointerToMessageFromDataset();
+  const float x_max= 0;
+  const float y_max= 0;
+  const float z_max= 0;
+  const float rx_max= 0;
+  const float ry_max= 0;
+  const float rz_max= 0.3;
 
-  BaseSensorMessagePtr old_cloudPtr;
-  BaseSensorMessagePtr new_cloudPtr;
+  const float points_size = 1.5;
 
-  for( int i= 0; i< starting_data_point_index; ++i){
-    dM.readPointerToMessageFromDataset();
-    std::cout <<"Iteration num : " << total_counter<<"\n"; 
-    ++total_counter;
-  }
+  while( ViewerCoreSharedQGL::isRunning()) {
+    const float x = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / x_max));
+    const float y = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / y_max));
+    const float z = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / z_max));
+    const float rx = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / rx_max));
+    const float ry = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / ry_max));
+    const float rz = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / rz_max));
+
+    Vector6f pose;
+    pose << x, y, z, rx, ry, rz;
+    const Isometry3f rotoTransl = srrg2_core::geometry3d::v2t(pose);
 
 
-  while (  ViewerCoreSharedQGL::isRunning() and relative_counter < total_num_iterations){
-    ++relative_counter;
-    ++total_counter;
-
-    std::getchar();
-    new_cloudPtr = dM.readPointerToMessageFromDataset();
     CustomMatchablefVectorData  matchables_1;
     CustomMatchablefVectorData  matchables_2;
 
     CustomMeasurementAdaptorPtr measurementAdaptor =
       CustomMeasurementAdaptorPtr(new CustomMeasurementAdaptor);
-
-    measurementAdaptor->setMyParams( t_params);
+    measurementAdaptor->setMyParams(t_params);
 
     measurementAdaptor->setDest( &matchables_1);
-    measurementAdaptor->setMeasurement( old_cloudPtr);
+    measurementAdaptor->setMeasurement( cloudPtr1 );
     measurementAdaptor->compute();
+
     PointNormalColor3fVectorCloud  features_cloud_1 = measurementAdaptor->drawMatchables();
+    PointNormalColor3fVectorCloud  clusters_cloud_1 = measurementAdaptor->drawClusters();
+    PointNormalColor3fVectorCloud  clusters_cloud_1_corrected= measurementAdaptor->drawClusters();
     measurementAdaptor->reset();
 
     measurementAdaptor->setDest( &matchables_2);
-    measurementAdaptor->setMeasurement( new_cloudPtr);
+    measurementAdaptor->setMeasurement( cloudPtr2);
     measurementAdaptor->compute();
-    PointNormalColor3fVectorCloud  features_cloud_2 = measurementAdaptor->drawMatchables();
 
+    PointNormalColor3fVectorCloud  features_cloud_2 = measurementAdaptor->drawMatchables();
+    PointNormalColor3fVectorCloud  clusters_cloud_2 = measurementAdaptor->drawClusters();
+
+
+    const Isometry3f T = Isometry3f::Identity() * rotoTransl;
+    for ( auto & m: matchables_2){
+      m.transformInPlace(T);
+    }
+    features_cloud_2.transformInPlace( T);
+    clusters_cloud_2.transformInPlace( T);
 
     CorrespondenceVector correspondances;
 
-
     CorrespondenceFinderMatchablesKDTreePtr correspondenceFinder =
-     CorrespondenceFinderMatchablesKDTreePtr( new CorrespondenceFinderMatchablesKDTree);
+      CorrespondenceFinderMatchablesKDTreePtr( new CorrespondenceFinderMatchablesKDTree);
 
 
     correspondenceFinder->setCorrespondences( &correspondances);
-    correspondenceFinder->setEstimate(Isometry3f::Identity() );
+    correspondenceFinder->setEstimate(Isometry3f::Identity());
     correspondenceFinder->setFixed(&matchables_1 );
     correspondenceFinder->setMoving(&matchables_2);
     correspondenceFinder->reset();
     correspondenceFinder->compute();
 
-    old_cloudPtr = new_cloudPtr;
-
-
-    std::cout << "iteration number : "   <<total_counter<< std::endl;
     std::cout << "correspondances || " << correspondenceFinder->stats() << std::endl;
 
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Discarded stats <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
-    std::cout  << "Number of lines discarded for kdtree invalid idx : "<< correspondenceFinder->counter_discarded_for_lines_kdtree_invalid_index<<" \n";
-    std::cout  << "Number of lines discarded for dist origin : "<< correspondenceFinder->counter_discarded_line_for_dist_origin<<" \n";
-    std::cout  << "Number of planes discarded for kdtree invalid idx : "<< correspondenceFinder->counter_discarded_for_planes_kdtree_invalid_index<<" \n";
-    std::cout  << "Number of planes discarded for dist origin : "<< correspondenceFinder->counter_discarded_plane_for_dist_origin<<" \n";
-    std::cout  << "Number of planes discarded for dist directions: "<< correspondenceFinder->counter_discarded_plane_for_dist_direction<<" \n";
-    std::cout  << "Number of planes discarded for dist relative orientations: "<< correspondenceFinder->counter_discarded_plane_for_dist_relative_dir<<" \n";
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> END Discarded stats <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n";
 
 
-    int counter= 0;
-    for ( auto & corresp: correspondances){
-      ++counter;
-  //    std::cout << " Correspondance num :  " << counter << " fixed index " << corresp.fixed_idx <<" moving index "<< corresp.moving_idx<< std::endl;
-//      std::cout << " fixed origin               :  " << matchables_1[corresp.fixed_idx].origin().transpose() << " || ";
-//      std::cout << " fixed direction            :  " << matchables_1[corresp.fixed_idx].direction().transpose() << "\n";
-//      std::cout << " moving origin              :  " << matchables_2[corresp.moving_idx].origin().transpose() << " || ";
-//      std::cout << " moving direction           :  " << matchables_2[corresp.moving_idx].direction().transpose() << "\n";
-    }
-    counter= 0;
-    for ( auto & m: matchables_1){
-      ++counter;
-      //        std::cout << "Fixed Matchable num  :  " << counter << " ||  orign      :  " << m.origin().transpose()<< std::endl;
-      //        std::cout << "Fixed Matchable num  :  " << counter << " ||  direction  :  " << m.direction().transpose()<< std::endl;
-    }
-    counter= 0;
-    for ( auto & m: matchables_2){
-      ++counter;
-      //         std::cout <<"Moving Matchable num :  " << counter << " ||  orign      :  " << m.origin().transpose()<< std::endl;
-      //         std::cout <<"Moving Matchable num :  " << counter << " ||  direction  :  " << m.direction().transpose()<< std::endl;
+    using FactorType          = SE3Matchable2MatchableErrorFactorNoInfo;
+    using FactorBaseType      = Factor_<FactorType::VariableType::BaseVariableType>;
+
+    const int num_iterations = 10;
+    std::vector<FactorBaseType*> factors;
+    factors.reserve(correspondances.size());
+
+
+    for ( auto & c : correspondances){
+      FactorType* factor = new FactorType();
+      factor->bindFixed(&matchables_1[c.fixed_idx]);
+      factor->bindMoving(&matchables_2[c.moving_idx]);
+      factors.emplace_back(factor);
     }
 
-    //std::cout <<"features point number 1:  " <<features_cloud_1.size() << "\n";
-    //std::cout <<"features point number 2:  " <<features_cloud_2.size() << "\n";
-    const float points_size = 1.5;
+    const Isometry3f guess = Isometry3f::Identity();
+
+    SolverDefault_<VariableSE3EulerLeftAD> solver;
+    solver.param_max_iterations.pushBack(num_iterations);
+    solver.param_termination_criteria.setValue(nullptr);
+    solver.clearFactorIterators(); // ia JIC
+    solver.addFactorContainer(factors);
+    solver.setEstimate(guess);
+    solver.compute();
+    const auto& stats      = solver.iterationStats();
+    const auto& final_chi2 = stats.back().chi_inliers;
+
+
+    std::cerr << stats << std::endl;
+    std::cerr << " final chi : "<< final_chi2 << std::endl;
+
+    const auto& estimated_T = solver.estimate();
+    std::cerr << "GT\n" << FG_GREEN(T.matrix()) << std::endl;
+    std::cerr << "estimated\n" << FG_YELLOW(estimated_T.matrix()) << std::endl;
+
+    // const auto diff_T      = estimated_T.inverse() * T;
+    // const auto diff_vector = geometry3d::t2tnq(diff_T);
+
+
+    for (size_t i = 0; i < factors.size(); ++i) {
+      delete factors[i];
+    }
+
+    for( auto & p: clusters_cloud_1){
+      p.color() = Vector3f( 1.,0.,0.);
+    }
+    for( auto & m: features_cloud_1 ){
+      m.color() = Vector3f( 1.,0.,0.);
+    }
+    for( auto & p: clusters_cloud_2){
+      p.color() = Vector3f( 0.,0.,1.);
+    }
+    for( auto & m: features_cloud_2 ){
+      m.color() = Vector3f( 0.,0.,1.);
+    }
+
+    clusters_cloud_1_corrected.transformInPlace( estimated_T);
+    for( auto & p: clusters_cloud_1_corrected){
+      p.color() = Vector3f( 0.,1.,0.);
+    }
+
     canvas_1->pushPointSize();
     canvas_1->setPointSize(points_size);
     canvas_1->putPoints( features_cloud_1);
+    canvas_1->putPoints( features_cloud_2);
     canvas_1->flush();
- 
+
     canvas_2->pushPointSize();
     canvas_2->setPointSize(points_size);
-    canvas_2->putPoints( features_cloud_2);
+    canvas_2->putPoints( clusters_cloud_1);
+    canvas_2->putPoints( clusters_cloud_2);
+    canvas_2->putPoints( clusters_cloud_1_corrected);
     canvas_2->flush();
 
     canvas_3->pushPointSize();
     canvas_3->setPointSize(points_size);
-
-    for( auto & p: features_cloud_1 ){
-      p.color() = Vector3f( 1.,0.,0.);
-    }
-
-    for( auto & p: features_cloud_2 ){
-      p.color() = Vector3f( 0.,0.,1.);
-    }
-
-   // canvas_3->pushColor();
-//    canvas_3->setColor(Vector3f( 1.,0.,0.));
-    canvas_3->putPoints( features_cloud_1);
-//    canvas_3->popAttribute();
-
-//    canvas_3->pushColor();
-//    canvas_3->setColor(Vector3f( 0.,0.,1.));
-    canvas_3->putPoints( features_cloud_2);
-//    canvas_3->popAttribute();
-
-
+    canvas_3->putPoints( clusters_cloud_1);
+    canvas_3->putPoints( clusters_cloud_2);
     canvas_3->popAttribute();
     canvas_3->setPointSize(points_size*4);
 
@@ -259,11 +291,12 @@ void processCorrespondences_test(
             matchables_2[c.moving_idx].origin(),
             Vector3f(0.,0.,0. ));
       canvas_3->putPoints( linePoints);
-      
     }
     canvas_3->popAttribute();
     canvas_3->flush();
-  }
-}
 
+    std::getchar();
+  }
+
+}
 

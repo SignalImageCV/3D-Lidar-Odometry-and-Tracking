@@ -125,6 +125,7 @@ void processVisualizeRealMatchables(
     ++counter;
  
     cloudPtr = dM.readPointerToMessageFromDataset();
+    std::getchar();
   }
 }
 

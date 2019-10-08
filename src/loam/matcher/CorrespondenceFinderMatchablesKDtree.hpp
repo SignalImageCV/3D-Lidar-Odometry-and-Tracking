@@ -53,6 +53,13 @@ namespace Loam{
   public:
     //! @brief ctor
     CorrespondenceFinderMatchablesKDTree() : BaseType() {
+
+    counter_discarded_for_lines_kdtree_invalid_index = 0;
+    counter_discarded_line_for_dist_origin = 0;
+    counter_discarded_for_planes_kdtree_invalid_index = 0;
+    counter_discarded_plane_for_dist_direction= 0;
+    counter_discarded_plane_for_dist_origin= 0;
+    counter_discarded_plane_for_dist_relative_dir= 0;
     }
 
     //! @brief dtor
@@ -66,6 +73,14 @@ namespace Loam{
     //! in this case we have to populate the kdtrees from the fixed and then,
     //! for each matchable in the moving, query the trees according to the type of primitive.
     void compute() final;
+
+    int counter_discarded_for_lines_kdtree_invalid_index;
+    int counter_discarded_line_for_dist_origin;
+    int counter_discarded_for_planes_kdtree_invalid_index;
+    int counter_discarded_plane_for_dist_origin;
+    int counter_discarded_plane_for_dist_direction;
+    int counter_discarded_plane_for_dist_relative_dir;
+
 
   protected:
     //! @brief aux function to associate points with points - returns a correspondence

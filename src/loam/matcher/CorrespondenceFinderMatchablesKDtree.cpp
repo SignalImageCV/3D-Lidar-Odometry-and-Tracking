@@ -8,6 +8,10 @@ namespace Loam{
     BaseType::reset();
 
     _is_initialized = false;
+    counter_discarded_line_for_dist_origin = 0;
+    counter_discarded_plane_for_dist_direction= 0;
+    counter_discarded_plane_for_dist_origin= 0;
+    counter_discarded_plane_for_dist_relative_dir= 0;
 
     if (!_fixed) {
       throw std::runtime_error("CorrespondenceFinderMatchablesKDTree::reset|error, fixed not set");
@@ -24,6 +28,8 @@ namespace Loam{
     planes_coordinates.reserve(_fixed->size());
     _index_map_planes.reserve(_fixed->size());
 
+
+
     // ia populate
     for (size_t k = 0; k < _fixed->size(); ++k) {
       const CustomMatchablef & m = _fixed->at(k);
@@ -37,8 +43,8 @@ namespace Loam{
 
         case MatchableBase::Type::Line: {
           KdTreeTypeLines::VectorTD coords = KdTreeTypeLines::VectorTD::Zero();
-         // coords.head<3>()                 = (m.direction()).cross(m.origin());
-          coords.head<3>()                 = (m.direction()).cross(origin_normalized);
+          coords.head<3>()                 = (m.direction()).cross(m.origin());
+          //coords.head<3>()                 = (m.direction()).cross(origin_normalized);
           coords.tail<3>()                 = m.direction() * _line_direction_tree_weight;
           lines_coordinates.emplace_back(coords);
           _index_map_lines.emplace_back(k);
@@ -48,8 +54,8 @@ namespace Loam{
         case MatchableBase::Type::Plane: {
           KdTreeTypePlanes::VectorTD coords = KdTreeTypePlanes::VectorTD::Zero();
           coords.head<3>()                  = m.direction() * _plane_direction_tree_weight;
-          //coords(3)                         = m.direction().dot(m.origin());
-          coords(3)                         = m.direction().dot(origin_normalized);
+          coords(3)                         = m.direction().dot(m.origin());
+          //coords(3)                         = m.direction().dot(origin_normalized);
           planes_coordinates.emplace_back(coords);
           _index_map_planes.emplace_back(k);
           break;
@@ -193,8 +199,8 @@ namespace Loam{
     // ia transform the moved matchable into tree compliant coords
     KdTreeTypeLines::VectorTD moving_tree_coords = KdTreeTypeLines::VectorTD::Zero();
     moving_tree_coords.head<3>() =
-      (moving_transformed_.direction()).cross(moving_origin_normalized);
-     // (moving_transformed_.direction()).cross(moving_transformed_.origin());
+      //(moving_transformed_.direction()).cross(moving_origin_normalized);
+      (moving_transformed_.direction()).cross(moving_transformed_.origin());
     moving_tree_coords.tail<3>() = moving_transformed_.direction() * _line_direction_tree_weight;
 
     // ia query the tree
@@ -207,6 +213,7 @@ namespace Loam{
     // ia if kdtree fails return invalid correspondence
     if (responce_idx < 0) {
       ++_stats.non_associated;
+      ++counter_discarded_for_lines_kdtree_invalid_index;
       return c;
     }
 
@@ -217,11 +224,15 @@ namespace Loam{
       "CorrespondenceFinderMatchablesKDTree::_findLineAssociation|correspondence types mismatch");
 
 
+    float threshold_d_origin = 4.;
+
     float dist_origin   =  (responce_matchable.origin() - moving_.origin()).norm();
 
 //    std::cout << " dist origin line matcher    "<< dist_origin<< "\n";
-    if (dist_origin > 4.) {
+    if (dist_origin > threshold_d_origin ) {
       ++_stats.non_associated;
+      ++counter_discarded_line_for_dist_origin;
+      //std::cout << " dist origin line ***"<< dist_origin<< "\n";
 //      std::cout << "DISCARDED >>>>>>>>>>>>>>>>>>>>>>>>>>>>> \n";
       return c;
     }
@@ -247,8 +258,8 @@ namespace Loam{
     KdTreeTypePlanes::VectorTD responce_coords    = KdTreeTypePlanes::VectorTD::Zero();
     KdTreeTypePlanes::VectorTD moving_tree_coords = KdTreeTypePlanes::VectorTD::Zero();
     moving_tree_coords.head<3>() = moving_transformed_.direction() * _plane_direction_tree_weight;
-    moving_tree_coords(3) = moving_transformed_.direction().dot(moving_origin_normalized);
-    //moving_tree_coords(3) = moving_transformed_.direction().dot(moving_transformed_.origin());
+    //moving_tree_coords(3) = moving_transformed_.direction().dot(moving_origin_normalized);
+    moving_tree_coords(3) = moving_transformed_.direction().dot(moving_transformed_.origin());
 
     int responce_idx = -1;
 
@@ -261,6 +272,7 @@ namespace Loam{
     // ia if kdtree fails return invalid correspondence
     if (responce_idx < 0) {
       ++_stats.non_associated;
+      ++counter_discarded_for_planes_kdtree_invalid_index;
       return c;
     }
 
@@ -273,20 +285,36 @@ namespace Loam{
     // ia check consistency of the association
     float dist_origin   =  (responce_matchable.origin() - moving_.origin()).norm();
     float dist   = responce_matchable.direction().dot(moving_.direction());
-    //float dist_d = std::fabs(responce_matchable.direction().dot(responce_matchable.origin()) -
-    //                            (moving_.direction()).dot(moving_.origin()));
+    float dist_d = std::fabs(responce_matchable.direction().dot(responce_matchable.origin()) -
+                                (moving_.direction()).dot(moving_.origin()));
 
     const Vector3f responce_matchable_origin_normalized = responce_matchable.origin().normalized();
-    float dist_d = std::fabs(responce_matchable.direction().dot(responce_matchable_origin_normalized) -
-                             (moving_.direction()).dot(moving_origin_normalized));
+    //float dist_d = std::fabs(responce_matchable.direction().dot(responce_matchable_origin_normalized) -
+     //                        (moving_.direction()).dot(moving_origin_normalized));
 
 
 //    std::cout << " dist origin plane matcher ______  "<< dist_origin<< "\n";
 //    std::cout << " dist plane  matcher ________  "<< dist<< "\n";
 //    std::cout << " dist_d plane  matcher ______  "<< dist_d<< "\n";
 
-    //if (dist_origin > 8. or  dist < 0.8) {
-    if (dist_origin > 4. or  dist < 0.8 or dist_d > 0.4) {
+    float threshold_d_origin = 10.;
+    float threshold_d_direction= 0.95;
+    float threshold_d_relative_dir= 0.4;
+    //if (dist_origin > threshold_d_origin  or  dist < threshold_d_direction or dist_d > threshold_d_relative_dir ) {
+    if (dist_origin > threshold_d_origin  or  dist < threshold_d_direction ) {
+      if ( dist_origin > threshold_d_origin){
+        ++counter_discarded_plane_for_dist_origin;
+        //std::cout << " dist origin plane ______  "<< dist_origin<< "\n";
+      }
+      if ( dist < threshold_d_direction){
+        ++counter_discarded_plane_for_dist_direction;
+        //std::cout << " dist direction plane ________  "<< dist<< "\n";
+      }
+  //    if ( dist_d> threshold_d_relative_dir){
+//        ++counter_discarded_plane_for_dist_relative_dir;
+//        std::cout << " dist relative dir plane ______  "<< dist_d<< "\n";
+//      }
+
       ++_stats.non_associated;
 //      std::cout << "DISCARDED >>>>>>>>>>>>>>>>>>>>>>>>>>>>> \n";
       return c;

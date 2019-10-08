@@ -18,8 +18,6 @@ namespace Loam{
 
     if( cloudPtr ) {
 
-      //Isometry3f identity = Isometry3f::Identity();
-
       m_relative_transformation =   m_aligner.compute(cloudPtr,m_relative_transformation);
 
       m_absolute_transformation = m_absolute_transformation * m_relative_transformation.inverse();

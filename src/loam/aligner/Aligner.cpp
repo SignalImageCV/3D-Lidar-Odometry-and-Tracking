@@ -37,8 +37,6 @@ namespace Loam{
     if (not m_flag_not_started_yet){
       CorrespondenceVector correspondances;
 
- //   CorrespondenceFinderMatchablesBruteForcePtr correspondenceFinder =
-  //   CorrespondenceFinderMatchablesBruteForcePtr( new CorrespondenceFinderMatchablesBruteForce);
 
 
       CorrespondenceFinderMatchablesKDTreePtr correspondenceFinder =
@@ -97,7 +95,7 @@ namespace Loam{
       }
       else{
         m_previous_matchables = new_matchables;
-        return Isometry3f::Identity();
+        return t_initial_guess;
       }
 
     }
