@@ -11,7 +11,7 @@ namespace Loam{
     m_params(t_params),
     m_blur_extension(2),
     m_neigh_ext_vertical(6),
-    m_neigh_ext_horizontal(2)
+    m_neigh_ext_horizontal(1)
   {
 
     m_pathMatrix = populatePathMatrix(
@@ -154,7 +154,8 @@ namespace Loam{
   cluster Clusterer::computeCluster(const matrixCoords & t_seed_coords){
     stack<pathCell> cellStack;
     m_pathMatrix[t_seed_coords.row][t_seed_coords.col].hasBeenChosen = true;
-    cellStack.push( m_pathMatrix[t_seed_coords.row][t_seed_coords.col]);
+    pathCell seed_cell = m_pathMatrix[t_seed_coords.row][t_seed_coords.col];
+    cellStack.push(seed_cell);
     cluster c;
     int numPointsCluster =0;
     Eigen::Vector3f cumulative_mu= Eigen::Vector3f::Zero();
@@ -166,7 +167,7 @@ namespace Loam{
       ++numPointsCluster;
       cellStack.pop();
       for ( auto & otherCell: neighboors){
-        const float diff_normal= 1- ( currCell.normal.transpose() * otherCell.normal);
+        const float diff_normal= 1- ( seed_cell.normal.dot( otherCell.normal));
         const float diff_depth =  std::fabs( currCell.depth -  otherCell.depth);
         if ( diff_normal < m_params.epsilon_n and  diff_depth < m_params.epsilon_d){
             m_pathMatrix[otherCell.matCoords.row][otherCell.matCoords.col].hasBeenChosen = true;
