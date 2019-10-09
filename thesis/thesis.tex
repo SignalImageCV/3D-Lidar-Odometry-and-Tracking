@@ -16,25 +16,23 @@
 \newcommand{\bs}{\textbackslash}
 
 % Commands for the titlepage
-\title{of the Sapthesis class\\ for a Laurea Magistrale thesis in English}
-\author{Francesco Biccari}
-\IDnumber{1234567}
-\course{Fisica}
+\title{Position tracking in 3D scenes using high order primitives}
+\author{Edoardo Ghini}
+\IDnumber{1616301}
+\course{MARR}
 \courseorganizer{Facolt\`{a} di Scienze Matematiche, Fisiche e Naturali}
-\AcademicYear{2012/2013}
-\copyyear{2013}
+\AcademicYear{2018/2019}
+\copyyear{2019}
 \advisor{Prof. Nome Cognome}
 \advisor{Dr. Nome Cognome}
 \coadvisor{Dr. Nome Cognome}
-\authoremail{biccari@email.com}
+\authoremail{edoardo.ghini@gmail.com}
 
-\examdate{16 April 2013}
+\examdate{31 October 2019}
 \examiner{Prof. Nome Cognome}
 \examiner{Prof. Nome Cognome}
 \examiner{Dr. Nome Cognome}
 \versiondate{\today}
-
-
 
 \begin{document}
 
@@ -42,19 +40,14 @@
 
 \maketitle
 
-\dedication{Dedicated to\\ Donald Knuth}
+\dedication{Dedicated to nessuno}
 
 \begin{abstract}
-This document is an example which shows the main features of
-the \LaTeXe\ class \texttt{sapthesis.cls} developed by Francesco Biccari
-with the help of GuIT (Gruppo Utilizzatori Italiani di \TeX).
+ fill with abstract 
 \end{abstract}
 
 \begin{acknowledgments}
-Ho deciso di scrivere i ringraziamenti in italiano
-per dimostrare la mia gratitudine verso i membri
-del GuIT, il Gruppo Utilizzatori Italiani di \TeX, e, in particolare,
-verso il prof. Enrico Gregorio.
+  grazie
 \end{acknowledgments}
 
 \tableofcontents
@@ -113,21 +106,27 @@ Therefore similarly as how is done in [ref to flat-surf paper] an algorithm of s
 \subsection{Eigenvalue-based characteristics}
 Every potential feature is characterized, among the other things, by the  eigenvalues  of its [omega] matrix. There are structured informations that can be gained by relatively simple manipulation of this eigenvalues.\\
 As it has been done in [ref to semantic3d weinmann], every feature when is created will also compute eight different traits :\\
-[mat 8 traits linearity, planarity etc.]
+(mat 8 traits linearity, planarity etc.)
 Two of these distinctive traits have been considered a consistent indicator of the nature of the feature that they are describing. Thus each feature that does not respect two upper bounds, one about the scattering and the other regarding the change of curvature, will be filtered out.
 
 
 
 \section{Motion extimation}
 
+\subsection{Motion model}
 \subsection{Correspondance finder}
 \subsection{Aligner}
+  \subsubsection{Solver}
 \subsection{Tracker}
 
 
 
-\chapter{Conclusion}
-\section{Real world applications}
+\chapter{Results}
+
+\section{Flat surface removal experiment}
+\section{Normal computation experiment}
+\section{Clustering experiment}
+\section{Full traking experiment}
 
 
 

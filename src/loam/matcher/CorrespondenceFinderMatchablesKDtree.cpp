@@ -297,7 +297,7 @@ namespace Loam{
 //    std::cout << " dist plane  matcher ________  "<< dist<< "\n";
 //    std::cout << " dist_d plane  matcher ______  "<< dist_d<< "\n";
 
-    float threshold_d_origin = 10.;
+    float threshold_d_origin = 6.;
     float threshold_d_direction= 0.95;
     float threshold_d_relative_dir= 0.4;
     //if (dist_origin > threshold_d_origin  or  dist < threshold_d_direction or dist_d > threshold_d_relative_dir ) {
