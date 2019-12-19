@@ -47,13 +47,15 @@ int main( int argc, char** argv){
   void visualizeCleanedWithNormals(ViewerCanvasPtr first_canvas,
           ViewerCanvasPtr second_canvas, const  string & filename){
 
+
+// -vr 64 -hr 768 -et 7 -er 0.15 -dd 2.1 -nn 7 -ec 30 -ed 1.5 -en 0.3  -el 0.03 -edl 0.7 -ep 0.02 -edp 0.2
     const sphericalImage_params params(
-      60, //num_vertical_rings
-      100, //num_points_ring
-      10, //epsilon_times
+      64, //num_vertical_rings
+      768, //num_points_ring
+      7, //epsilon_times
       0.15, //epsilon_radius
-      0.1, //depth_differential_threshold
-      8,  //min_neighboors_for_normal
+      2.1, //depth_differential_threshold
+      7,  //min_neighboors_for_normal
       5, //epsilon_c
       0.1, //epsilon_d
       0.02, //epsilon_n

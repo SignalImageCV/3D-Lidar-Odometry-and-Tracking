@@ -118,6 +118,8 @@ void processVisualizeTraking(
   }
 
 
+  std::getchar();
+
   while( ViewerCoreSharedQGL::isRunning() and relative_counter < total_num_iterations){
     ++relative_counter;
     ++total_counter;

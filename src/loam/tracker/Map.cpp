@@ -3,7 +3,7 @@
 namespace Loam{
 
   Map::Map():
-    m_max_numPoints( 40000),
+    m_max_numPoints( 180000),
     m_worldPointsPtr(std::make_shared<PointNormalColor3fVectorCloud>())
   {
   };
